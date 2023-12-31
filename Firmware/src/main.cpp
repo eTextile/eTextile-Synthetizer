@@ -14,7 +14,7 @@
 #include "mapping_lib.h"
 #include "usb_midi_io.h"
 #include "hardware_midi_io.h"
-#include "soundCard.h"
+#include "sound_card.h"
 
 uint32_t fpsTimeStamp = 0;
 uint16_t fps = 0;

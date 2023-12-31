@@ -4,7 +4,7 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#include "soundCard.h"
+#include "sound_card.h"
 
 AudioControlSGTL5000  sgtl5000;
 
