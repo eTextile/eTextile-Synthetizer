@@ -18,7 +18,7 @@ uint32_t bootTime = 0;
 uint16_t sysEx_data_length = 0;
 uint8_t* sysEx_data_ptr = NULL;
 
-// Used by USB_MIDI & HARDWARE_MIDI
+// Used by USB_MIDI && HARDWARE_MIDI
 void e256_noteOn(byte channel, byte note, byte velocity){
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
   node_ptr->midiMsg.channel = channel;
@@ -38,7 +38,7 @@ void e256_noteOff(byte channel, byte note, byte velocity){
   llist_push_front(&midiIn, node_ptr);
 };
 
-// Used by USB_MIDI & HARDWARE_MIDI
+// Used by USB_MIDI && HARDWARE_MIDI
 void e256_controlChange(byte channel, byte number, byte value){
     switch (channel){
       case MIDI_LEVELS_CHANNEL:
@@ -50,7 +50,7 @@ void e256_controlChange(byte channel, byte number, byte value){
     }
 };
 
-// Used by USB_MIDI & HARDWARE_MIDI
+// Used by USB_MIDI && HARDWARE_MIDI
 void e256_programChange(byte channel, byte program){
   switch (channel){
     case MIDI_MODES_CHANNEL:
@@ -94,7 +94,7 @@ void e256_programChange(byte channel, byte program){
             usbMIDI.sendSysEx(flash_configSize, flash_config_ptr, false);
             usbMIDI.send_now();
             while (usbMIDI.read());
-            #if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
+            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
               Serial.printf("\nSEND_FLASH_CONFIG: ");
               printBytes(flash_config_ptr, flash_configSize);
             #endif
@@ -105,7 +105,7 @@ void e256_programChange(byte channel, byte program){
       };
       break;
   };
-  #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MIDI_IO)
+  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MIDI_IO)
     Serial.printf("\nRECIVE_PGM_IN:%d\tCHANNEL:%d", program, channel);
   #endif
 };
@@ -116,13 +116,13 @@ void usb_midi_pending_mode_timeout(){
     if(load_flash_config()){
       set_mode(STANDALONE_MODE);
       matrix_calibrate();
-      #if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
         Serial.printf("\nFLASH_CONFIG_LOAD_DONE: ");
         printBytes(flash_config_ptr, flash_configSize);
       #endif
     } else {
       set_mode(SYNC_MODE);
-      #if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
         Serial.printf("\nFLASH_CONFIG_LOAD_FAILED!");
       #endif
       //set_mode(ERROR_MODE);
@@ -134,7 +134,7 @@ void midiInfo(uint8_t msg, uint8_t channel){
 if (e256_currentMode == STANDALONE_MODE){
   usbMIDI.sendProgramChange(msg, channel); // ProgramChange(program, channel);
   usbMIDI.send_now();
-  #if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
+  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
     Serial.printf("\nSEND_MIDI_MSG:%d\tCHANNEL:%d", msg, channel);
   #endif
   }
@@ -213,7 +213,7 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, bool complet
 
 // TODO
 void e256_clock(){
-#if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
+#if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
   Serial.println("Clock");
 #endif
 };

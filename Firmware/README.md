@@ -54,16 +54,6 @@
   - polygons()
   - touchpads()
   - grids()
-    - grid tables are hardcoded (it's more difficult to change if it later becomes necessary :-(
-    - [GRID_LAYOUT_NOTES]; MIDI notes definitions
-    - [GRID_LAYOUT_MIDI_IN]: Use the MIDI_HARDWARE_INPUT notes to populate the grid
-    - GRID_LAYOUT_DEFAULT vs GRID_LAYOUT_HARMONIC
-        - [GRID_LAYOUT_DEFAULT]: the MIDI notes are organized sequentially from 0 to 127 % GRID COLS
-            - GRID_LAYOUT_DEFAULT -> GRID_COLS  12
-            - GRID_LAYOUT_DEFAULT -> GRID_ROWS  11
-        - [GRID_LAYOUT_HARMONIC]: the MIDI notes are organized in 2D Harmonic table note layout
-            - GRID_LAYOUT_HARMONIC -> GRID_COLS 14
-            - GRID_LAYOUT_HARMONIC -> GRID_ROWS 9
 
 ### Development Frameworks
 - **eTextile-Synthesizer PCB** & **Teensy 4.0**

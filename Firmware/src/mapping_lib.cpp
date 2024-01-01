@@ -377,6 +377,9 @@ void mapping_grids_alloc(uint8_t grids_cnt){
 
 // Pre-compute key min & max coordinates using the pre-loaded config file
 void mapping_grids_setup(void){
+
+  //uint8_t gridLayout[GRID_KEYS] = {0};
+
   for (uint8_t i = 0; i < mapp_grids; i++){
     int grid_size_x = mapp_gridsParams[i].rect.to.x - mapp_gridsParams[i].rect.from.x;
     //float key_size_x = (grid_size_x / mapp_gridsParams[i].cols) - mapp_gridsParams[i].gap;
@@ -406,7 +409,7 @@ void mapping_grids_update(blob_t *blob_ptr){
       if (blob_ptr->state){ // Test if the blob is alive
         if (&mapp_gridsParams[i].midiLayout[keyPress] != mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]){ // Test if the blob is touching a new key
           if (mapp_gridsParams[i].lastKeyPress[blob_ptr->UID] != NULL){ // Test if the blob was touching another key
-          #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MAPPING)
+          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPING)
             Serial.printf("\nDEBUG_MAPPING_GRID\tBLOB_ID:%d\tKEY_SLIDING_OFF:%d", blob_ptr->UID, lastKeyPress[blob_ptr->UID]);
           #else
             mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]->status = midi::NoteOff;
@@ -414,7 +417,7 @@ void mapping_grids_update(blob_t *blob_ptr){
           #endif
             mapp_gridsParams[i].lastKeyPress[blob_ptr->UID] = NULL; // RAZ last key pressed value
           };
-          #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MAPPING)
+          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPING)
             Serial.printf("\nDEBUG_MAPPING_GRID\tBLOB_ID:%d\tKEY_PRESS:%d", blob_ptr->UID, mapp_gridsParams[i].midiLayout[keyPress]);
           #else
             mapp_gridsParams[i].midiLayout[keyPress].status = midi::NoteOn;
@@ -424,7 +427,7 @@ void mapping_grids_update(blob_t *blob_ptr){
         };
       }
       else { // if !blob_ptr->state
-      #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MAPPING)
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPING)
         Serial.printf("\nDEBUG_MAPPING_GRID\tBLOB_ID:%d\tKEY_UP:%d", blob_ptr->UID, lastKeyPress[blob_ptr->UID]);
       #else
         mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]->status = midi::NoteOff;
@@ -475,7 +478,8 @@ void mapping_grids_populate_dynamic(void) {
   if (newNote) {
     newNote = false;
     unsigned int key = 0;
-    while (key < GRID_KEYS) {
+    //while (key < GRID_KEYS) {
+    while (key < mapp_gridsParams[0].keys) { // FIXME!
       for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiChord); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
         gridLayout[key] = node_ptr->midiMsg.data2;
         key++;

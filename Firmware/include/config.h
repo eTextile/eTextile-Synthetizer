@@ -13,7 +13,7 @@
 
 #define PROJECT                      "ETEXTILE-SYNTHESIZER"
 #define NAME                         "256"
-#define VERSION                      "1.0.12"
+//#define VERSION                      "1.0.12"
 #define SENSOR_UID                   1 // Unique sensor ID
 
 // E256 HARDWARE CONSTANTS

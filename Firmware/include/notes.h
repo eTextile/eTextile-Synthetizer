@@ -9,19 +9,6 @@
 
 #include "config.h"
 
-// See: https://www.c-thru-music.com/cgi/?page=layout_octaves
-#if defined(GRID_LAYOUT_HARMONIC)
-#define GRID_COLS         14
-#define GRID_ROWS         9
-#define GRID_KEYS         (GRID_COLS * GRID_ROWS)
-#endif
-
-#if defined(GRID_LAYOUT_DEFAULT)
-#define GRID_COLS        12
-#define GRID_ROWS        11
-#define GRID_KEYS        (GRID_COLS * GRID_ROWS)
-#endif
-
 #if defined(GRID_LAYOUT_MIDI_IN)
 #define GRID_COLS        8
 #define GRID_ROWS        8

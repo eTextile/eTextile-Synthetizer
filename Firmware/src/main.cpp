@@ -30,9 +30,8 @@ void setup() {
   hardware_midi_io_setup();
   //while (!Serial);
   //Serial.println("START");
-
-set_mode(PENDING_MODE);
-bootTime = millis();
+  set_mode(PENDING_MODE);
+  bootTime = millis();
 };
 
 void loop() {

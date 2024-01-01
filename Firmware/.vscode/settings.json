@@ -2,6 +2,5 @@
     "files.associations": {
         "string": "cpp",
         "string_view": "cpp"
-    },
-    "liveServer.settings.port": 5501
+    }
 }

@@ -32,7 +32,7 @@ void runing_median(void) {
       filter[blob_ptr->UID].index = 1; // Circular buffer runing index
     };
 
-    #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MEDIAN)
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MEDIAN)
       //Serial.printf("\nCOUNT_%d\tINDEX_%d", filter[0].count, filter[0].index);
     #endif
     // Add the new values to the input runing buffer
@@ -63,7 +63,7 @@ void runing_median(void) {
       filter[blob_ptr->UID].X_sort[j] = tempIndex;
     };
 
-    #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MEDIAN)
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MEDIAN)
       Serial.printf("\nDEBUG_MEDIAN : ");
       for (uint8_t i = 0; i <= filter[0].count; i++) {
        Serial.printf("\t%d_%d_%f", i, filter[0].X_sort[i], filter[0].X_rawVal[i]);

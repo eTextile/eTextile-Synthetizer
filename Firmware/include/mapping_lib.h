@@ -113,6 +113,7 @@ struct grid {
   rect_t rect;
   uint8_t cols;
   uint8_t rows;
+  uint8_t keys;
   //uint8_t gap;  // Move it as global constant!
   uint8_t mode;   // MIDI aftertouch -> Move to midiMsg!
   float scale_factor_x;
@@ -152,7 +153,6 @@ void mapping_grids_alloc(uint8_t grids_cnt);
 extern uint8_t mapp_csliders;
 extern slider_t *mapp_cslidersParams;
 void mapping_sliders_alloc(uint8_t csliders_cnt);
-
 
 void mapping_lib_setup(void);
 void mapping_lib_update(void);
