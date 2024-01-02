@@ -377,7 +377,7 @@ for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_pt
 };
 #endif
 
-#if defined(USB_MIDI_SERIAL) & defined(DEBUG_BITMAP)
+#if defined(USB_MIDI_SERIAL) && defined(DEBUG_BITMAP)
   for (uint8_t rowPos = 0; rowPos < NEW_ROWS; rowPos++) {
     uint8_t* rowPos_ptr = &bitmapArray[0] + rowPos * NEW_ROWS;
     for (int colPos = 0; colPos < NEW_COLS; colPos++) {
@@ -387,7 +387,7 @@ for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_pt
   };
   Serial.printf("\n");
 #endif
-#if defined(USB_MIDI_SERIAL) & defined(DEBUG_BLOBS)
+#if defined(USB_MIDI_SERIAL) && defined(DEBUG_BLOBS)
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     Serial.printf("\nDEBUG_BLOBS:%d\tLS:%d\tS:%d\tX:%f\tY:%f\tZ:%d\tW:%d\tH:%d\tVXY:%f\tVZ:%f",
                   blob_ptr->UID,
@@ -403,7 +403,7 @@ for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_pt
                  );
   };
   #endif
-  #if defined(USB_MIDI_SERIAL) & defined(DEBUG_FIND_BLOBS)
+  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FIND_BLOBS)
     if ((lnode_t*)llist_blobs_temp.head_ptr != NULL) {
       Serial.printf("\n___________DEBUG_FIND_BLOBS / END_OF_FRAME");
     }

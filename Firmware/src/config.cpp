@@ -86,7 +86,7 @@ void set_mode(uint8_t mode) {
   e256_ctr.modes[mode].leds.update = true;
   e256_lastMode = e256_currentMode;
   e256_currentMode = mode;
-  #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MODES)
+  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MODES)
     Serial.printf("\nSET_MODE:%d", mode);
   #endif
 };
@@ -97,7 +97,7 @@ void set_level(uint8_t level, uint8_t value) {
   setup_leds(&e256_ctr.levels[level]);
   e256_ctr.levels[level].update = true;
   e256_level = level;
-  #if defined(USB_MIDI_SERIAL) & defined(DEBUG_LEVELS)
+  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LEVELS)
     Serial.printf("\nSET_LEVEL:%d_%d", level, value);
   #endif
 };
@@ -112,7 +112,7 @@ void set_state(uint8_t state) {
     digitalWrite(LED_PIN_D2, !e256_ctr.states[state].leds.D2);
     delay(e256_ctr.states[state].timeOff);
   };
-  #if defined(USB_MIDI_SERIAL) & defined(DEBUG_STATES)
+  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_STATES)
     Serial.printf("\nSET_STATE:%d", state);
   #endif
 };
@@ -171,7 +171,7 @@ inline void update_buttons() {
         midiInfo(FLASH_CONFIG_WRITE_DONE, MIDI_VERBOSITY_CHANNEL);
       }
       else {
-        #if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
           Serial.printf("\nSYSEX_CONFIG_WRITE: "); // FIXME FILE CORRUPTED!
           printBytes(sysEx_data_ptr, sysEx_data_length);
         #else

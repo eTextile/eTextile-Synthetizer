@@ -32,7 +32,7 @@ void mapping_triggers_update(blob_t* blob_ptr) {
         blob_ptr->centroid.y > mapp_trigsParams[i].rect.from.y &&
         blob_ptr->centroid.y < mapp_trigsParams[i].rect.to.y) {
       if (!blob_ptr->lastState) {
-        #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MAPPING)
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPING)
           Serial.printf("\nDEBUG_MAPPING_TRIGGERS\tID:%d\tNOTE_ON:%d", i, mapp_trigParams[i].midiMsg.data1);
         #else
           mapp_trigsParams[i].midiMsg.status = midi::NoteOn;
@@ -40,7 +40,7 @@ void mapping_triggers_update(blob_t* blob_ptr) {
         #endif
       }
       else if (!blob_ptr->state) {
-        #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MAPPING)
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPING)
           Serial.printf("\nDEBUG_MAPPING_TRIGGERS\tID;%d\tNOTE_OFF:%d", i, mapp_trigParams[i].midiMsg.data1);
         #else
           mapp_trigsParams[i].midiMsg.status = midi::NoteOff;
@@ -74,7 +74,7 @@ void mapping_switchs_update(blob_t* blob_ptr) {
         blob_ptr->centroid.y > mapp_switchParams[i].rect.from.y &&
         blob_ptr->centroid.y < mapp_switchParams[i].rect.to.y) {
       if (!blob_ptr->lastState) {
-        #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MAPPING)
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPING)
           Serial.printf("\nDEBUG_MAPPING_SWITCHS\tID:%d\tNOTE_ON:%d", i, toggleParam[i].midiMsg.data1);
         #else
           mapp_switchParams[i].midiMsg.status = midi::NoteOn;
@@ -82,7 +82,7 @@ void mapping_switchs_update(blob_t* blob_ptr) {
         #endif
       };
       if (!blob_ptr->state) {
-        #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MAPPING)
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPING)
           Serial.printf("\nDEBUG_MAPPING_SWITCHS\tID:%d\tNOTE_OFF:%d", i, toggleParam[i].midiMsg.data1);
         #else
           mapp_switchParams[i].midiMsg.status = midi::NoteOff;
@@ -146,7 +146,7 @@ void mapping_sliders_update(blob_t* blob_ptr) {
       }
       if (mapp_slidersParams[i].midiMsg.data2 != mapp_slidersParams[i].last_val) {
         mapp_slidersParams[i].last_val = mapp_slidersParams[i].midiMsg.data2;
-        #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MAPPING)
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPING)
           Serial.printf("\nDEBUG_MAPPING_SLIDER\tID:%d\tVal:%d", i, mapp_slidersParams[i].midiMsg.data2);
         #else
           midi_sendOut(mapp_slidersParams[i].midiMsg);
@@ -196,7 +196,7 @@ void mapping_knobs_update(blob_t* blob_ptr) {
       } else {
         mapp_knobsParams[i].midiMsg_theta.data2 = atanf(posY / posX);
       }
-      #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MAPPING)
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPING)
         Serial.printf("\nDEBUG_MAPPING_KNOBSS:\tKnobsID:\t%d\tradius:\t%fTheta:\t%f", i, mapp_knobsParams[i].midiMsg_radius.data2, mapp_knobsParams[i].midiMsg_theta.data2);
       #else
         midi_sendOut(mapp_knobsParams[i].midiMsg_radius);
@@ -235,7 +235,7 @@ void mapping_touchpads_update(blob_t* blob_ptr) {
         blob_ptr->centroid.y > mapp_touchpadsParams[i].rect.from.y &&
         blob_ptr->centroid.y < mapp_touchpadsParams[i].rect.to.y) {
       if (mapp_touchpadsParams[i].touch[blob_ptr->UID].midiMsg_x.data2) {
-        #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MAPPING)
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPING)
           Serial.printf("\nDEBUG_MAPPING_TOUCHPAD\tMIDI_x_cc:%d\tVAL:%d", 
           mapp_touchpadsParams[i].midiMsg_x.data2,
           round(map(blob_ptr->centroid.x, mapp_touchpadsParams[i].rect.from.x, mapp_touchpadsParams[i].rect.to.x, 0, 127)));
@@ -252,7 +252,7 @@ void mapping_touchpads_update(blob_t* blob_ptr) {
         #endif
       };
       if (mapp_touchpadsParams[i].touch[blob_ptr->UID].midiMsg_y.data2) {
-        #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MAPPING)
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPING)
           Serial.printf("\nDEBUG_MAPPING_TOUCHPAD\tMIDI_y_cc:%d\tVAL:%d", 
           mapp_touchpadsParams[i].touch[blob_ptr->UID].midiMsg_y.data2, 
           round(map(blob_ptr->centroid.y, mapp_touchpadsParams[i].rect.from.y, mapp_touchpadsParams[i].rect.to.y, 0, 127)));
@@ -269,7 +269,7 @@ void mapping_touchpads_update(blob_t* blob_ptr) {
         #endif
       };
       if (mapp_touchpadsParams[i].touch[blob_ptr->UID].midiMsg_z.data2) {
-        #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MAPPING)
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPING)
           Serial.printf("\nDEBUG_MAPPING_TOUCHPAD\tMIDI_z_cc:%d\tVAL:%d",
                         mapp_touchpadsParams[i].touch[blob_ptr->UID].midiMsg_z.data2,
                         map(blob_ptr->centroid.z, 0, 255, 0, 127));
@@ -347,7 +347,7 @@ void mapping_polygons_update(blob_t* blob_ptr) {
     };
     if (mapp_polygonsParams[p].is_inside) {
       // TODO: get the max width & max height and scale it to [0-1]
-      #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MAPPING)
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPING)
         Serial.printf("\nDEBUG_MAPPING_POLYGONS\tPoint %f %f is inside polygon %d\n", blob_ptr->centroid.x, blob_ptr->centroid.y, p);
       #else
       //
@@ -355,7 +355,7 @@ void mapping_polygons_update(blob_t* blob_ptr) {
       break;
     }
     else {
-      #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MAPPING)
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPING)
         printf("\nDEBUG_MAPPING_POLYGONS\tPoint %f %f does not lie within any polygon\n", blob_ptr->centroid.x, blob_ptr->centroid.y);
       #endif
     }
@@ -566,7 +566,7 @@ void mapping_cSliders_update(void) {
       } else {
         theta = atanf(posY / posX);
       }
-      #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MAPPING)
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPING)
         Serial.printf("\nDEBUG_MAPPING_CSLIDER\tRADIUS:%f\tTHETA:%f", radius, theta);
       #endif
       if (blob_ptr->state) {
@@ -584,7 +584,7 @@ void mapping_cSliders_update(void) {
               if (theta != cSlider_ptr->lastVal) {
                 cSlider_ptr->lastVal = theta;
                 mapp_cslidersParams[i].midiMsg.data2 = (uint8_t)map(theta, cSlider_ptr->thetaMin, cSlider_ptr->thetaMax, 0, 127);
-                #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MAPPING)
+                #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPING)
                   Serial.printf("\nDEBUG_MAPPING_CSLIDER\tSLIDER_ID:%d\tRADIUS:%f\tTHETA:%f\tVAL:%d", id, radius, theta, sliderVal);
                 #else
                   midi_sendOut(mapp_csliderParams[i].midiMsg);

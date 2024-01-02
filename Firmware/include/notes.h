@@ -9,12 +9,6 @@
 
 #include "config.h"
 
-#if defined(GRID_LAYOUT_MIDI_IN)
-#define GRID_COLS        8
-#define GRID_ROWS        8
-#define GRID_KEYS        (GRID_COLS * GRID_ROWS)
-#endif
-
 extern uint8_t gridLayout[];
 
 #endif /*__NOTES_H__*/
