@@ -1,6 +1,6 @@
 /*
   This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
-  Copyright (c) 2014-2022 Maurin Donneaud <maurin@etextile.org>
+  Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 
   TODO?: https://github.com/KurtE/DmaSpi/tree/T4
@@ -232,7 +232,7 @@ void matrix_scan(void) {
     };
   };
 
-#if defined(USB_MIDI_SERIAL) && defined(DEBUG_ADC)
+#if defined(USB_MIDI_SERIAL) & defined(DEBUG_ADC)
   for (uint8_t posY = 0; posY < RAW_ROWS; posY++) {
     uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR(&rawFrame, posY);
     for (uint8_t posX = 0; posX < RAW_COLS; posX++) {

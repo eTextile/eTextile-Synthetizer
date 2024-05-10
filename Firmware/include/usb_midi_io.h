@@ -1,6 +1,6 @@
 /*
   This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
-  Copyright (c) 2014-2022 Maurin Donneaud <maurin@etextile.org>
+  Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
@@ -15,15 +15,16 @@ extern uint32_t bootTime;
 extern uint16_t sysEx_data_length;
 extern uint8_t* sysEx_data_ptr;
 
-
-void usb_midi_io_setup(void);
-
-void midiInfo(uint8_t msg, uint8_t channel);
-
-void usb_midi_pending_mode_timeout(void);
-
+void usb_midi_setup(void);
 void usb_midi_recive(void);
-void usb_midi_handle_input(const midi::Message<128u> &midiMsg);
+void usb_midi_pending_mode_timeout(void);
 void usb_midi_transmit(void);
+void usb_midi_send_info(uint8_t msg, uint8_t channel);
+void usb_read_noteOn(byte channel, byte note, byte velocity);
+void usb_read_noteOff(byte channel, byte note, byte velocity);
+void usb_read_controlChange(byte channel, byte control, byte value);
+void usb_read_programChange(byte channel, byte program);
+void usb_read_systemExclusive(const uint8_t* data_ptr, uint16_t length, bool complete);
+void usb_read_midi_clock();
 
 #endif /*__USB_MIDI_IO_H__*/

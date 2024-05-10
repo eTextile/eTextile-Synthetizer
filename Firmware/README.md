@@ -47,7 +47,6 @@
 ## MAPPING LIB
 ### LIST OF AVAILABLE TUIs
 - All feture are parametric
-  - tirggers()
   - switchs()
   - sliders()
   - knobs()
@@ -101,7 +100,7 @@ Path of the lib_deps installation :
 ## Copyright
 Except as otherwise noted, all files in the eTextile-Synthesizer project folder
 
-    Copyright (c) 2014-2022 Maurin Donneaud
+    Copyright (c) 2014- Maurin Donneaud
 
 For information on usage and redistribution, and for a DISCLAIMER OF ALL
 WARRANTIES, see LICENSE.txt included in the eTextile-Synthesizer project folder.

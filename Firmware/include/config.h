@@ -1,6 +1,6 @@
 /*
   This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
-  Copyright (c) 2014-2022 Maurin Donneaud <maurin@etextile.org>
+  Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
@@ -52,7 +52,6 @@
 #define PiII                         (float)(PI / 2)
 #define LONG_HOLD                    1500
 #define BLINK_ITER                   10
-#define MIDI_TRANSMIT_INTERVAL       50    // 20Hz
 #define LEVEL_TIMEOUT                3000
 #define PENDING_MODE_TIMEOUT         4000
 
@@ -70,14 +69,14 @@
 #define SYNC_MODE                    1 // Hand chake mode
 #define STANDALONE_MODE              2 // Send mappings values over MIDI hardware
 #define MATRIX_MODE_RAW              3 // Send matrix analog sensor values (16x16) over USB using MIDI format
-#define MATRIX_MODE_INTERP           4 // Send matrix analog sensor values (16x16) over USB using MIDI format
+#define MATRIX_MODE_INTERP           4 // Send interpolated sensor values (256x256) over USB using MIDI format
 #define EDIT_MODE                    5 // Send all blobs values over USB_MIDI
-#define PLAY_MODE                    6 // Send mappings values over USB_MIDI
-#define ERROR_MODE                   7 // 
+#define PLAY_MODE                    6 // Recive mappings values from USB_MIDI and forward them to USB_HARDWARE
+#define ERROR_MODE                   7 //
 
 // E256 STATES CONSTANTS (MIDI_STATES_CHANNEL)
 #define CALIBRATE_REQUEST            0
-#define CONFIG_FILE_REQUEST          1                 
+#define CONFIG_FILE_REQUEST          1
 
 // E256 LEVELS CONSTANTS (MIDI_LEVELS_CHANNEL)
 #define THRESHOLD                    0 // E256-LEDs: | 1 | 1 |
@@ -86,18 +85,28 @@
 #define LINE_OUT                     3 // E256-LEDs: | 0 | 0 |
 
 // E256 MAPPING_LIB CONSTANTS
-#define MAX_BLOBS                    16    // [0:7] How many blobs can be tracked at the same time
-#define MAX_TRIGGERS                 16
+#define MAX_BLOBS                    16 // [0:7] How many blobs can be tracked at the same time
+
+//#define MAX_TRIGGERS               16
 #define MAX_SWITCHS                  16
-#define MAX_SLIDERS                  8
-#define MAX_CSLIDERS                 2
-#define MAX_KNOBS                    9
+
+#define MAX_SLIDERS                  6
+#define MAX_SLIDER_TOUCHS            2
+
+#define MAX_KNOBS                    4
+#define MAX_KNOB_TOUCHS              4
+
 #define MAX_TOUCHPADS                2
-#define MAX_TOUCH_POINTS             10
-#define MAX_POLYGON_POINTS           64
+#define MAX_TOUCHPAD_TOUCHS          5
+
 #define MAX_POLYGONS                 8
+#define MAX_POLYGON_POINTS           64
+
 #define MAX_GRIDS                    2
-#define MAX_GRID_KEYS                128
+#define MAX_GRID_KEYS                256
+
+#define MAX_CSLIDERS                 2
+
 #define H_SLIDER                     0
 #define V_SLIDER                     1
 
@@ -124,26 +133,31 @@
 #define DONE_ACTION                  15 
 
 // ERROR CODES CONSTANTS
-#define WAITING_FOR_CONFIG             0
-#define CONNECTING_FLASH               1
-#define FLASH_FULL                     2
-#define FILE_TO_BIG                    3
-#define NO_CONFIG_FILE                 4
-#define WHILE_OPEN_FLASH_FILE          5
-#define USBMIDI_CONFIG_LOAD_FAILED     6
-#define FLASH_CONFIG_LOAD_FAILED       7
-#define FLASH_CONFIG_WRITE_FAILED      8
-#define CONFIG_APPLY_FAILED            9
-#define UNKNOWN_SYSEX                  10
-#define TOO_MANY_BLOBS                 11
+#define WAITING_FOR_CONFIG           0
+#define CONNECTING_FLASH             1
+#define FLASH_FULL                   2
+#define FILE_TO_BIG                  3
+#define NO_CONFIG_FILE               4
+#define WHILE_OPEN_FLASH_FILE        5
+#define USBMIDI_CONFIG_LOAD_FAILED   6
+#define FLASH_CONFIG_LOAD_FAILED     7
+#define FLASH_CONFIG_WRITE_FAILED    8
+#define CONFIG_APPLY_FAILED          9
+#define UNKNOWN_SYSEX                10
+#define TOO_MANY_BLOBS               11
+
+// #define MIDI_HARDWARE_TRANSMIT
+// #define MIDI_USB_TRANSMIT
+
+#define MIDI_TRANSMIT_INTERVAL       50    // 20Hz
 
 /*
-#define M_CHAN                         "c"
-#define M_VELO                         "v"
-#define M_NOTE                         "n"
-#define M_CC                           "cc"
-#define M_VAL                          "v"
-#define M_STATE                        "s"
+#define M_CHAN                       "c"
+#define M_VELO                       "v"
+#define M_NOTE                       "n"
+#define M_CC                         "cc"
+#define M_VAL                        "v"
+#define M_STATE                      "s"
 */
 
 typedef struct leds leds_t;

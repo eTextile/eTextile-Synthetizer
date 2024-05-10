@@ -1,7 +1,6 @@
 /*
-  **eTextile-Synthesizer**
   This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
-  Copyright (c) 2014-2022 Maurin Donneaud <maurin@etextile.org>
+  Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
@@ -11,7 +10,7 @@
 #include "blob.h"
 #include "median.h"
 #include "midi_bus.h"
-#include "mapping_lib.h"
+#include "mappings.h"
 #include "usb_midi_io.h"
 #include "hardware_midi_io.h"
 #include "sound_card.h"
@@ -24,13 +23,15 @@ void setup() {
   scan_setup();
   interp_setup();
   blob_setup();
-  midi_bus_setup();
   mapping_lib_setup();
-  usb_midi_io_setup();
-  hardware_midi_io_setup();
-  //while (!Serial);
-  //Serial.println("START");
+  hardware_midi_setup();
+  usb_midi_setup();
+  midi_bus_setup();
   set_mode(PENDING_MODE);
+  #if defined(USB_MIDI_SERIAL)
+    while (!Serial);
+    Serial.println("START");
+  #endif
   bootTime = millis();
 };
 
@@ -38,8 +39,7 @@ void loop() {
   matrix_scan();
   matrix_interp();
   matrix_find_blobs();
-  update_controls();
-
+  //update_controls();
   switch (e256_currentMode) {
     case PENDING_MODE:
       usb_midi_recive();
@@ -47,14 +47,6 @@ void loop() {
       break;
     case SYNC_MODE:
       usb_midi_recive();
-      break;
-    case STANDALONE_MODE:
-      #if defined(GRID_LAYOUT_MIDI_IN)
-        hardware_midi_read_input();
-      #endif
-      mapping_lib_update();
-      //update_levels(); // NOT_USED in this branche!
-      hardware_midi_transmit();
       break;
     case MATRIX_MODE_RAW:
       usb_midi_recive();
@@ -66,8 +58,13 @@ void loop() {
       break;
     case PLAY_MODE:
       usb_midi_recive();
+      hardware_midi_transmit();
+      break;
+    case STANDALONE_MODE:
+      //update_levels(); // NOT_USED in this branche! But the THRESHOLD!!!!?????????????????
+      //hardware_midi_recive();      
       mapping_lib_update();
-      usb_midi_transmit();
+      hardware_midi_transmit();
       break;
   };
 

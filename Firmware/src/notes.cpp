@@ -1,10 +1,8 @@
 /*
   This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
-  Copyright (c) 2014-2022 Maurin Donneaud <maurin@etextile.org>
+  Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
-
-#include "notes.h"
 
 #define  Cm1   0         // 8.18 Hz
 #define  Cdm1  1         // 8.66 Hz

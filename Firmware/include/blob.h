@@ -6,7 +6,7 @@
 
   Added custom blob détection algorithm to keep track of the blobs ID's
     - This patch is part of the eTextile-Synthesizer project - http://synth.eTextile.org
-    - Copyright (c) 2014-2022 Maurin Donneaud <maurin@etextile.org>
+    - Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
     - This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
