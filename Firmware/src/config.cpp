@@ -112,7 +112,7 @@ void set_state(uint8_t state) {
     //millis();
     digitalWrite(LED_PIN_D1, !e256_ctr.states[state].leds.D1);
     digitalWrite(LED_PIN_D2, !e256_ctr.states[state].leds.D2);
-    delay(e256_ctr.states[state].timeOff);
+    delay(e256_ctr.states[state].timeOff); // FIXME!
   };
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_STATES)
     Serial.printf("\nSET_STATE:%d", state);
