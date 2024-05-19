@@ -39,7 +39,7 @@ void loop() {
   matrix_scan();
   matrix_interp();
   matrix_find_blobs();
-  //update_controls();
+  update_controls();
   switch (e256_currentMode) {
     case PENDING_MODE:
       usb_midi_recive();
@@ -62,13 +62,18 @@ void loop() {
       break;
     case STANDALONE_MODE:
       //update_levels(); // NOT_USED in this branche! But the THRESHOLD!!!!?????????????????
-      //hardware_midi_recive();      
+      //hardware_midi_recive();
+      usb_midi_recive(); // USED TO DEBUG!
       mapping_lib_update();
       hardware_midi_transmit();
       break;
+    case ERROR_MODE:
+      // TODO!
+      usb_midi_recive(); // USED TO DEBUG!
+      break;
   };
 
-  #if defined(USB_MIDI_SERIAL) & defined(DEBUG_FPS)
+  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FPS)
   if (millis() - fpsTimeStamp >= 1000) {
     fpsTimeStamp = millis();
     Serial.printf("\nFPS:%d", fps);

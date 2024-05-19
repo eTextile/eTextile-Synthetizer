@@ -10,6 +10,10 @@
 #include <Arduino.h>
 #include "midi_bus.h"
 
+// E256 MIDI CONSTANTS
+#define SYSEX_CONF 0x7C  // DEC: 124
+#define SYSEX_SOUND 0x6C // DEC: 108
+
 extern uint32_t bootTime;
 
 extern uint16_t sysEx_data_length;

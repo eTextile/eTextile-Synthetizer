@@ -62,10 +62,15 @@ struct e256_switch{
   bool lastState;
 };
 
+typedef enum {
+  VERTICAL,
+  HORIZONTAL
+} dir_t;
+
 typedef struct e256_slider slider_t;
 struct e256_slider {
   rect_t rect;
-  uint8_t dir; // H_SLIDER || V_SLIDER
+  dir_t dir;
   uint8_t touchs;
   touch_2d_t touch[MAX_SLIDER_TOUCHS];
 };

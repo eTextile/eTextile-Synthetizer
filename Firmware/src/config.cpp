@@ -53,8 +53,9 @@ e256_control_t e256_ctr = {
   &e256_l[0]  // levels_ptr
 };
 
-uint8_t e256_currentMode = PENDING_MODE;
-uint8_t e256_lastMode = PENDING_MODE;
+mapping_mode_t e256_currentMode = PENDING_MODE;
+mapping_mode_t e256_lastMode = PENDING_MODE;
+
 uint8_t e256_level = THRESHOLD;
 
 uint8_t* flash_config_ptr = NULL;
@@ -85,8 +86,8 @@ void set_mode(uint8_t mode) {
   setup_leds(&e256_ctr.modes[mode]);
   e256_ctr.modes[mode].leds.update = true;
   e256_lastMode = e256_currentMode;
-  e256_currentMode = mode;
-  #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MODES)
+  e256_currentMode = (mapping_mode_t)mode; // IS IT OK!?
+  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MODES)
     Serial.printf("\nSET_MODE:%d", mode);
   #endif
 };
@@ -97,7 +98,7 @@ void set_level(uint8_t level, uint8_t value) {
   setup_leds(&e256_ctr.levels[level]);
   e256_ctr.levels[level].update = true;
   e256_level = level;
-  #if defined(USB_MIDI_SERIAL) & defined(DEBUG_LEVELS)
+  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LEVELS)
     Serial.printf("\nSET_LEVEL:%d_%d", level, value);
   #endif
 };
@@ -107,12 +108,13 @@ void set_state(uint8_t state) {
   for (int i = 0; i<e256_ctr.states[state].iter; i++){
     digitalWrite(LED_PIN_D1, e256_ctr.states[state].leds.D1);
     digitalWrite(LED_PIN_D2, e256_ctr.states[state].leds.D2);
-    delay(e256_ctr.states[state].timeOn);
+    delay(e256_ctr.states[state].timeOn); // FIXME!
+    //millis();
     digitalWrite(LED_PIN_D1, !e256_ctr.states[state].leds.D1);
     digitalWrite(LED_PIN_D2, !e256_ctr.states[state].leds.D2);
     delay(e256_ctr.states[state].timeOff);
   };
-  #if defined(USB_MIDI_SERIAL) & defined(DEBUG_STATES)
+  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_STATES)
     Serial.printf("\nSET_STATE:%d", state);
   #endif
 };
@@ -171,7 +173,7 @@ inline void update_buttons() {
         usb_midi_send_info(FLASH_CONFIG_WRITE_DONE, MIDI_VERBOSITY_CHANNEL);
       }
       else {
-        #if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
           Serial.printf("\nSYSEX_CONFIG_WRITE: "); // FIXME FILE CORRUPTED!
           printBytes(sysEx_data_ptr, sysEx_data_length);
         #else
@@ -242,7 +244,8 @@ inline void update_encoder() {
   };
 };
 
-inline void blink_leds(uint8_t mode) {
+//inline void blink_leds(uint8_t mode) {
+inline void blink_leds(mapping_mode_t mode) {
   static uint32_t ledsTimeStamp = 0;
   if (e256_ctr.modes[mode].leds.update) {
     if (millis() - ledsTimeStamp < e256_ctr.modes[mode].timeOn && e256_ctr.modes[mode].toggle == true ) {
@@ -282,7 +285,7 @@ inline bool config_load_mappings_switchs(const JsonArray& config) {
   }
   mapping_switchs_alloc(config.size()); // TEST_IT!!!!!!!!!!
 
-   uint8_t midi_status;
+  uint8_t midi_status;
   midi_status_t status;
   for (uint8_t i = 0; i < mapp_switchs; i++) {
     mapp_switchParams[i].rect.from.x = config[i]["from"][0];

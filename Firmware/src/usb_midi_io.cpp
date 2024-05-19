@@ -38,13 +38,13 @@ void usb_midi_pending_mode_timeout(){
     if(load_flash_config()){
       set_mode(STANDALONE_MODE);
       matrix_calibrate();
-      #if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
         Serial.printf("\nFLASH_CONFIG_LOAD_DONE: ");
         printBytes(flash_config_ptr, flash_configSize);
       #endif
     } else {
       set_mode(SYNC_MODE);
-      #if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
         Serial.printf("\nFLASH_CONFIG_LOAD_FAILED!");
       #endif
       //set_mode(ERROR_MODE);
@@ -124,7 +124,7 @@ void usb_midi_transmit() {
 void usb_midi_send_info(uint8_t msg, uint8_t channel){
   usbMIDI.sendProgramChange(msg, channel); // ProgramChange(program, channel);
   usbMIDI.send_now();
-  #if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
+  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
     Serial.printf("\nSEND_MIDI_MSG:%d\tCHANNEL:%d", msg, channel);
   #endif
 };
@@ -224,7 +224,7 @@ void usb_read_programChange(byte channel, byte program){
             usbMIDI.sendSysEx(flash_configSize, flash_config_ptr, false);
             usbMIDI.send_now();
             while (usbMIDI.read());
-            #if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
+            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
               Serial.printf("\nSEND_FLASH_CONFIG: ");
               printBytes(flash_config_ptr, flash_configSize);
             #endif
@@ -235,14 +235,14 @@ void usb_read_programChange(byte channel, byte program){
       };
       break;
   };
-  #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MIDI_IO)
+  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MIDI_IO)
     Serial.printf("\nRECIVE_PGM_IN:%d\tCHANNEL:%d", program, channel);
   #endif
 };
 
 // TODO
 void usb_read_midi_clock(){
-#if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
+#if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
   Serial.println("Clock");
 #endif
 };
@@ -297,7 +297,7 @@ void usb_read_systemExclusive(const uint8_t* data_ptr, uint16_t length, bool com
       if (sysEx_identifier == SYSEX_CONF) {
         usb_midi_send_info(USBMIDI_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
         if (apply_config(sysEx_data_ptr, sysEx_data_length)){
-          #if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
+          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
             Serial.printf("\nSYSEX_CONFIG_RECIVED: ");
             printBytes(sysEx_data_ptr, sysEx_data_length);
           #else
