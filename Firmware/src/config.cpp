@@ -81,7 +81,7 @@ void setup_leds(void* ptr){
 };
 
 void set_mode(uint8_t mode) {
-  e256_ctr.modes[e256_currentMode].leds.update = false;
+  e256_ctr.modes[(uint8_t)e256_currentMode].leds.update = false;
   e256_ctr.levels[e256_level].leds.update = false;
   setup_leds(&e256_ctr.modes[mode]);
   e256_ctr.modes[mode].leds.update = true;
@@ -93,7 +93,7 @@ void set_mode(uint8_t mode) {
 };
 
 void set_level(uint8_t level, uint8_t value) {
-  e256_ctr.modes[e256_currentMode].leds.update = false;
+  e256_ctr.modes[(uint8_t)e256_currentMode].leds.update = false;
   e256_ctr.encoder->write(value << 2);
   setup_leds(&e256_ctr.levels[level]);
   e256_ctr.levels[level].update = true;
@@ -108,11 +108,10 @@ void set_state(uint8_t state) {
   for (int i = 0; i<e256_ctr.states[state].iter; i++){
     digitalWrite(LED_PIN_D1, e256_ctr.states[state].leds.D1);
     digitalWrite(LED_PIN_D2, e256_ctr.states[state].leds.D2);
-    delay(e256_ctr.states[state].timeOn); // FIXME!
-    //millis();
+    delay(e256_ctr.states[state].timeOn);
     digitalWrite(LED_PIN_D1, !e256_ctr.states[state].leds.D1);
     digitalWrite(LED_PIN_D2, !e256_ctr.states[state].leds.D2);
-    delay(e256_ctr.states[state].timeOff); // FIXME!
+    delay(e256_ctr.states[state].timeOff);
   };
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_STATES)
     Serial.printf("\nSET_STATE:%d", state);
@@ -145,6 +144,7 @@ bool flash_file(const char *fileName, uint8_t* data_ptr, uint16_t size) {
     if (sysEx_data_length < FLASH_SIZE) {
       tmpFile.write(data_ptr, size);
       tmpFile.close();
+      //usb_midi_send_info(FILE_WRITE_DONE, MIDI_ERROR_CHANNEL);
       return true;
     }
     else {
@@ -162,7 +162,7 @@ inline void update_buttons() {
   // ACTION: BUTTON_L short press
   // FONCTION: CALIBRATE THE SENSOR MATRIX
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() < LONG_HOLD) {
-    //matrix_calibrate(); // FIXME for erratic call when booting!
+    //matrix_calibrate(); // FIXME for erratic call when booting!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     //set_state(CALIBRATE_REQUEST);
   };
   // ACTION: BUTTON_L long press
@@ -244,8 +244,7 @@ inline void update_encoder() {
   };
 };
 
-//inline void blink_leds(uint8_t mode) {
-inline void blink_leds(mapping_mode_t mode) {
+inline void blink_leds(uint8_t mode) {
   static uint32_t ledsTimeStamp = 0;
   if (e256_ctr.modes[mode].leds.update) {
     if (millis() - ledsTimeStamp < e256_ctr.modes[mode].timeOn && e256_ctr.modes[mode].toggle == true ) {
@@ -275,7 +274,7 @@ inline void fade_leds(uint8_t level) {
 
 // Update LEDs according to the mode and rotary encoder values
 inline void update_leds() {
-  blink_leds(e256_currentMode);
+  blink_leds((uint8_t)e256_currentMode);
   fade_leds(e256_level);
 };
 
@@ -283,6 +282,11 @@ inline bool config_load_mappings_switchs(const JsonArray& config) {
   if (config.isNull()) {
     return false;
   }
+
+  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+    // DEBUG...
+  #endif
+  
   mapping_switchs_alloc(config.size()); // TEST_IT!!!!!!!!!!
 
   uint8_t midi_status;
@@ -299,7 +303,7 @@ inline bool config_load_mappings_switchs(const JsonArray& config) {
     mapp_switchParams[i].msg.midi.data1 = config[i]["msg"]["midi"]["data1"];
     mapp_switchParams[i].msg.midi.data2 = config[i]["msg"]["midi"]["data2"];
     mapp_switchParams[i].msg.midi.channel = status.channel;
-    if (status.type == C_CHANGE || status.type == P_AFTERTOUCH){
+    if (status.type == C_CHANGE || status.type == P_AFTERTOUCH) {
       mapp_switchParams[i].msg.limit.min = config[i]["msg"]["limit"]["min"];
       mapp_switchParams[i].msg.limit.max = config[i]["msg"]["limit"]["max"]; 
     }
@@ -335,13 +339,13 @@ inline bool config_load_mappings_sliders(const JsonArray& config) {
 
       midi_status = config[i][j]["msg"]["pos_z"]["midi"]["status"];
       midi_msg_status_unpack(midi_status, &status);
-      mapp_slidersParams[i].touch[j].z.midi.type = status.type;
-      mapp_slidersParams[i].touch[j].z.midi.data1 = config[i][j]["msg"]["pos_z"]["midi"]["data1"];
-      mapp_slidersParams[i].touch[j].z.midi.data2 = config[i][j]["msg"]["pos_z"]["midi"]["data2"];
-      mapp_slidersParams[i].touch[j].z.midi.channel = status.channel;
+      mapp_slidersParams[i].touch[j].pos_z.midi.type = status.type;
+      mapp_slidersParams[i].touch[j].pos_z.midi.data1 = config[i][j]["msg"]["pos_z"]["midi"]["data1"];
+      mapp_slidersParams[i].touch[j].pos_z.midi.data2 = config[i][j]["msg"]["pos_z"]["midi"]["data2"];
+      mapp_slidersParams[i].touch[j].pos_z.midi.channel = status.channel;
       if (status.type == C_CHANGE || status.type == P_AFTERTOUCH){
-        mapp_slidersParams[i].touch[j].z.limit.min = config[i][j]["msg"]["pos_z"]["limit"]["min"];
-        mapp_slidersParams[i].touch[j].z.limit.max = config[i][j]["msg"]["pos_z"]["limit"]["max"];
+        mapp_slidersParams[i].touch[j].pos_z.limit.min = config[i][j]["msg"]["pos_z"]["limit"]["min"];
+        mapp_slidersParams[i].touch[j].pos_z.limit.max = config[i][j]["msg"]["pos_z"]["limit"]["max"];
       }
     }
   };
@@ -424,43 +428,43 @@ inline bool config_load_mappings_touchpads(const JsonArray& config) {
       uint8_t midi_status;
       midi_status_t status;
       for (uint8_t j = 0; j < config[i]["touchs"]; j++) {
+        mapp_touchpadsParams[i].touch[j].pos_x.midi.type = status.type;
 
         midi_status = config[i][j]["pos_x"]["msg"]["midi"]["status"];
         midi_msg_status_unpack(midi_status, &status);
-        mapp_touchpadsParams[i].touch[j].x.midi.type = status.type;
-        mapp_touchpadsParams[i].touch[j].x.midi.data1 = config[i][j]["msg"]["pos_x"]["midi"]["data1"];
-        mapp_touchpadsParams[i].touch[j].x.midi.data2 = config[i][j]["msg"]["pos_x"]["midi"]["data2"];
-        mapp_touchpadsParams[i].touch[j].x.midi.channel = status.channel;
+        mapp_touchpadsParams[i].touch[j].pos_x.midi.type = status.type;
+        mapp_touchpadsParams[i].touch[j].pos_x.midi.data1 = config[i][j]["msg"]["pos_x"]["midi"]["data1"];
+        mapp_touchpadsParams[i].touch[j].pos_x.midi.data2 = config[i][j]["msg"]["pos_x"]["midi"]["data2"];
+        mapp_touchpadsParams[i].touch[j].pos_x.midi.channel = status.channel;
         if (status.type == C_CHANGE || status.type == P_AFTERTOUCH){
-          mapp_touchpadsParams[i].touch[j].x.limit.min = config[i][j]["msg"]["pos_x"]["limit"]["min"];
-          mapp_touchpadsParams[i].touch[j].x.limit.max = config[i][j]["msg"]["pos_x"]["limit"]["max"];
+          mapp_touchpadsParams[i].touch[j].pos_x.limit.min = config[i][j]["msg"]["pos_x"]["limit"]["min"];
+          mapp_touchpadsParams[i].touch[j].pos_x.limit.max = config[i][j]["msg"]["pos_x"]["limit"]["max"];
         }
 
         midi_status = config[i][j]["pos_y"]["msg"]["midi"]["status"];
         midi_msg_status_unpack(midi_status, &status);
-        mapp_touchpadsParams[i].touch[j].y.midi.type = status.type;
-        mapp_touchpadsParams[i].touch[j].y.midi.data1 = config[i][j]["msg"]["pos_y"]["midi"]["data1"];
-        mapp_touchpadsParams[i].touch[j].y.midi.data2 = config[i][j]["msg"]["pos_y"]["midi"]["data2"];
-        mapp_touchpadsParams[i].touch[j].y.midi.channel = status.channel;
+        mapp_touchpadsParams[i].touch[j].pos_y.midi.type = status.type;
+        mapp_touchpadsParams[i].touch[j].pos_y.midi.data1 = config[i][j]["msg"]["pos_y"]["midi"]["data1"];
+        mapp_touchpadsParams[i].touch[j].pos_y.midi.data2 = config[i][j]["msg"]["pos_y"]["midi"]["data2"];
+        mapp_touchpadsParams[i].touch[j].pos_y.midi.channel = status.channel;
         if (status.type == C_CHANGE || status.type == P_AFTERTOUCH){
-        mapp_touchpadsParams[i].touch[j].y.limit.min = config[i][j]["msg"]["pos_y"]["limit"]["min"];
-        mapp_touchpadsParams[i].touch[j].y.limit.max = config[i][j]["msg"]["pos_y"]["limit"]["max"];
+        mapp_touchpadsParams[i].touch[j].pos_y.limit.min = config[i][j]["msg"]["pos_y"]["limit"]["min"];
+        mapp_touchpadsParams[i].touch[j].pos_y.limit.max = config[i][j]["msg"]["pos_y"]["limit"]["max"];
         }
 
         midi_status = config[i][j]["pos_z"]["msg"]["midi"]["status"];
         midi_msg_status_unpack(midi_status, &status);
-        mapp_touchpadsParams[i].touch[j].z.midi.type = status.type;
-        mapp_touchpadsParams[i].touch[j].z.midi.data1 = config[i][j]["msg"]["pos_z"]["midi"]["data1"];
-        mapp_touchpadsParams[i].touch[j].z.midi.data2 = config[i][j]["msg"]["pos_z"]["midi"]["data2"];
-        mapp_touchpadsParams[i].touch[j].z.midi.channel = status.channel;
+        mapp_touchpadsParams[i].touch[j].pos_z.midi.type = status.type;
+        mapp_touchpadsParams[i].touch[j].pos_z.midi.data1 = config[i][j]["msg"]["pos_z"]["midi"]["data1"];
+        mapp_touchpadsParams[i].touch[j].pos_z.midi.data2 = config[i][j]["msg"]["pos_z"]["midi"]["data2"];
+        mapp_touchpadsParams[i].touch[j].pos_z.midi.channel = status.channel;
         if (status.type == C_CHANGE || status.type == P_AFTERTOUCH){
-          mapp_touchpadsParams[i].touch[j].z.limit.min = config[i][j]["msg"]["pos_z"]["limit"]["min"];
-          mapp_touchpadsParams[i].touch[j].z.limit.max = config[i][j]["msg"]["pos_z"]["limit"]["max"];
+          mapp_touchpadsParams[i].touch[j].pos_z.limit.min = config[i][j]["msg"]["pos_z"]["limit"]["min"];
+          mapp_touchpadsParams[i].touch[j].pos_z.limit.max = config[i][j]["msg"]["pos_z"]["limit"]["max"];
         }
       }
     }
     else {
-      usb_midi_send_info(TOO_MANY_BLOBS, MIDI_ERROR_CHANNEL);
       //usb_midi_send_info(TOO_MANY_TOUCHS, MIDI_ERROR_CHANNEL); // TODO!
     }
   };
@@ -521,13 +525,6 @@ bool config_load_mappings(const JsonObject &config) {
     set_mode(ERROR_MODE);
     return false;
   };
-  /*
-  if (!config_load_mappings_triggers(config["triggers"])) {
-    usb_midi_send_info(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
-    set_mode(ERROR_MODE);
-    return false;
-  };
-  */
   if (!config_load_mappings_switchs(config["switchs"])) {
     usb_midi_send_info(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);

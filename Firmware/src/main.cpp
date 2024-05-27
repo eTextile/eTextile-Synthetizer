@@ -60,10 +60,11 @@ void loop() {
       usb_midi_recive();
       hardware_midi_transmit();
       break;
+    case FETCH_MODE:
+      break;   
     case STANDALONE_MODE:
       //update_levels(); // NOT_USED in this branche! But the THRESHOLD!!!!?????????????????
       //hardware_midi_recive();
-      usb_midi_recive(); // USED TO DEBUG!
       mapping_lib_update();
       hardware_midi_transmit();
       break;

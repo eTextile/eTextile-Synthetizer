@@ -13,7 +13,7 @@
 #include <MIDI.h>  // https://github.com/FortySevenEffects/arduino_midi_library > https://github.com/PaulStoffregen/MIDI
 using namespace midi;
 
-#define MIDI_NODES      128
+#define MIDI_NODES    128
 
 #define NOTE_OFF      0x8 // NOTE_OFF
 #define NOTE_ON       0x9 // NOTE_ON

@@ -24,10 +24,10 @@ void hardware_midi_recive(void) {
 void hardware_midi_handle_input(const midi::Message<128u> &midiMsg) {
   // This can be refactored to avoide data copy !
   // I dont understand the midiMsg struct!
-  // can it be casted or direct pushed to our I/O midi list:
+  // can it be casted or direct pushed to our I/O midi linked list?
   //midi_t* midiMsg = (midi_t*)dataPacket;
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
-  node_ptr->midi.type = midiMsg.type;       // Set the MIDI status
+  node_ptr->midi.type = midiMsg.type;       // Set the MIDI type
   node_ptr->midi.data1 = midiMsg.data1;     // Set the MIDI note
   node_ptr->midi.data2 = midiMsg.data2;     // Set the MIDI velocity
   node_ptr->midi.channel = midiMsg.channel; // Set the MIDI channel
@@ -56,4 +56,5 @@ void hardware_midi_transmit(void){
       break;
     };
   };
+  llist_save_nodes(&midi_node_stack, &midiOut);
 };

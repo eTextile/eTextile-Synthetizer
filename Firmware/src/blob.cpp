@@ -214,8 +214,8 @@ void matrix_find_blobs(void) {
           blob_ptr->centroid.x = constrain(blob_cx / blob_pixels, X_MIN, X_MAX) - X_MIN ;
           blob_ptr->centroid.y = constrain(blob_cy / blob_pixels, Y_MIN, Y_MAX) - Y_MIN;
           blob_ptr->centroid.z = blob_depth - e256_ctr.levels[THRESHOLD].val;
-          blob_ptr->box.W = (blob_x2 - blob_x1);
-          blob_ptr->box.H = blob_height;
+          blob_ptr->box.w = (blob_x2 - blob_x1);
+          blob_ptr->box.h = blob_height;
           llist_push_front(&llist_blobs_temp, blob_ptr);
         };
         posX = oldX;
@@ -359,18 +359,18 @@ for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_pt
     blob_ptr->velocity.TimeStamp = millis();
     lastCoord[blob_ptr->UID].X = blob_ptr->centroid.x;
     lastCoord[blob_ptr->UID].Y = blob_ptr->centroid.y;
-    lastCoord[blob_ptr->UID].Z = blob_ptr->centroid.z;
+    lastCoord[blob_ptr->UID].z = blob_ptr->centroid.z;
   }
   else {
     if (millis() - blob_ptr->velocity.TimeStamp > 10) {
       blob_ptr->velocity.timeStamp = millis();
       float vx = fabs(blob_ptr->centroid.x - lastCoord[blob_ptr->UID].X);
       float vy = fabs(blob_ptr->centroid.y - lastCoord[blob_ptr->UID].Y);
-      blob_ptr->velocity.XY = sqrtf(vx * vx + vy * vy);
-      blob_ptr->velocity.Z = blob_ptr->centroid.z - lastCoord[blob_ptr->UID].Z;
+      blob_ptr->velocity.xy = sqrtf(vx * vx + vy * vy);
+      blob_ptr->velocity.z = blob_ptr->centroid.z - lastCoord[blob_ptr->UID].z;
       lastCoord[blob_ptr->UID].X = blob_ptr->centroid.x;
       lastCoord[blob_ptr->UID].Y = blob_ptr->centroid.y;
-      lastCoord[blob_ptr->UID].Z = blob_ptr->centroid.z;
+      lastCoord[blob_ptr->UID].z = blob_ptr->centroid.z;
     };
   };
 
@@ -396,10 +396,10 @@ for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_pt
                   blob_ptr->centroid.x,
                   blob_ptr->centroid.y,
                   blob_ptr->centroid.z,
-                  blob_ptr->box.W,
-                  blob_ptr->box.H,
-                  blob_ptr->velocity.XY,
-                  blob_ptr->velocity.Z
+                  blob_ptr->box.w,
+                  blob_ptr->box.h,
+                  blob_ptr->velocity.xy,
+                  blob_ptr->velocity.z
                  );
   };
   #endif

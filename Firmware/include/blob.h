@@ -15,14 +15,16 @@
 
 #include "llist.h"
 
-#define  BI   0  // [0] Blob UID
-#define  BS   1  // [1] Blob State
-#define  BL   2  // [2] Blob Last State
-#define  BX   3  // [3] Blob X centroid position
-#define  BY   4  // [4] Blob Y centroid position
-#define  BZ   5  // [5] Blob Depth
-#define  BW   6  // [6] Blob width
-#define  BH   7  // [7] Blob Height
+typedef enum {
+  BI, // [0] Blob UID
+  BS, // [1] Blob State
+  BL, // [2] Blob Last State
+  BX, // [3] Blob X centroid position
+  BY, // [4] Blob Y centroid position
+  BZ, // [5] Blob Depth
+  BW, // [6] Blob width
+  BH  // [7] Blob Height
+} blob_params_t;
 
 extern llist_t llist_blobs;            // Exposed local declaration see blob.cpp
 
@@ -85,15 +87,15 @@ struct vertrice {
 
 typedef struct box box_t;
 struct box {
-  uint8_t W; // TODO Make it as float
-  uint8_t H; // TODO Make it as float
+  uint8_t w; // TODO: make it as float // use from 
+  uint8_t h; // TODO: make it as float // use to
 };
 
 typedef struct velocity velocity_t;
 struct velocity {
   unsigned long timeStamp;
-  float XY;
-  float Z;
+  float xy;
+  float z;
 };
 
 typedef enum status {

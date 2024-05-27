@@ -27,14 +27,14 @@ struct e256_rect {
 typedef struct e256_2d_touch touch_2d_t;
 struct e256_2d_touch {
   msg_t dir;
-  msg_t z;
+  msg_t pos_z;
 };
 
 typedef struct e256_3d_touch touch_3d_t;
 struct e256_3d_touch {
-  msg_t x;
-  msg_t y;
-  msg_t z;
+  msg_t pos_x;
+  msg_t pos_y;
+  msg_t pos_z;
 };
 
 typedef struct e256_knob_touch touch_param_t;

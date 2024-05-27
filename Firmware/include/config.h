@@ -51,13 +51,13 @@
 #define IIIPiII (float)(3 * PI) / 2
 #define PiII (float)(PI / 2)
 #define LONG_HOLD 1500
-#define BLINK_ITER 10
 #define LEVEL_TIMEOUT 3000
 #define PENDING_MODE_TIMEOUT 8000
 
 // E256 MIDI I/O CHANNELS CONSTANTS [1:15]
 #define MIDI_INPUT_CHANNEL 1
-#define MIDI_OUTPUT_CHANNEL 2
+//#define MIDI_OUTPUT_CHANNEL 2
+
 #define MIDI_MODES_CHANNEL 3
 #define MIDI_STATES_CHANNEL 4
 #define MIDI_LEVELS_CHANNEL 5
@@ -71,7 +71,8 @@ typedef enum {
   MATRIX_MODE_RAW, // Send matrix analog sensor values (16x16) over USB using MIDI format
   EDIT_MODE,       // Send all blobs values over USB_MIDI
   PLAY_MODE,       // Recive mappings values from USB_MIDI and forward them to USB_HARDWARE
-  ERROR_MODE       //
+  FETCH_MODE,      // Send mapping config file
+  ERROR_MODE       // Unexpected behaviour
 } mapping_mode_t;
 
 // E256 STATES CONSTANTS (MIDI_STATES_CHANNEL)

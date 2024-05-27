@@ -7,14 +7,14 @@
 #include "midi_bus.h"
 #include "blob.h"
 
-midi_t midiNodeArray[MIDI_NODES] = {0}; // Memory allocation for all MIDI I/O messages
+midiNode_t midiNodeArray[MIDI_NODES] = {0}; // Memory allocation for all MIDI I/O messages
 
 llist_t midi_node_stack;                    // Main MIDI node stack
 llist_t midiIn;                             // Main MIDI Input linked list
 llist_t midiOut;                            // Main MIDI Output linked list
 llist_t midiChord;                          // Main MIDI chord linked list
 
-void llist_midi_init(llist_t* llist_ptr, midi_t* nodesArray_ptr, const int nodes) {
+void llist_midi_init(llist_t* llist_ptr, midiNode_t* nodesArray_ptr, const int nodes) {
   llist_raz(llist_ptr);
   for (int i = 0; i < nodes; i++) {
     llist_push_front(llist_ptr, &nodesArray_ptr[i]);

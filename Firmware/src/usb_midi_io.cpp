@@ -98,8 +98,8 @@ void usb_midi_transmit() {
               blobValues[1] = (uint8_t)round(map(blob_ptr->centroid.x, 0, WIDTH, 0, 127));
               blobValues[2] = (uint8_t)round(map(blob_ptr->centroid.y, 0, HEIGHT, 0, 127));
               blobValues[3] = blob_ptr->centroid.z;
-              blobValues[4] = blob_ptr->box.W;
-              blobValues[5] = blob_ptr->box.H;
+              blobValues[4] = blob_ptr->box.w;
+              blobValues[5] = blob_ptr->box.h;
               usbMIDI.sendSysEx(6, blobValues, false); // Testing!
               //usbMIDI.sendSysEx(6, blob_ptr.pData, false); // TODO !?
             //};
@@ -130,18 +130,21 @@ void usb_midi_send_info(uint8_t msg, uint8_t channel){
 };
 
 void usb_read_noteOn(byte channel, byte note, byte velocity){
-  #if defined(PLAY_MODE)
-    midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
-    node_ptr->midi.type = midi::NoteOn;
-    node_ptr->midi.data1 = note;
-    node_ptr->midi.data2 = velocity;
-    node_ptr->midi.channel = channel;
-  #if defined(MIDI_THRU) 
-    llist_push_front(&midiOut, node_ptr); // Add the node to the midiOut linked liste
-  #else
-    llist_push_front(&midiIn, node_ptr);  // Add the node to the midiIn linked liste
-  #endif
-  #endif
+  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
+  node_ptr->midi.type = midi::NoteOn;
+  node_ptr->midi.data1 = note;
+  node_ptr->midi.data2 = velocity;
+  node_ptr->midi.channel = channel;
+  switch (e256_currentMode) {
+  case EDIT_MODE:
+      llist_push_front(&midiIn, node_ptr);  // Add the node to the midiIn linked liste
+    break;
+    case PLAY_MODE:
+      llist_push_front(&midiOut, node_ptr); // Add the node to the midiOut linked liste
+    break;
+  default:
+    break;
+  }
 };
 
 void usb_read_noteOff(byte channel, byte note, byte velocity){
@@ -150,11 +153,16 @@ void usb_read_noteOff(byte channel, byte note, byte velocity){
   node_ptr->midi.data1 = note;
   node_ptr->midi.data2 = velocity;
   node_ptr->midi.channel = channel;
-  #if defined(MIDI_THRU) 
-    llist_push_front(&midiOut, node_ptr); // Add the node to the midiOut linked liste
-  #else
-    llist_push_front(&midiIn, node_ptr);  // Add the node to the midiIn linked liste
-  #endif
+  switch (e256_currentMode) {
+  case EDIT_MODE:
+      llist_push_front(&midiIn, node_ptr);  // Add the node to the midiIn linked liste
+    break;
+    case PLAY_MODE:
+      llist_push_front(&midiOut, node_ptr); // Add the node to the midiOut linked liste
+    break;
+  default:
+    break;
+  }
 };
 
 // Used by USB_MIDI
@@ -170,11 +178,16 @@ void usb_read_controlChange(byte channel, byte control, byte value){
         node_ptr->midi.data1 = control;               // Set the MIDI note
         node_ptr->midi.data2 = value;                 // Set the MIDI velocity
         node_ptr->midi.channel = channel;             // Set the MIDI channel
-      #if defined(MIDI_THRU) 
-        llist_push_front(&midiOut, node_ptr);            // Add the node to the midiOut linked liste
-      #else
-        llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
-      #endif
+        switch (e256_currentMode) {
+          case EDIT_MODE:
+            llist_push_front(&midiIn, node_ptr);  // Add the node to the midiIn linked liste
+            break;
+          case PLAY_MODE:
+            llist_push_front(&midiOut, node_ptr); // Add the node to the midiOut linked liste
+            break;
+          default:
+            break;
+        }
       break;
     }
 };
@@ -195,12 +208,6 @@ void usb_read_programChange(byte channel, byte program){
           set_mode(MATRIX_MODE_RAW);
           usb_midi_send_info(MATRIX_MODE_RAW_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
-          /*
-        case MATRIX_MODE_INTERP:
-          set_mode(MATRIX_MODE_INTERP);
-          usb_midi_send_info(MATRIX_MODE_INTERP_DONE, MIDI_VERBOSITY_CHANNEL);
-          break;
-          */
         case EDIT_MODE:
           set_mode(EDIT_MODE);
           usb_midi_send_info(EDIT_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
