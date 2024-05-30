@@ -112,7 +112,7 @@ void matrix_calibrate(void) {
         uint8_t indexA = row * RAW_COLS + cols;          // Compute 1D array indexA
         uint8_t indexB = indexA + DUAL_COLS;             // Compute 1D array indexB
 
-        // delayMicroseconds(10);
+        delayMicroseconds(10);
         pinMode(ADC0_PIN, OUTPUT);
         pinMode(ADC1_PIN, OUTPUT);
         digitalWrite(ADC0_PIN, LOW); // Set the ADC0 Pin to GND to discharge
@@ -121,12 +121,8 @@ void matrix_calibrate(void) {
         pinMode(ADC1_PIN, INPUT);
 
         result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
-        uint8_t ADC0_val = result.result_adc0;
-        // if (ADC0_val > offsetArray[indexA]) offsetArray[indexA] = ADC0_val;
-        offsetArray[indexA] = max(offsetArray[indexA], ADC0_val);
-        uint8_t ADC1_val = result.result_adc1;
-        // if (ADC1_val > offsetArray[indexB]) offsetArray[indexB] = ADC1_val;
-        offsetArray[indexB] = max(offsetArray[indexB], ADC1_val);
+        offsetArray[indexA] = max(offsetArray[indexA], result.result_adc0);
+        offsetArray[indexB] = max(offsetArray[indexB], result.result_adc1);
         #if defined(SET_ORIGIN_Y)
         setRows = setRows << 1;
         #else
@@ -147,14 +143,13 @@ void matrix_scan(void) {
     uint16_t setRows = 0x8000; // Reset to [1000 0000 0000 0000]
     #endif
     for (uint8_t row = 0; row < RAW_ROWS; row++) {     // DIGITAL_PINS [0-15]
-      #if defined(__IMXRT1062__)                       // If using Teensy 4.0 & 4.1
       digitalWrite(SS1_PIN, LOW);                      // Set the Slave Select Pin LOW
       // SPI1.transfer16(setRows);                     // Set up the two OUTPUT shift registers (FIXME)
       SPI1.transfer((uint8_t)(setRows & 0xFF));        // Shift out one byte to setup one OUTPUT shift register
       SPI1.transfer((uint8_t)((setRows >> 8) & 0xFF)); // Shift out one byte to setup one OUTPUT shift register
       SPI1.transfer(setDualCols[cols]);                // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
       digitalWrite(SS1_PIN, HIGH);                     // Set the Slave Select Pin HIGH
-      #endif
+
       uint8_t indexA = row * RAW_COLS + cols; // Compute 1D array indexA
       uint8_t indexB = indexA + DUAL_COLS;    // Compute 1D array indexB
 
@@ -169,12 +164,12 @@ void matrix_scan(void) {
       result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
 
       uint8_t valA = result.result_adc0;
-      valA > offsetArray[indexA] ? rawFrameArray[indexA] = valA - offsetArray[indexA] : rawFrameArray[indexA] = 0;
-      rawFrameArray[indexA] = min(valA, 127); // Add limit for MIDI message 0:127
+      valA > offsetArray[indexA] ? rawFrameArray[indexA] = (valA - offsetArray[indexA]) : rawFrameArray[indexA] = 0;
+      //rawFrameArray[indexA] = min(valA, 127); // Add limit for MIDI message 0:127
 
       uint8_t valB = result.result_adc1;
-      valB > offsetArray[indexB] ? rawFrameArray[indexB] = valB - offsetArray[indexB] : rawFrameArray[indexB] = 0;
-      rawFrameArray[indexB] = min(valB, 127); // Add limit for MIDI message 0:127
+      valB > offsetArray[indexB] ? rawFrameArray[indexB] = (valB - offsetArray[indexB]) : rawFrameArray[indexB] = 0;
+      //rawFrameArray[indexB] = min(valB, 127); // Add limit for MIDI message 0:127
 
       #if defined(SET_ORIGIN_Y)
       setRows = setRows << 1;
