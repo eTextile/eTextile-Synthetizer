@@ -287,7 +287,7 @@ inline bool config_load_mappings_switchs(const JsonArray& config) {
     // DEBUG...
   #endif
   
-  mapping_switchs_alloc(config.size()); // TEST_IT!!!!!!!!!!
+  mapping_switchs_alloc(config.size()); // TESTING!
 
   uint8_t midi_status;
   midi_status_t status;
@@ -521,48 +521,41 @@ inline bool config_load_mappings_grids(const JsonArray& config) {
 
 bool config_load_mappings(const JsonObject &config) {
   if (config.isNull()) {
-    usb_midi_send_info(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
-    set_mode(ERROR_MODE);
+    //usb_midi_send_info(CONFIG_FILE_IS_NULL, MIDI_ERROR_CHANNEL);
     return false;
   };
   if (!config_load_mappings_switchs(config["switchs"])) {
-    usb_midi_send_info(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
-    set_mode(ERROR_MODE);
+    ///usb_midi_send_info(CONFIG_LOAD_SWITCHS_FAILED, MIDI_ERROR_CHANNEL);
     return false;
   };
   if (!config_load_mappings_sliders(config["sliders"])) {
-    usb_midi_send_info(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
-    set_mode(ERROR_MODE);
+    //usb_midi_send_info(CONFIG_LOAD_SLIDERS_FAILED, MIDI_ERROR_CHANNEL);
     return false;
   };
   if (!config_load_mappings_knobs(config["knobs"])) {
-    usb_midi_send_info(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
-    set_mode(ERROR_MODE);
+    //usb_midi_send_info(CONFIG_LOAD_KNOBS_FAILED, MIDI_ERROR_CHANNEL);
     return false;
   };
   if (!config_load_mappings_touchpads(config["touchpads"])) {
-    usb_midi_send_info(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
-    set_mode(ERROR_MODE);
+    //usb_midi_send_info(CONFIG_LOAD_TOUCHPADS_FAILED, MIDI_ERROR_CHANNEL);
     return false;
   };
   if (!config_load_mappings_polygons(config["polygons"])) {
-    usb_midi_send_info(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
-    set_mode(ERROR_MODE);
+    //usb_midi_send_info(CONFIG_LOAD_POLYGONS_FAILED, MIDI_ERROR_CHANNEL);
     return false;
   };
   if (!config_load_mappings_grids(config["grids"])) {
-    usb_midi_send_info(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
-    set_mode(ERROR_MODE);
+    //usb_midi_send_info(CONFIG_LOAD_GRIDS_FAILED, MIDI_ERROR_CHANNEL);
     return false;
   };
   return true;
 };
 
 bool apply_config(uint8_t* conf_ptr, uint16_t conf_size) {
-  //DynamicJsonDocument config(conf_size);
-  StaticJsonDocument<4095> config;
+  JsonDocument config;
   DeserializationError error = deserializeJson(config, conf_ptr);
   if (error) {
+    Serial.println(F("Failed to read file, using default configuration"));
     return false;
   };
   if (config_load_mappings(config["mappings"])) {
