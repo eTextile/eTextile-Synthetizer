@@ -36,18 +36,18 @@ void usb_midi_recive(void) {
 void usb_midi_pending_mode_timeout(){
   if (e256_currentMode == PENDING_MODE && millis() - bootTime > PENDING_MODE_TIMEOUT){
     if(load_flash_config()){
-      set_mode(STANDALONE_MODE);
-      matrix_calibrate();
       #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
         Serial.printf("\nFLASH_CONFIG_LOAD_DONE: ");
-        printBytes(flash_config_ptr, flash_configSize);
+        printBytes(flash_config_ptr, (uint16_t)flash_configSize);
       #endif
+      matrix_calibrate();
+      set_mode(STANDALONE_MODE);
     } else {
       set_mode(SYNC_MODE);
+      //usb_midi_send_info(NO_CONFIG_FILE_LOADED, MIDI_VERBOSITY_CHANNEL); // TODO!
       #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-        Serial.printf("\nFLASH_CONFIG_LOAD_FAILED!");
+        Serial.printf("\nNO_CONFIG_FILE_LOADED!");
       #endif
-      //set_mode(ERROR_MODE);
     };
   };
 };
@@ -93,15 +93,15 @@ void usb_midi_transmit() {
           else {
             //if (millis() - blob_ptr->transmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
               //blob_ptr->transmitTimeStamp = millis();
-              // This must be zerocopy!
+              // This must be zerocopy:
+              // usbMIDI.sendSysEx(6, blob_ptr.pData, false);
               blobValues[0] = blob_ptr->UID + 1;
-              blobValues[1] = (uint8_t)round(map(blob_ptr->centroid.x, 0, WIDTH, 0, 127));
-              blobValues[2] = (uint8_t)round(map(blob_ptr->centroid.y, 0, HEIGHT, 0, 127));
+              blobValues[1] = (uint8_t)round(map(blob_ptr->centroid.x, X_MIN, X_MAX, 0, 127));
+              blobValues[2] = (uint8_t)round(map(blob_ptr->centroid.y, Y_MIN, Y_MAX, 0, 127));
               blobValues[3] = blob_ptr->centroid.z;
               blobValues[4] = blob_ptr->box.w;
               blobValues[5] = blob_ptr->box.h;
-              usbMIDI.sendSysEx(6, blobValues, false); // Testing!
-              //usbMIDI.sendSysEx(6, blob_ptr.pData, false); // TODO !?
+              usbMIDI.sendSysEx((uint32_t)6, blobValues, false); // Testing!
             //};
           };
         } else {
@@ -174,10 +174,10 @@ void usb_read_controlChange(byte channel, byte control, byte value){
         break;
       default:
         midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
-        node_ptr->midi.type = midi::ControlChange;  // Set the MIDI status
-        node_ptr->midi.data1 = control;               // Set the MIDI note
-        node_ptr->midi.data2 = value;                 // Set the MIDI velocity
-        node_ptr->midi.channel = channel;             // Set the MIDI channel
+        node_ptr->midi.type = midi::ControlChange; // Set the MIDI status
+        node_ptr->midi.data1 = control;            // Set the MIDI note
+        node_ptr->midi.data2 = value;              // Set the MIDI velocity
+        node_ptr->midi.channel = channel;          // Set the MIDI channel
         switch (e256_currentMode) {
           case EDIT_MODE:
             llist_push_front(&midiIn, node_ptr);  // Add the node to the midiIn linked liste
@@ -227,16 +227,19 @@ void usb_read_programChange(byte channel, byte program){
           break;
         case CONFIG_FILE_REQUEST:
           if(load_flash_config()){
-            usb_midi_send_info(FLASH_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
+            //usb_midi_send_info(FLASH_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
+            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+              //Serial.printf("\nSEND_FLASH_CONFIG: ");
+              //printBytes(flash_config_ptr, (uint16_t)flash_configSize);
+            #endif
             usbMIDI.sendSysEx(flash_configSize, flash_config_ptr, false);
             usbMIDI.send_now();
             while (usbMIDI.read());
-            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-              Serial.printf("\nSEND_FLASH_CONFIG: ");
-              printBytes(flash_config_ptr, flash_configSize);
-            #endif
           } else {
-            usb_midi_send_info(FLASH_CONFIG_LOAD_FAILED, MIDI_ERROR_CHANNEL);
+            //usb_midi_send_info(NO_CONFIG_FILE_LOADED, MIDI_VERBOSITY_CHANNEL); // TODO!
+            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+              Serial.printf("\nNO_CONFIG_FILE_LOADED!");
+            #endif
           };
           break;
       };
@@ -269,7 +272,7 @@ void usb_read_systemExclusive(const uint8_t* data_ptr, uint16_t length, bool com
   static uint8_t sysEx_chunkCount = 0;
   static uint8_t sysEx_identifier = 0;
   static uint16_t sysEx_chunkSize = 0;
-  
+
   if (sysEx_alloc){
     sysEx_alloc = false;
     sysEx_identifier = *(data_ptr + 2);
@@ -304,15 +307,15 @@ void usb_read_systemExclusive(const uint8_t* data_ptr, uint16_t length, bool com
       if (sysEx_identifier == SYSEX_CONF) {
         usb_midi_send_info(USBMIDI_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
         if (apply_config(sysEx_data_ptr, sysEx_data_length)){
-          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-            Serial.printf("\nSYSEX_CONFIG_RECIVED: ");
-            printBytes(sysEx_data_ptr, sysEx_data_length);
-          #else
             usb_midi_send_info(CONFIG_APPLY_DONE, MIDI_VERBOSITY_CHANNEL);
+          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+            Serial.printf("\nCONFIG_APPLY_DONE: ");
+            printBytes(sysEx_data_ptr, sysEx_data_length);
           #endif
         }
         else {
           usb_midi_send_info(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
+          set_mode(ERROR_MODE);
         }
       }
       else if (sysEx_identifier == SYSEX_SOUND){ // TODO

@@ -9,6 +9,6 @@
 
 #include <Arduino.h>
 
-void* allocate(void* data_ptr, uint16_t size);
+void* allocate(void* data_ptr, uint32_t size);
 
 #endif /*__ALLOCATE_H__*/

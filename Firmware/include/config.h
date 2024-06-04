@@ -13,9 +13,9 @@
 
 #define PROJECT "ETEXTILE-SYNTHESIZER"
 #define NAME "256"
-// #define VERSION                      "1.0.12"
+// #define VERSION "1.0.12"
 #define SENSOR_UID 1 // Unique sensor ID
-
+#define FLASH_BUFFER_SIZE 4096
 // E256 HARDWARE CONSTANTS
 #define LED_PIN_D1 5
 #define LED_PIN_D2 4
@@ -52,7 +52,7 @@
 #define PiII (float)(PI / 2)
 #define LONG_HOLD 1500
 #define LEVEL_TIMEOUT 3000
-#define PENDING_MODE_TIMEOUT 8000
+#define PENDING_MODE_TIMEOUT 5000
 
 // E256 MIDI I/O CHANNELS CONSTANTS [1:15]
 #define MIDI_INPUT_CHANNEL 1
@@ -88,7 +88,7 @@ typedef enum {
 // E256 MAPPING_LIB CONSTANTS
 #define MAX_BLOBS 16 // [0:7] How many blobs can be tracked at the same time
 
-// #define MAX_TRIGGERS               16
+// #define MAX_TRIGGERS 16
 #define MAX_SWITCHS 16
 
 #define MAX_SLIDERS 6
@@ -197,7 +197,7 @@ extern mapping_mode_t e256_currentMode;
 extern uint8_t e256_level;
 
 extern uint8_t *flash_config_ptr;
-extern uint16_t flash_configSize;
+extern uint32_t flash_configSize;
 
 void set_mode(uint8_t mode);
 void set_state(uint8_t state);

@@ -6,7 +6,7 @@
 
 #include "allocate.h"
 
-void* allocate(void* data_ptr, uint16_t size) {
+void* allocate(void* data_ptr, uint32_t size) {
   if (data_ptr == NULL){
     data_ptr = malloc(size * sizeof(uint8_t));
     return data_ptr;

@@ -29,8 +29,8 @@ void setup() {
   midi_bus_setup();
   set_mode(PENDING_MODE);
   #if defined(USB_MIDI_SERIAL)
-    while (!Serial);
-    Serial.println("START");
+    //while (!Serial);
+    //Serial.println("START");
   #endif
   bootTime = millis();
 };
@@ -63,7 +63,7 @@ void loop() {
     case FETCH_MODE:
       break;   
     case STANDALONE_MODE:
-      //update_levels(); // NOT_USED in this branche! But the THRESHOLD!!!!?????????????????
+      //update_levels(); // NOT_USED in this branche!
       //hardware_midi_recive();
       mapping_lib_update();
       hardware_midi_transmit();

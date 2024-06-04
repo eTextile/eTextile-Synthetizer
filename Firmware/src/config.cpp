@@ -59,7 +59,7 @@ mapping_mode_t e256_lastMode = PENDING_MODE;
 uint8_t e256_level = THRESHOLD;
 
 uint8_t* flash_config_ptr = NULL;
-uint16_t flash_configSize = 0;
+uint32_t flash_configSize = 0;
 
 // Her it should not compile if you didn't install the library
 // [Bounce2]: https://github.com/thomasfredericks/Bounce2
@@ -120,10 +120,7 @@ void set_state(uint8_t state) {
 
 bool flash_file(const char *fileName, uint8_t* data_ptr, uint16_t size) {
   if (sysEx_data_length != 0) {
-    if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
-      usb_midi_send_info(CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
-      return false;
-    };
+    SerialFlash.wakeup();
     while (!SerialFlash.ready());
     if (SerialFlash.exists(fileName)) {
       SerialFlash.remove(fileName); // 
@@ -145,6 +142,7 @@ bool flash_file(const char *fileName, uint8_t* data_ptr, uint16_t size) {
       tmpFile.write(data_ptr, size);
       tmpFile.close();
       //usb_midi_send_info(FILE_WRITE_DONE, MIDI_ERROR_CHANNEL);
+      // TODO: flash chip sleep!
       return true;
     }
     else {
@@ -552,41 +550,52 @@ bool config_load_mappings(const JsonObject &config) {
 };
 
 bool apply_config(uint8_t* conf_ptr, uint16_t conf_size) {
-  JsonDocument config;
-  DeserializationError error = deserializeJson(config, conf_ptr);
+  JsonDocument e256_config;
+  DeserializationError error = deserializeJson(e256_config, conf_ptr);
   if (error) {
-    Serial.println(F("Failed to read file, using default configuration"));
+    Serial.printf("FAILED_TO_LOAD_CONFIG_FILE!");
     return false;
   };
-  if (config_load_mappings(config["mappings"])) {
+  if (config_load_mappings(e256_config["mappings"])) {
     return true;
   } else {
     return false;
   };
 };
 
-bool load_flash_config() {
+bool setup_serial_flash(){
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
     usb_midi_send_info(CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
+    SerialFlash.sleep();
     return false;
   }
   else {
+    return true;
+  }
+};
+
+bool load_flash_config() {
+  SerialFlash.wakeup();
+  while (!SerialFlash.ready());
+  if (SerialFlash.exists("config.json")) {
     SerialFlashFile configFile = SerialFlash.open("config.json");
-    if (configFile) {
-      flash_configSize = (uint16_t)configFile.size();
-      flash_config_ptr = (uint8_t *)allocate(flash_config_ptr, flash_configSize);
-      configFile.read(flash_config_ptr, flash_configSize);
-      return true;
-    }
-    else {
-      return false;
-    };
+    flash_configSize = configFile.size();
+    //Serial.printf("\nCONFIG_SIZE: " + flash_configSize); // NOT_WORKING!?
+    flash_config_ptr = (uint8_t *)allocate(flash_config_ptr, flash_configSize);
+    configFile.read(flash_config_ptr, flash_configSize);
+    configFile.close();
+    SerialFlash.sleep(); // TEST_IT!
+    return true;
+  }
+  else {
+    return false;
   };
 };
 
 void hardware_setup(){
   setup_buttons();
   setup_encoder();
+  setup_serial_flash();
 };
 
 void update_controls(){

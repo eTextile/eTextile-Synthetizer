@@ -27,7 +27,7 @@ void update_levels(void) {
         e256_ctr.levels[LINE_OUT].update = false;
         AudioNoInterrupts();
         //sgtl5000.dacVolume(levels_ptr[LINE_OUT].val);
-        //sgtl5000.volume(levels[LINE_OUT].val); // DO NOT WORK!?
+        //sgtl5000.volume(levels[LINE_OUT].val); // DO NOT WORK!? => https://www.pjrc.com/teensy/gui/index.html?info=AudioControlSGTL5000
         AudioInterrupts();
       }
       break;
