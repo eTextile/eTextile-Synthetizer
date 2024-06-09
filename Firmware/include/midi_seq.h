@@ -12,12 +12,6 @@
 #include "blob.h"
 #include "midi_bus.h"
 
-typedef struct seq seq_t;
-struct seq {
-  uint16_t intervalTime[];
-  uint8_t* seqframe;
-};
-
 void tapTempo(void);      // TODO
 void stepSequencer(void); // TODO
 void arpeggiator(void);   // TODO

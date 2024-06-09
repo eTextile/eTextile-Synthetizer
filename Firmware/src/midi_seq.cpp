@@ -6,6 +6,12 @@
 
 #include "midi_seq.h"
 
+typedef struct seq seq_t;
+struct seq {
+  //uint32_t intervalTime[32];
+  uint8_t* seqframe;
+};
+
 void tapTempo(void) {
   for (midiNode_t* midiNode_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiOut); midiNode_ptr != NULL; midiNode_ptr = (midiNode_t*)ITERATOR_NEXT(midiNode_ptr)) {
     // TODO
