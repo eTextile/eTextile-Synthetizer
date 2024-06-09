@@ -52,7 +52,7 @@
 #define PiII (float)(PI / 2)
 #define LONG_HOLD 1500
 #define LEVEL_TIMEOUT 3000
-#define PENDING_MODE_TIMEOUT 5000
+#define PENDING_MODE_TIMEOUT 4000
 
 // E256 MIDI I/O CHANNELS CONSTANTS [1:15]
 #define MIDI_INPUT_CHANNEL 1
@@ -193,7 +193,7 @@ struct e256_control {
 };
 
 extern e256_control_t e256_ctr;
-extern mapping_mode_t e256_currentMode;
+extern uint8_t e256_currentMode;
 extern uint8_t e256_level;
 
 extern uint8_t *flash_config_ptr;

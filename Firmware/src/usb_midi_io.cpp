@@ -35,6 +35,9 @@ void usb_midi_recive(void) {
 
 void usb_midi_pending_mode_timeout(){
   if (e256_currentMode == PENDING_MODE && millis() - bootTime > PENDING_MODE_TIMEOUT){
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+        Serial.printf("\nTIME_IS_OUT!");
+      #endif
     if(load_flash_config()){
       #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
         Serial.printf("\nFLASH_CONFIG_LOAD_DONE: ");
@@ -43,7 +46,8 @@ void usb_midi_pending_mode_timeout(){
       matrix_calibrate();
       set_mode(STANDALONE_MODE);
     } else {
-      set_mode(SYNC_MODE);
+      bootTime = millis();
+      set_mode(PENDING_MODE); // SYNC_MODE
       //usb_midi_send_info(NO_CONFIG_FILE_LOADED, MIDI_VERBOSITY_CHANNEL); // TODO!
       #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
         Serial.printf("\nNO_CONFIG_FILE_LOADED!");
@@ -129,7 +133,7 @@ void usb_midi_send_info(uint8_t msg, uint8_t channel){
   #endif
 };
 
-void usb_read_noteOn(byte channel, byte note, byte velocity){
+void usb_read_noteOn(uint8_t channel, uint8_t note, uint8_t velocity){
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
   node_ptr->midi.type = midi::NoteOn;
   node_ptr->midi.data1 = note;
@@ -147,7 +151,7 @@ void usb_read_noteOn(byte channel, byte note, byte velocity){
   }
 };
 
-void usb_read_noteOff(byte channel, byte note, byte velocity){
+void usb_read_noteOff(uint8_t channel, uint8_t note, uint8_t velocity){
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
   node_ptr->midi.type = midi::NoteOff;
   node_ptr->midi.data1 = note;
@@ -167,7 +171,7 @@ void usb_read_noteOff(byte channel, byte note, byte velocity){
 
 // Used by USB_MIDI
 // If the CC comes from usb it is forwarded to midiOut acting as MIDI thru
-void usb_read_controlChange(byte channel, byte control, byte value){
+void usb_read_controlChange(uint8_t channel, uint8_t control, uint8_t value){
   switch (channel){
       case MIDI_LEVELS_CHANNEL:
         set_level(control, value);
@@ -192,7 +196,7 @@ void usb_read_controlChange(byte channel, byte control, byte value){
     }
 };
 
-void usb_read_programChange(byte channel, byte program){
+void usb_read_programChange(uint8_t channel, uint8_t program){
   switch (channel){
     case MIDI_MODES_CHANNEL:
       switch (program){

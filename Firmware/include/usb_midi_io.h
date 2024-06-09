@@ -24,10 +24,10 @@ void usb_midi_recive(void);
 void usb_midi_pending_mode_timeout(void);
 void usb_midi_transmit(void);
 void usb_midi_send_info(uint8_t msg, uint8_t channel);
-void usb_read_noteOn(byte channel, byte note, byte velocity);
-void usb_read_noteOff(byte channel, byte note, byte velocity);
-void usb_read_controlChange(byte channel, byte control, byte value);
-void usb_read_programChange(byte channel, byte program);
+void usb_read_noteOn(uint8_t channel, uint8_t note, uint8_t velocity);
+void usb_read_noteOff(uint8_t channel, uint8_t note, uint8_t velocity);
+void usb_read_controlChange(uint8_t channel, uint8_t control, uint8_t value);
+void usb_read_programChange(uint8_t channel, uint8_t program);
 void usb_read_systemExclusive(const uint8_t* data_ptr, uint16_t length, bool complete);
 void usb_read_midi_clock();
 

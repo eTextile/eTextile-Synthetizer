@@ -53,8 +53,8 @@ e256_control_t e256_ctr = {
   &e256_l[0]  // levels_ptr
 };
 
-mapping_mode_t e256_currentMode = PENDING_MODE;
-mapping_mode_t e256_lastMode = PENDING_MODE;
+uint8_t e256_currentMode = PENDING_MODE; // mapping_mode_t !?
+uint8_t e256_lastMode = PENDING_MODE; // mapping_mode_t !?
 
 uint8_t e256_level = THRESHOLD;
 
@@ -81,12 +81,12 @@ void setup_leds(void* ptr){
 };
 
 void set_mode(uint8_t mode) {
-  e256_ctr.modes[(uint8_t)e256_currentMode].leds.update = false;
+  e256_ctr.modes[e256_currentMode].leds.update = false;
   e256_ctr.levels[e256_level].leds.update = false;
   setup_leds(&e256_ctr.modes[mode]);
   e256_ctr.modes[mode].leds.update = true;
   e256_lastMode = e256_currentMode;
-  e256_currentMode = (mapping_mode_t)mode; // IS IT OK!?
+  e256_currentMode = mode;
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MODES)
     Serial.printf("\nSET_MODE:%d", mode);
   #endif
@@ -272,7 +272,7 @@ inline void fade_leds(uint8_t level) {
 
 // Update LEDs according to the mode and rotary encoder values
 inline void update_leds() {
-  blink_leds((uint8_t)e256_currentMode);
+  blink_leds(e256_currentMode);
   fade_leds(e256_level);
 };
 
@@ -566,16 +566,16 @@ bool apply_config(uint8_t* conf_ptr, uint16_t conf_size) {
 bool setup_serial_flash(){
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
     usb_midi_send_info(CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
-    SerialFlash.sleep();
     return false;
   }
   else {
+    SerialFlash.sleep(); // TEST_IT!
     return true;
   }
 };
 
 bool load_flash_config() {
-  SerialFlash.wakeup();
+  SerialFlash.wakeup(); // TEST_IT!
   while (!SerialFlash.ready());
   if (SerialFlash.exists("config.json")) {
     SerialFlashFile configFile = SerialFlash.open("config.json");
