@@ -20,15 +20,89 @@
 Bounce BUTTON_L = Bounce();
 Bounce BUTTON_R = Bounce();
 
-e256_mode_t e256_m[8] = {
-  {{HIGH, LOW, false}, 50, 50, true},      // [0] PENDING_MODE
-  {{HIGH, LOW, false}, 500, 500, true},    // [1] SYNC_MODE
-  {{HIGH, LOW, false}, 2500, 2500, true},  // [2] STANDALONE_MODE
-  {{HIGH, HIGH, false}, 200, 200, true},   // [3] MATRIX_MODE_RAW
-  {{HIGH, HIGH, false}, 200, 200, true},   // [4] MATRIX_MODE_INTERP
-  {{HIGH, LOW, false}, 1000, 50, true},    // [5] EDIT_MODE
-  {{HIGH, LOW, false}, 50, 1000, true},    // [6] PLAY_MODE
-  {{HIGH, LOW, false}, 10, 10, true}       // [7] ERROR_MODE
+mode_codes_t mode_code;
+verbosity_codes_t verbosity_code;
+error_codes_t error_code;
+
+const char* get_mode_name(mode_codes_t code) {
+  switch (code) {
+    case PENDING_MODE: return "PENDING_MODE";
+    case SYNC_MODE: return "SYNC_MODE";
+    case CALIBRATE_MODE: return "CALIBRATE_MODE";
+    case MATRIX_MODE_RAW: return "MATRIX_MODE_RAW"; 
+    case EDIT_MODE: return "EDIT_MODE";
+    case PLAY_MODE: return "PLAY_MODE";
+    case ALLOCATE_MODE: return "ALLOCATE_MODE";
+    case UPLOAD_MODE: return "UPLOAD_MODE";
+    case APPLY_MODE: return "APPLY_MODE";
+    case WRITE_MODE: return "WRITE_MODE";
+    case LOAD_MODE: return "LOAD_MODE";
+    case FETCH_MODE: return "FETCH_MODE";
+    case STANDALONE_MODE: return "STANDALONE_MODE";
+    case ERROR_MODE: return "ERROR_MODE";
+    default:
+      break;
+  }
+  return 0;
+};
+
+const char* get_verbosity_name(verbosity_codes_t code) {
+  switch (code) {
+    case PENDING_MODE_DONE: return "PENDING_MODE_DONE";
+    case SYNC_MODE_DONE: return "SYNC_MODE_DONE";
+    case CALIBRATE_MODE_DONE: return "CALIBRATE_MODE_DONE";
+    case MATRIX_MODE_RAW_DONE: return "MATRIX_MODE_RAW_DONE";
+    case EDIT_MODE_DONE: return "EDIT_MODE_DONE";
+    case PLAY_MODE_DONE: return "PLAY_MODE_DONE";
+    case ALLOCATE_MODE_DONE: return "ALLOCATE_MODE_DONE";
+    case UPLOAD_MODE_DONE: return "UPLOAD_MODE_DONE";
+    case APPLY_MODE_DONE: return "APPLY_MODE_DONE";
+    case WRITE_MODE_DONE: return "WRITE_MODE_DONE";
+    case LOAD_MODE_DONE: return "LOAD_MODE_DONE";
+    case FETCH_MODE_DONE: return "FETCH_MODE_DONE";
+    case STANDALONE_MODE_DONE: return "STANDALONE_MODE_DONE";
+    case DONE_ACTION: return "DONE_ACTION";
+    default:
+      break;
+  }
+  return 0;
+};
+
+const char* get_error_name(error_codes_t code) {
+  switch (code) {
+    case WAITING_FOR_CONFIG: return "WAITING_FOR_CONFIG";
+    case CONNECTING_FLASH: return "CONNECTING_FLASH";
+    case FLASH_FULL: return "FLASH_FULL";
+    case FILE_TO_BIG: return "FILE_TO_BIG";
+    case NO_CONFIG_FILE: return "NO_CONFIG_FILE";
+    case WHILE_OPEN_FLASH_FILE: return "WHILE_OPEN_FLASH_FILE";
+    case USBMIDI_CONFIG_LOAD_FAILED: return "USBMIDI_CONFIG_LOAD_FAILED";
+    case FLASH_CONFIG_LOAD_FAILED: return "FLASH_CONFIG_LOAD_FAILED";
+    case FLASH_CONFIG_WRITE_FAILED: return "FLASH_CONFIG_WRITE_FAILED";
+    case CONFIG_APPLY_FAILED: return "CONFIG_APPLY_FAILED";
+    case UNKNOWN_SYSEX: return "UNKNOWN_SYSEX";
+    case TOO_MANY_BLOBS: return "TOO_MANY_BLOBS";
+    default:
+      break;
+  }
+  return 0;
+};
+
+e256_mode_t e256_m[14] = {
+  {{HIGH, LOW, false}, 50, 50, true},     // [0] PENDING_MODE
+  {{HIGH, LOW, false}, 500, 500, true},   // [1] SYNC_MODE
+  {{HIGH, LOW, false}, 10, 10, true},     // [2] CALIBRATE_MODE
+  {{HIGH, HIGH, false}, 200, 200, true},  // [3] MATRIX_MODE_RAW
+  {{HIGH, LOW, false}, 1000, 50, true},   // [4] EDIT_MODE
+  {{HIGH, LOW, false}, 50, 1000, true},   // [5] PLAY_MODE
+  {{HIGH, LOW, false}, 10, 10, true},     // [6] ALLOCATE_MODE
+  {{HIGH, LOW, false}, 10, 10, true},     // [7] UPLOAD_MODE
+  {{HIGH, LOW, false}, 10, 10, true},     // [8] APPLY_MODE
+  {{HIGH, LOW, false}, 10, 10, true},     // [9] WRITE_MODE
+  {{HIGH, LOW, false}, 10, 10, true},     // [10] LOAD_MODE
+  {{HIGH, LOW, false}, 30, 10, true},     // [11] FETCH_MODE
+  {{HIGH, LOW, false}, 2500, 2500, true}, // [12] STANDALONE_MODE
+  {{HIGH, LOW, false}, 10, 10, true}      // [13] ERROR_MODE
 };
 
 e256_state_t e256_s[2] = {
@@ -53,8 +127,8 @@ e256_control_t e256_ctr = {
   &e256_l[0]  // levels_ptr
 };
 
-uint8_t e256_currentMode = PENDING_MODE; // mapping_mode_t !?
-uint8_t e256_lastMode = PENDING_MODE; // mapping_mode_t !?
+mode_codes_t e256_currentMode = PENDING_MODE;
+mode_codes_t e256_lastMode = PENDING_MODE;
 
 uint8_t e256_level = THRESHOLD;
 
@@ -81,14 +155,14 @@ void setup_leds(void* ptr){
 };
 
 void set_mode(uint8_t mode) {
-  e256_ctr.modes[e256_currentMode].leds.update = false;
+  e256_ctr.modes[(uint8_t)e256_currentMode].leds.update = false;
   e256_ctr.levels[e256_level].leds.update = false;
   setup_leds(&e256_ctr.modes[mode]);
   e256_ctr.modes[mode].leds.update = true;
   e256_lastMode = e256_currentMode;
-  e256_currentMode = mode;
+  e256_currentMode = (mode_codes_t)mode;
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MODES)
-    Serial.printf("\nSET_MODE:%d", mode);
+    Serial.printf("\nSET_MODE:\t%s", get_mode_name((mode_codes_t)mode));
   #endif
 };
 
@@ -168,7 +242,7 @@ inline void update_buttons() {
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() > LONG_HOLD) {
     if (sysEx_data_length > 0){
       if (flash_file("config.json", sysEx_data_ptr, sysEx_data_length)){
-        usb_midi_send_info(FLASH_CONFIG_WRITE_DONE, MIDI_VERBOSITY_CHANNEL);
+        usb_midi_send_info(WRITE_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
       }
       else {
         #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
@@ -176,7 +250,7 @@ inline void update_buttons() {
           printBytes(sysEx_data_ptr, sysEx_data_length);
         #else
           usb_midi_send_info(FLASH_CONFIG_WRITE_FAILED, MIDI_ERROR_CHANNEL);
-          set_mode(ERROR_MODE);
+          set_mode((uint8_t)ERROR_MODE);
         #endif
       }
     };
@@ -185,7 +259,7 @@ inline void update_buttons() {
   // FONCTION: PENDING_MODE (waiting for mode)
   // LEDs: blink slowly (500ms) alternately
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() > LONG_HOLD) {
-    //set_mode(PENDING_MODE);
+    //set_mode((uint8_t)PENDING_MODE);
   };
   // ACTION: BUTTON_R short press
   // FONCTION: SELECT_LEVEL
@@ -238,7 +312,7 @@ inline void update_encoder() {
   }
   if (millis() - levelTimeStamp > LEVEL_TIMEOUT && levelToggle){
     levelToggle = false;
-    set_mode(e256_lastMode);
+    set_mode((uint8_t)e256_lastMode);
   };
 };
 
@@ -272,7 +346,7 @@ inline void fade_leds(uint8_t level) {
 
 // Update LEDs according to the mode and rotary encoder values
 inline void update_leds() {
-  blink_leds(e256_currentMode);
+  blink_leds((uint8_t)e256_currentMode);
   fade_leds(e256_level);
 };
 
@@ -580,7 +654,10 @@ bool load_flash_config() {
   if (SerialFlash.exists("config.json")) {
     SerialFlashFile configFile = SerialFlash.open("config.json");
     flash_configSize = configFile.size();
-    //Serial.printf("\nCONFIG_SIZE: " + flash_configSize); // NOT_WORKING!?
+  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+    Serial.printf("\nCONF_SIZE: %d", flash_configSize);
+    printBytes(sysEx_data_ptr, sysEx_data_length);
+  #endif
     flash_config_ptr = (uint8_t *)allocate(flash_config_ptr, flash_configSize);
     configFile.read(flash_config_ptr, flash_configSize);
     configFile.close();
@@ -603,3 +680,5 @@ void update_controls(){
   update_encoder();
   update_leds();
 };
+
+

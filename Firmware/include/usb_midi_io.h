@@ -23,7 +23,9 @@ void usb_midi_setup(void);
 void usb_midi_recive(void);
 void usb_midi_pending_mode_timeout(void);
 void usb_midi_transmit(void);
+
 void usb_midi_send_info(uint8_t msg, uint8_t channel);
+
 void usb_read_noteOn(uint8_t channel, uint8_t note, uint8_t velocity);
 void usb_read_noteOff(uint8_t channel, uint8_t note, uint8_t velocity);
 void usb_read_controlChange(uint8_t channel, uint8_t control, uint8_t value);

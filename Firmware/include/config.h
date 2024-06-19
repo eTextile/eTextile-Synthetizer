@@ -52,28 +52,18 @@
 #define PiII (float)(PI / 2)
 #define LONG_HOLD 1500
 #define LEVEL_TIMEOUT 3000
-#define PENDING_MODE_TIMEOUT 4000
+#define PENDING_MODE_TIMEOUT 8000
+
+#define MIDI_TRANSMIT_INTERVAL 50 // 20Hz
 
 // E256 MIDI I/O CHANNELS CONSTANTS [1:15]
 #define MIDI_INPUT_CHANNEL 1
 //#define MIDI_OUTPUT_CHANNEL 2
 
-#define MIDI_MODES_CHANNEL 3
-#define MIDI_STATES_CHANNEL 4
-#define MIDI_LEVELS_CHANNEL 5
-#define MIDI_VERBOSITY_CHANNEL 6
-#define MIDI_ERROR_CHANNEL 7
-
-typedef enum {
-  PENDING_MODE,    // Waiting for mode
-  SYNC_MODE,       // Hand chake mode
-  STANDALONE_MODE, // Send mappings values over MIDI hardware
-  MATRIX_MODE_RAW, // Send matrix analog sensor values (16x16) over USB using MIDI format
-  EDIT_MODE,       // Send all blobs values over USB_MIDI
-  PLAY_MODE,       // Recive mappings values from USB_MIDI and forward them to USB_HARDWARE
-  FETCH_MODE,      // Send mapping config file
-  ERROR_MODE       // Unexpected behaviour
-} mapping_mode_t;
+#define MIDI_LEVELS_CHANNEL 3
+#define MIDI_MODES_CHANNEL 4
+#define MIDI_VERBOSITY_CHANNEL 5
+#define MIDI_ERROR_CHANNEL 6
 
 // E256 STATES CONSTANTS (MIDI_STATES_CHANNEL)
 #define CALIBRATE_REQUEST 0
@@ -88,7 +78,6 @@ typedef enum {
 // E256 MAPPING_LIB CONSTANTS
 #define MAX_BLOBS 16 // [0:7] How many blobs can be tracked at the same time
 
-// #define MAX_TRIGGERS 16
 #define MAX_SWITCHS 16
 
 #define MAX_SLIDERS 6
@@ -108,25 +97,45 @@ typedef enum {
 
 #define MAX_CSLIDERS 2
 
-typedef enum {
+typedef enum mode_codes {
+  PENDING_MODE,    // Waiting for mode
+  SYNC_MODE,       // Hand chake mode
+  CALIBRATE_MODE,  //
+  MATRIX_MODE_RAW, // Send matrix analog sensor values (16x16) over USB using MIDI format
+  EDIT_MODE,       // Send all blobs values over USB_MIDI
+  PLAY_MODE,       // Recive mappings values from USB_MIDI and forward them to USB_HARDWARE
+  ALLOCATE_MODE,   //
+  UPLOAD_MODE,     //
+  APPLY_MODE,      //
+  WRITE_MODE,      //
+  LOAD_MODE,       //
+  FETCH_MODE,      // Send mapping config file
+  STANDALONE_MODE, // Send mappings values over MIDI hardware
+  ERROR_MODE       // Unexpected behaviour
+} mode_codes_t;
+
+extern mode_codes_t mode_code;
+
+typedef enum verbosity_codes {
   PENDING_MODE_DONE,
   SYNC_MODE_DONE,
+  CALIBRATE_MODE_DONE,
   MATRIX_MODE_RAW_DONE,
   EDIT_MODE_DONE,
   PLAY_MODE_DONE,
-  FLASH_CONFIG_ALLOC_DONE,
-  FLASH_CONFIG_LOAD_DONE,
-  FLASH_CONFIG_WRITE_DONE,
-  USBMIDI_CONFIG_ALLOC_DONE,
-  USBMIDI_CONFIG_LOAD_DONE,
-  CONFIG_APPLY_DONE,
-  USBMIDI_SOUND_LOAD_DONE,
-  USBMIDI_SET_LEVEL_DONE,
-  CALIBRATE_DONE,
+  ALLOCATE_MODE_DONE,
+  UPLOAD_MODE_DONE,
+  APPLY_MODE_DONE,
+  WRITE_MODE_DONE,
+  LOAD_MODE_DONE,
+  FETCH_MODE_DONE,
+  STANDALONE_MODE_DONE,
   DONE_ACTION
-} e256_verbosity_t;
+} verbosity_codes_t;
 
-typedef enum {
+extern verbosity_codes_t verbosity_code;
+
+typedef enum errors_codes {
   WAITING_FOR_CONFIG,
   CONNECTING_FLASH,
   FLASH_FULL,
@@ -139,18 +148,9 @@ typedef enum {
   CONFIG_APPLY_FAILED,
   UNKNOWN_SYSEX,
   TOO_MANY_BLOBS
-} e256_errors_t;
+} error_codes_t;
 
-#define MIDI_TRANSMIT_INTERVAL 50 // 20Hz
-
-/*
-#define M_CHAN                       "c"
-#define M_VELO                       "v"
-#define M_NOTE                       "n"
-#define M_CC                         "cc"
-#define M_VAL                        "v"
-#define M_STATE                      "s"
-*/
+extern error_codes_t error_code;
 
 typedef struct leds leds_t;
 struct leds {
@@ -193,7 +193,7 @@ struct e256_control {
 };
 
 extern e256_control_t e256_ctr;
-extern uint8_t e256_currentMode;
+extern mode_codes_t e256_currentMode;
 extern uint8_t e256_level;
 
 extern uint8_t *flash_config_ptr;
@@ -207,5 +207,9 @@ void hardware_setup(void);
 void update_controls(void);
 bool load_flash_config(void);
 bool apply_config(uint8_t *conf_ptr, uint16_t conf_size);
+
+const char* get_mode_name(mode_codes_t code);
+const char* get_verbosity_name(verbosity_codes_t code);
+const char* get_error_name(error_codes_t code);
 
 #endif /*__CONFIG_H__*/

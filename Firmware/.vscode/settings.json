@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "string": "cpp",
-        "string_view": "cpp"
+        "string_view": "cpp",
+        "system_error": "cpp",
+        "cmath": "cpp"
     }
 }
