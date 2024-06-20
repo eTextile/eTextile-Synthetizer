@@ -211,8 +211,6 @@ void usb_read_controlChange(uint8_t channel, uint8_t control, uint8_t value){
 
 void usb_read_programChange(uint8_t channel, uint8_t program){
   
-  Serial.printf("\nPROG:\t%d", channel);
-
   switch (channel){
     case MIDI_MODES_CHANNEL:
       switch (program){
