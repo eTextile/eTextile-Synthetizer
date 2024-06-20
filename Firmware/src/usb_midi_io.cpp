@@ -232,6 +232,11 @@ void usb_read_programChange(uint8_t channel, uint8_t program){
           usb_midi_send_info(MATRIX_MODE_RAW_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
 
+        case MAPPING_MODE:
+          set_mode((uint8_t)MAPPING_MODE);
+          usb_midi_send_info(MAPPING_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+          break;
+
         case EDIT_MODE:
           set_mode((uint8_t)EDIT_MODE);
           usb_midi_send_info(EDIT_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
