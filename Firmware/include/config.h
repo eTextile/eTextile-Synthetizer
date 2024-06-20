@@ -102,6 +102,7 @@ typedef enum mode_codes {
   SYNC_MODE,       // Hand chake mode
   CALIBRATE_MODE,  //
   MATRIX_MODE_RAW, // Send matrix analog sensor values (16x16) over USB using MIDI format
+  MAPPING_MODE,    //
   EDIT_MODE,       // Send all blobs values over USB_MIDI
   PLAY_MODE,       // Recive mappings values from USB_MIDI and forward them to USB_HARDWARE
   ALLOCATE_MODE,   //
@@ -121,6 +122,7 @@ typedef enum verbosity_codes {
   SYNC_MODE_DONE,
   CALIBRATE_MODE_DONE,
   MATRIX_MODE_RAW_DONE,
+  MAPPING_MODE_DONE,
   EDIT_MODE_DONE,
   PLAY_MODE_DONE,
   ALLOCATE_MODE_DONE,
