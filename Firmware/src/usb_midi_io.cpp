@@ -284,7 +284,7 @@ void usb_read_programChange(uint8_t channel, uint8_t program){
           //usb_midi_send_info(ERROR_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
         default:
-          Serial.println("OUT_OFF_RANGE!");
+          //Serial.println("OUT_OFF_RANGE!");
           break;
       };
       break;
