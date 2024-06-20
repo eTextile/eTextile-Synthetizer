@@ -92,17 +92,18 @@ e256_mode_t e256_m[14] = {
   {{HIGH, LOW, false}, 50, 50, true},     // [0] PENDING_MODE
   {{HIGH, LOW, false}, 500, 500, true},   // [1] SYNC_MODE
   {{HIGH, LOW, false}, 10, 10, true},     // [2] CALIBRATE_MODE
-  {{HIGH, HIGH, false}, 200, 200, true},  // [3] MATRIX_MODE_RAW
-  {{HIGH, LOW, false}, 1000, 50, true},   // [4] EDIT_MODE
-  {{HIGH, LOW, false}, 50, 1000, true},   // [5] PLAY_MODE
-  {{HIGH, LOW, false}, 10, 10, true},     // [6] ALLOCATE_MODE
-  {{HIGH, LOW, false}, 10, 10, true},     // [7] UPLOAD_MODE
-  {{HIGH, LOW, false}, 10, 10, true},     // [8] APPLY_MODE
-  {{HIGH, LOW, false}, 10, 10, true},     // [9] WRITE_MODE
-  {{HIGH, LOW, false}, 10, 10, true},     // [10] LOAD_MODE
-  {{HIGH, LOW, false}, 30, 10, true},     // [11] FETCH_MODE
-  {{HIGH, LOW, false}, 2500, 2500, true}, // [12] STANDALONE_MODE
-  {{HIGH, LOW, false}, 10, 10, true}      // [13] ERROR_MODE
+  {{HIGH, HIGH, false}, 250, 250, true},  // [3] MATRIX_MODE_RAW
+  {{HIGH, HIGH, false}, 100, 100, true},  // [4] MAPPING_MODE
+  {{HIGH, LOW, false}, 1000, 50, true},   // [5] EDIT_MODE
+  {{HIGH, LOW, false}, 50, 1000, true},   // [6] PLAY_MODE
+  {{HIGH, LOW, false}, 10, 10, true},     // [7] ALLOCATE_MODE
+  {{HIGH, LOW, false}, 10, 10, true},     // [8] UPLOAD_MODE
+  {{HIGH, LOW, false}, 10, 10, true},     // [9] APPLY_MODE
+  {{HIGH, LOW, false}, 10, 10, true},     // [10] WRITE_MODE
+  {{HIGH, LOW, false}, 10, 10, true},     // [11] LOAD_MODE
+  {{HIGH, LOW, false}, 30, 10, true},     // [12] FETCH_MODE
+  {{HIGH, LOW, false}, 2500, 2500, true}, // [13] STANDALONE_MODE
+  {{HIGH, LOW, false}, 10, 10, true}      // [14] ERROR_MODE
 };
 
 e256_state_t e256_s[2] = {
