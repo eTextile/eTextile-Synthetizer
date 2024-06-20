@@ -216,8 +216,7 @@ bool flash_file(const char *fileName, uint8_t* data_ptr, uint16_t size) {
     if (sysEx_data_length < FLASH_SIZE) {
       tmpFile.write(data_ptr, size);
       tmpFile.close();
-      //usb_midi_send_info(FILE_WRITE_DONE, MIDI_ERROR_CHANNEL);
-      // TODO: flash chip sleep!
+      SerialFlash.sleep(); // TESTING!
       return true;
     }
     else {
@@ -644,13 +643,13 @@ bool setup_serial_flash(){
     return false;
   }
   else {
-    SerialFlash.sleep(); // TEST_IT!
+    SerialFlash.sleep(); // TESTING!
     return true;
   }
 };
 
 bool load_flash_config() {
-  SerialFlash.wakeup(); // TEST_IT!
+  SerialFlash.wakeup(); // TESTING!
   while (!SerialFlash.ready());
   if (SerialFlash.exists("config.json")) {
     SerialFlashFile configFile = SerialFlash.open("config.json");
@@ -662,7 +661,7 @@ bool load_flash_config() {
     flash_config_ptr = (uint8_t *)allocate(flash_config_ptr, flash_configSize);
     configFile.read(flash_config_ptr, flash_configSize);
     configFile.close();
-    SerialFlash.sleep(); // TEST_IT!
+    SerialFlash.sleep(); // TESTING!
     return true;
   }
   else {
