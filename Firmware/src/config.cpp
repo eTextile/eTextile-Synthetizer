@@ -88,7 +88,7 @@ const char* get_error_name(error_codes_t code) {
   return 0;
 };
 
-e256_mode_t e256_m[14] = {
+e256_mode_t e256_m[15] = {
   {{HIGH, LOW, false}, 50, 50, true},     // [0] PENDING_MODE
   {{HIGH, LOW, false}, 500, 500, true},   // [1] SYNC_MODE
   {{HIGH, LOW, false}, 10, 10, true},     // [2] CALIBRATE_MODE
