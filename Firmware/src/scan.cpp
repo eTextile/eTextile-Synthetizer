@@ -3,8 +3,9 @@
   Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 
-  TODO?: https://github.com/KurtE/DmaSpi/tree/T4
-  TODO?: https://github.com/pedvide/ADC/issues/76
+  TODO:
+    -> https://github.com/pedvide/ADC/issues/76
+      -> https://github.com/KurtE/DmaSpi
 */
 
 #include "scan.h"
@@ -112,11 +113,12 @@ void matrix_calibrate(void) {
         uint8_t indexA = row * RAW_COLS + cols;          // Compute 1D array indexA
         uint8_t indexB = indexA + DUAL_COLS;             // Compute 1D array indexB
 
-        delayMicroseconds(10);
+        //delayMicroseconds(10);
         pinMode(ADC0_PIN, OUTPUT);
         pinMode(ADC1_PIN, OUTPUT);
         digitalWrite(ADC0_PIN, LOW); // Set the ADC0 Pin to GND to discharge
         digitalWrite(ADC1_PIN, LOW); // Set the ADC0 Pin to GND to discharge
+        delayMicroseconds(5); // TESTING!
         pinMode(ADC0_PIN, INPUT);
         pinMode(ADC1_PIN, INPUT);
 
@@ -153,11 +155,12 @@ void matrix_scan(void) {
       uint8_t indexA = row * RAW_COLS + cols; // Compute 1D array indexA
       uint8_t indexB = indexA + DUAL_COLS;    // Compute 1D array indexB
 
-      delayMicroseconds(10);
+      //delayMicroseconds(10);
       pinMode(ADC0_PIN, OUTPUT);
       pinMode(ADC1_PIN, OUTPUT);
       digitalWrite(ADC0_PIN, LOW); // Set the ADC0 Pin to GND to discharge
       digitalWrite(ADC1_PIN, LOW); // Set the ADC0 Pin to GND to discharge
+      delayMicroseconds(5); // TESTING!
       pinMode(ADC0_PIN, INPUT);
       pinMode(ADC1_PIN, INPUT);
 
