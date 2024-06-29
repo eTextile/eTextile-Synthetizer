@@ -67,7 +67,9 @@
 
 // E256 STATES CONSTANTS (MIDI_STATES_CHANNEL)
 #define CALIBRATE_REQUEST 0
-#define CONFIG_FILE_REQUEST 1
+
+#define ALLOCATE_DONE 22 // NEW!
+#define UPLOAD_DONE 23   // NEW!
 
 // E256 LEVELS CONSTANTS (MIDI_LEVELS_CHANNEL)
 #define THRESHOLD 0 // E256-LEDs: | 1 | 1 |
@@ -190,7 +192,7 @@ typedef struct e256_control e256_control_t;
 struct e256_control {
   Encoder *encoder;
   e256_mode_t *modes;
-  e256_state_t *states;
+  //e256_state_t *states;
   e256_level_t *levels;
 };
 
@@ -202,7 +204,8 @@ extern uint8_t *flash_config_ptr;
 extern uint32_t flash_configSize;
 
 void set_mode(uint8_t mode);
-void set_state(uint8_t state);
+//void set_state(uint8_t state);
+void blink(uint8_t iter);
 void set_level(uint8_t level, uint8_t value);
 
 void hardware_setup(void);

@@ -91,7 +91,7 @@ const char* get_error_name(error_codes_t code) {
 e256_mode_t e256_m[15] = {
   {{HIGH, LOW, false}, 50, 50, true},     // [0] PENDING_MODE
   {{HIGH, LOW, false}, 500, 500, true},   // [1] SYNC_MODE
-  {{HIGH, LOW, false}, 10, 10, true},     // [2] CALIBRATE_MODE
+  {{HIGH, LOW, false}, 15, 15, true},     // [2] CALIBRATE_MODE
   {{HIGH, HIGH, false}, 250, 250, true},  // [3] MATRIX_MODE_RAW
   {{HIGH, HIGH, false}, 100, 100, true},  // [4] MAPPING_MODE
   {{HIGH, LOW, false}, 1000, 50, true},   // [5] EDIT_MODE
@@ -106,10 +106,11 @@ e256_mode_t e256_m[15] = {
   {{HIGH, LOW, false}, 10, 10, true}      // [14] ERROR_MODE
 };
 
-e256_state_t e256_s[2] = {
-  {{LOW, LOW, false}, 50, 50, 8},          // [0] CALIBRATE_REQUEST
-  {{HIGH, LOW, false}, 15, 50, 200}        // [1] CONFIG_FILE_REQUEST
+/*
+e256_state_t e256_s[1] = {
+  {{LOW, LOW, false}, 50, 50, 8}          // [0] CALIBRATE_REQUEST
 };
+*/
 
 // The levels below can be adjusted using E256 built-in encoder
 Encoder e256_e(ENCODER_PIN_A, ENCODER_PIN_B);
@@ -124,7 +125,7 @@ e256_level_t e256_l[4] = {
 e256_control_t e256_ctr = {
   &e256_e,    // encoder_ptr
   &e256_m[0], // modes_ptr
-  &e256_s[0], // state_ptr
+  //&e256_s[0], // state_ptr
   &e256_l[0]  // levels_ptr
 };
 
@@ -148,11 +149,11 @@ inline void setup_buttons() {
 };
 
 void setup_leds(void* ptr){
-  leds_t* leds = (leds_t*)ptr;
+  leds_t* leds_ptr = (leds_t*)ptr;
   pinMode(LED_PIN_D1, OUTPUT);
   pinMode(LED_PIN_D2, OUTPUT);
-  digitalWrite(LED_PIN_D1, leds->D1);
-  digitalWrite(LED_PIN_D2, leds->D2);
+  digitalWrite(LED_PIN_D1, leds_ptr->D1);
+  digitalWrite(LED_PIN_D2, leds_ptr->D2);
 };
 
 void set_mode(uint8_t mode) {
@@ -178,6 +179,7 @@ void set_level(uint8_t level, uint8_t value) {
   #endif
 };
 
+/*
 void set_state(uint8_t state) {
   setup_leds(&e256_ctr.states[state]);
   for (int i = 0; i<e256_ctr.states[state].iter; i++){
@@ -191,6 +193,18 @@ void set_state(uint8_t state) {
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_STATES)
     Serial.printf("\nSET_STATE:%d", state);
   #endif
+};
+*/
+
+void blink(uint8_t iter) {
+  for (int i = 0; i<iter; i++){
+    digitalWrite(LED_PIN_D1, HIGH);
+    digitalWrite(LED_PIN_D2, HIGH);
+    delay(10);
+    digitalWrite(LED_PIN_D1, LOW);
+    digitalWrite(LED_PIN_D2, LOW);
+    delay(10);
+  };
 };
 
 bool flash_file(const char *fileName, uint8_t* data_ptr, uint16_t size) {
@@ -216,7 +230,7 @@ bool flash_file(const char *fileName, uint8_t* data_ptr, uint16_t size) {
     if (sysEx_data_length < FLASH_SIZE) {
       tmpFile.write(data_ptr, size);
       tmpFile.close();
-      SerialFlash.sleep(); // TESTING!
+      SerialFlash.sleep();
       return true;
     }
     else {
@@ -318,6 +332,7 @@ inline void update_encoder() {
 
 inline void blink_leds(uint8_t mode) {
   static uint32_t ledsTimeStamp = 0;
+
   if (e256_ctr.modes[mode].leds.update) {
     if (millis() - ledsTimeStamp < e256_ctr.modes[mode].timeOn && e256_ctr.modes[mode].toggle == true ) {
       e256_ctr.modes[mode].toggle = false;
@@ -356,10 +371,11 @@ inline bool config_load_mappings_switchs(const JsonArray& config) {
   }
 
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-    // DEBUG...
+   Serial.printf("CONF_SIZE:\t%d", config.size());
+   Serial.printf("RECT_FROM:\t%d", config[0]["from"][0]);
   #endif
   
-  mapping_switchs_alloc(config.size()); // TESTING!
+  mapping_switchs_alloc(config.size());
 
   uint8_t midi_status;
   midi_status_t status;
@@ -643,25 +659,25 @@ bool setup_serial_flash(){
     return false;
   }
   else {
-    SerialFlash.sleep(); // TESTING!
+    SerialFlash.sleep();
     return true;
   }
 };
 
 bool load_flash_config() {
-  SerialFlash.wakeup(); // TESTING!
+  SerialFlash.wakeup();
   while (!SerialFlash.ready());
   if (SerialFlash.exists("config.json")) {
     SerialFlashFile configFile = SerialFlash.open("config.json");
     flash_configSize = configFile.size();
-  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-    Serial.printf("\nCONF_SIZE: %d", flash_configSize);
-    printBytes(sysEx_data_ptr, sysEx_data_length);
-  #endif
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+      Serial.printf("\nCONF_SIZE: %d", flash_configSize);
+      printBytes(sysEx_data_ptr, sysEx_data_length);
+    #endif
     flash_config_ptr = (uint8_t *)allocate(flash_config_ptr, flash_configSize);
     configFile.read(flash_config_ptr, flash_configSize);
     configFile.close();
-    SerialFlash.sleep(); // TESTING!
+    SerialFlash.sleep();
     return true;
   }
   else {

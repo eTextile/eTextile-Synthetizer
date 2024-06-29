@@ -44,11 +44,12 @@ void usb_midi_pending_mode_timeout(){
         printBytes(flash_config_ptr, (uint16_t)flash_configSize);
       #endif
       matrix_calibrate();
+      blink(10);
       set_mode((uint8_t)STANDALONE_MODE);
     } else {
       bootTime = millis();
-      //set_mode((uint8_t)PENDING_MODE);
-      set_mode((uint8_t)SYNC_MODE); 
+      set_mode((uint8_t)PENDING_MODE);
+      //set_mode((uint8_t)SYNC_MODE); 
       #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
         Serial.printf("\nNO_CONFIG_FILE_LOADED!");
       #endif
@@ -273,16 +274,31 @@ void usb_read_programChange(uint8_t channel, uint8_t program){
           usb_midi_send_info(UPLOAD_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
 
+        case APPLY_MODE:
+          if (apply_config(sysEx_data_ptr, sysEx_data_length)) {
+            usb_midi_send_info(APPLY_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+              Serial.printf("\nCONFIG_APPLY_DONE: ");
+              printBytes(sysEx_data_ptr, sysEx_data_length);
+            #endif
+          }
+          else {
+            usb_midi_send_info(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
+            set_mode((uint8_t)ERROR_MODE);
+          }
+          break;
+
         case CALIBRATE_MODE:
           matrix_calibrate();
-          set_state(CALIBRATE_REQUEST);
           usb_midi_send_info(CALIBRATE_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+          blink(10);
           break;
 
         case ERROR_MODE:
           set_mode((uint8_t)ERROR_MODE);
           //usb_midi_send_info(ERROR_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
+
         default:
           //Serial.println("OUT_OFF_RANGE!");
           break;
@@ -325,27 +341,27 @@ void usb_read_systemExclusive(const uint8_t *data_ptr, uint16_t sysEx_chunk_size
   static uint16_t sysEx_last_chunk_size = 0;
   static uint8_t sysEx_chunks = 0;
   static uint8_t sysEx_chunk_count = 0;
-  static uint8_t sysEx_identifier = 0;
+  //static uint8_t sysEx_identifier = 0;
 
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-  Serial.printf("\nREAD_SYSEX");
-  Serial.printf("\nREAD_DATA_LENGHT: %d", sysEx_data_length);
-  Serial.printf("\nREAD_CHUNKS: %d", sysEx_chunks);
+  //Serial.printf("\nREAD_SYSEX");
+  //Serial.printf("\nREAD_DATA_LENGHT: %d", sysEx_data_length);
+  //Serial.printf("\nREAD_CHUNKS: %d", sysEx_chunks);
   #endif
 
   switch (e256_currentMode) {
 
   case ALLOCATE_MODE:
-    sysEx_identifier = *(data_ptr + 2);
+    //sysEx_identifier = *(data_ptr + 2);
     sysEx_data_length = *(data_ptr + 3) << 7 | *(data_ptr + 4);
     sysEx_chunk_ptr = sysEx_data_ptr = (uint8_t *)allocate(sysEx_data_ptr, sysEx_data_length);
     sysEx_chunks = (uint8_t)((sysEx_data_length + 3) / USB_MIDI_SYSEX_MAX);
     sysEx_last_chunk_size = (sysEx_data_length + 3) % USB_MIDI_SYSEX_MAX;
     if (sysEx_last_chunk_size != 0) sysEx_chunks++;
+    usb_midi_send_info(ALLOCATE_DONE, MIDI_VERBOSITY_CHANNEL);
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
       Serial.printf("\nCONFIG_ALLOC_DONE\tDATA_LENGHT:\t%d", sysEx_data_length);
     #endif
-    //usb_midi_send_info(DONE_ACTION, MIDI_VERBOSITY_CHANNEL);
     break;
 
   case UPLOAD_MODE:
@@ -366,42 +382,17 @@ void usb_read_systemExclusive(const uint8_t *data_ptr, uint16_t sysEx_chunk_size
       memcpy(sysEx_chunk_ptr, data_ptr, sizeof(uint8_t) * sysEx_chunk_size - 1);
       sysEx_chunk_count = 0;
     };
-    usb_midi_send_info(DONE_ACTION, MIDI_VERBOSITY_CHANNEL);
+    //usb_midi_send_info(DONE_ACTION, MIDI_VERBOSITY_CHANNEL);
+    usb_midi_send_info(UPLOAD_DONE, MIDI_VERBOSITY_CHANNEL);
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
       //Serial.printf("\nDONE_ACTION: ");
       //printBytes(sysEx_data_ptr, sysEx_data_length);
     #endif
     break;
 
-    case APPLY_MODE:
-
-      switch (sysEx_identifier) {
-
-        case SYSEX_CONF:
-          if (apply_config(sysEx_data_ptr, sysEx_data_length)) {
-            usb_midi_send_info(APPLY_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-              Serial.printf("\nCONFIG_APPLY_DONE: ");
-              printBytes(sysEx_data_ptr, sysEx_data_length);
-            #endif
-          }
-          else {
-            usb_midi_send_info(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
-            set_mode((uint8_t)ERROR_MODE);
-          }
-          break;
-
-        case SYSEX_SOUND:  // TODO
-          //usb_midi_send_info(LOAD_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-          break;
-
-        default:
-          usb_midi_send_info(UNKNOWN_SYSEX, MIDI_ERROR_CHANNEL);
-          set_mode((uint8_t)ERROR_MODE);
-          break;
-      };
-
     default:
+      usb_midi_send_info(UNKNOWN_SYSEX, MIDI_ERROR_CHANNEL);
+      set_mode((uint8_t)ERROR_MODE);
       break;
   };
 };

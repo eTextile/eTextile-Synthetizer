@@ -628,10 +628,10 @@ void mapping_cSliders_update(void) {
 
 void mapping_lib_setup(void){
   mapping_switchs_setup();
-  mapping_grids_setup();
-  mapping_sliders_setup();
-  mapping_knobs_setup();
-  mapping_touchpads_setup();
+  //mapping_grids_setup();
+  //mapping_sliders_setup();
+  //mapping_knobs_setup();
+  //mapping_touchpads_setup();
   //mapping_polygons_setup();
 };
 
@@ -639,10 +639,10 @@ void mapping_lib_update(void) {
   llist_save_nodes(&midi_node_stack, &midiOut); // Save/rescure all midiOut nodes
   for (blob_t *blob_ptr = (blob_t *)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t *)ITERATOR_NEXT(blob_ptr)){
     mapping_switchs_update(blob_ptr);
-    mapping_grids_update(blob_ptr);
-    mapping_sliders_update(blob_ptr);
-    mapping_knobs_update(blob_ptr);
-    mapping_touchpads_update(blob_ptr);
+    //mapping_grids_update(blob_ptr);
+    //mapping_sliders_update(blob_ptr);
+    //mapping_knobs_update(blob_ptr);
+    //mapping_touchpads_update(blob_ptr);
     //mapping_polygons_update(blob_ptr);
     //mapping_cSliders_update(&blob_ptr); // Experimental
   }
