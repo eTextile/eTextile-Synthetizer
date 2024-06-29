@@ -106,12 +106,6 @@ e256_mode_t e256_m[15] = {
   {{HIGH, LOW, false}, 10, 10, true}      // [14] ERROR_MODE
 };
 
-/*
-e256_state_t e256_s[1] = {
-  {{LOW, LOW, false}, 50, 50, 8}          // [0] CALIBRATE_REQUEST
-};
-*/
-
 // The levels below can be adjusted using E256 built-in encoder
 Encoder e256_e(ENCODER_PIN_A, ENCODER_PIN_B);
 
@@ -156,6 +150,17 @@ void setup_leds(void* ptr){
   digitalWrite(LED_PIN_D2, leds_ptr->D2);
 };
 
+void blink(uint8_t iter) {
+  for (int i = 0; i<iter; i++){
+    digitalWrite(LED_PIN_D1, HIGH);
+    digitalWrite(LED_PIN_D2, HIGH);
+    delay(50);
+    digitalWrite(LED_PIN_D1, LOW);
+    digitalWrite(LED_PIN_D2, LOW);
+    delay(50);
+  };
+};
+
 void set_mode(uint8_t mode) {
   e256_ctr.modes[(uint8_t)e256_currentMode].leds.update = false;
   e256_ctr.levels[e256_level].leds.update = false;
@@ -177,34 +182,6 @@ void set_level(uint8_t level, uint8_t value) {
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LEVELS)
     Serial.printf("\nSET_LEVEL:%d_%d", level, value);
   #endif
-};
-
-/*
-void set_state(uint8_t state) {
-  setup_leds(&e256_ctr.states[state]);
-  for (int i = 0; i<e256_ctr.states[state].iter; i++){
-    digitalWrite(LED_PIN_D1, e256_ctr.states[state].leds.D1);
-    digitalWrite(LED_PIN_D2, e256_ctr.states[state].leds.D2);
-    delay(e256_ctr.states[state].timeOn);
-    digitalWrite(LED_PIN_D1, !e256_ctr.states[state].leds.D1);
-    digitalWrite(LED_PIN_D2, !e256_ctr.states[state].leds.D2);
-    delay(e256_ctr.states[state].timeOff);
-  };
-  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_STATES)
-    Serial.printf("\nSET_STATE:%d", state);
-  #endif
-};
-*/
-
-void blink(uint8_t iter) {
-  for (int i = 0; i<iter; i++){
-    digitalWrite(LED_PIN_D1, HIGH);
-    digitalWrite(LED_PIN_D2, HIGH);
-    delay(10);
-    digitalWrite(LED_PIN_D1, LOW);
-    digitalWrite(LED_PIN_D2, LOW);
-    delay(10);
-  };
 };
 
 bool flash_file(const char *fileName, uint8_t* data_ptr, uint16_t size) {

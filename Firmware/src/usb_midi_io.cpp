@@ -63,10 +63,10 @@ void usb_midi_transmit() {
   switch (e256_currentMode) {
     case PENDING_MODE:
       // Nothing to do
-    break;
+      break;
     case SYNC_MODE:
       // Nothing to do
-    break;
+      break;
     case MATRIX_MODE_RAW:
       if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
         usbTransmitTimeStamp = millis();
@@ -120,9 +120,9 @@ void usb_midi_transmit() {
       break;
     case PLAY_MODE:
         // NA 
-    break;
-  default:
-    break;
+      break;
+    default:
+      break;
   };
 };
 
@@ -137,9 +137,9 @@ void usb_midi_send_info(uint8_t msg, uint8_t channel){
       break;
     case MIDI_ERROR_CHANNEL:
       Serial.printf("\nSEND_MIDI_MSG:\t%s", get_error_name((error_codes_t)msg));
-    break;
-  default:
-    break;
+      break;
+    default:
+      break;
   }
   #endif
   usbMIDI.sendProgramChange(msg, channel); // ProgramChange(program, channel);
@@ -154,14 +154,14 @@ void usb_read_noteOn(uint8_t channel, uint8_t note, uint8_t velocity){
   node_ptr->midi.data2 = velocity;
   node_ptr->midi.channel = channel;
   switch (e256_currentMode) {
-  case EDIT_MODE:
+    case EDIT_MODE:
       llist_push_front(&midiIn, node_ptr);  // Add the node to the midiIn linked liste
-    break;
+      break;
     case PLAY_MODE:
       llist_push_front(&midiOut, node_ptr); // Add the node to the midiOut linked liste
-    break;
-  default:
-    break;
+      break;
+    default:
+      break;
   }
 };
 
@@ -172,14 +172,14 @@ void usb_read_noteOff(uint8_t channel, uint8_t note, uint8_t velocity){
   node_ptr->midi.data2 = velocity;
   node_ptr->midi.channel = channel;
   switch (e256_currentMode) {
-  case EDIT_MODE:
+    case EDIT_MODE:
       llist_push_front(&midiIn, node_ptr);  // Add the node to the midiIn linked liste
-    break;
+      break;
     case PLAY_MODE:
       llist_push_front(&midiOut, node_ptr); // Add the node to the midiOut linked liste
-    break;
-  default:
-    break;
+      break;
+    default:
+      break;
   }
 };
 
@@ -187,27 +187,27 @@ void usb_read_noteOff(uint8_t channel, uint8_t note, uint8_t velocity){
 // If the CC comes from usb it is forwarded to midiOut acting as MIDI thru
 void usb_read_controlChange(uint8_t channel, uint8_t control, uint8_t value){
   switch (channel){
-      case MIDI_LEVELS_CHANNEL:
-        set_level(control, value);
-        break;
-      default:
-        midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
-        node_ptr->midi.type = midi::ControlChange; // Set the MIDI status
-        node_ptr->midi.data1 = control;            // Set the MIDI note
-        node_ptr->midi.data2 = value;              // Set the MIDI velocity
-        node_ptr->midi.channel = channel;          // Set the MIDI channel
-        switch (e256_currentMode) {
-          case EDIT_MODE:
-            llist_push_front(&midiIn, node_ptr);  // Add the node to the midiIn linked liste
-            break;
-          case PLAY_MODE:
-            llist_push_front(&midiOut, node_ptr); // Add the node to the midiOut linked liste
-            break;
-          default:
-            break;
-        }
+    case MIDI_LEVELS_CHANNEL:
+      set_level(control, value);
       break;
-    }
+    default:
+      midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
+      node_ptr->midi.type = midi::ControlChange; // Set the MIDI status
+      node_ptr->midi.data1 = control;            // Set the MIDI note
+      node_ptr->midi.data2 = value;              // Set the MIDI velocity
+      node_ptr->midi.channel = channel;          // Set the MIDI channel
+      switch (e256_currentMode) {
+        case EDIT_MODE:
+          llist_push_front(&midiIn, node_ptr);  // Add the node to the midiIn linked liste
+          break;
+        case PLAY_MODE:
+          llist_push_front(&midiOut, node_ptr); // Add the node to the midiOut linked liste
+          break;
+        default:
+          break;
+      }
+      break;
+  }
 };
 
 void usb_read_programChange(uint8_t channel, uint8_t program){
@@ -290,8 +290,8 @@ void usb_read_programChange(uint8_t channel, uint8_t program){
 
         case CALIBRATE_MODE:
           matrix_calibrate();
-          usb_midi_send_info(CALIBRATE_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
           blink(10);
+          usb_midi_send_info(CALIBRATE_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
 
         case ERROR_MODE:
@@ -300,7 +300,7 @@ void usb_read_programChange(uint8_t channel, uint8_t program){
           break;
 
         default:
-          //Serial.println("OUT_OFF_RANGE!");
+          //Serial.println("OUT_OFF_RANGE!"); // DROP!
           break;
       };
       break;
@@ -314,20 +314,6 @@ void usb_read_midi_clock(){
 #endif
 };
 
-/*
-void usb_read_systemExclusive(const uint8_t *data_ptr, uint16_t length, bool complete) {
-  
-  Serial.print("SysEx Message: ");
-  printBytes(data_ptr, length);
-  
-  if (!complete) {
-    Serial.println(" (to be continued)");
-  } else {
-    Serial.println(" (end)");
-  }
-}
-*/
-
 // Send data via MIDI system exclusive message
 // As MIDI buffer is limited to (USB_MIDI_SYSEX_MAX) we must register the data in chunks!
 // Recive: [ SYSEX_BEGIN, SYSEX_DEVICE_ID, SYSEX_IDENTIFIER, SYSEX_SIZE_MSB, SYSEX_SIZE_LSB, SYSEX_END ] 
@@ -335,19 +321,12 @@ void usb_read_systemExclusive(const uint8_t *data_ptr, uint16_t length, bool com
 // Recive: [ SYSEX_BEGIN, SYSEX_DEVICE_ID, SYSEX_DATA, SYSEX_END ]
 // Send: USBMIDI_CONFIG_LOAD_DONE
 
-
 void usb_read_systemExclusive(const uint8_t *data_ptr, uint16_t sysEx_chunk_size, bool complete) {
   static uint8_t *sysEx_chunk_ptr = NULL;
   static uint16_t sysEx_last_chunk_size = 0;
   static uint8_t sysEx_chunks = 0;
   static uint8_t sysEx_chunk_count = 0;
   //static uint8_t sysEx_identifier = 0;
-
-  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-  //Serial.printf("\nREAD_SYSEX");
-  //Serial.printf("\nREAD_DATA_LENGHT: %d", sysEx_data_length);
-  //Serial.printf("\nREAD_CHUNKS: %d", sysEx_chunks);
-  #endif
 
   switch (e256_currentMode) {
 
@@ -382,15 +361,15 @@ void usb_read_systemExclusive(const uint8_t *data_ptr, uint16_t sysEx_chunk_size
       memcpy(sysEx_chunk_ptr, data_ptr, sizeof(uint8_t) * sysEx_chunk_size - 1);
       sysEx_chunk_count = 0;
     };
-    //usb_midi_send_info(DONE_ACTION, MIDI_VERBOSITY_CHANNEL);
     usb_midi_send_info(UPLOAD_DONE, MIDI_VERBOSITY_CHANNEL);
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-      //Serial.printf("\nDONE_ACTION: ");
-      //printBytes(sysEx_data_ptr, sysEx_data_length);
+      Serial.printf("\nUPLOAD_DONE: ");
+      printBytes(sysEx_data_ptr, sysEx_data_length);
     #endif
     break;
 
     default:
+      //sysEx_identifier = *(data_ptr + 2);
       usb_midi_send_info(UNKNOWN_SYSEX, MIDI_ERROR_CHANNEL);
       set_mode((uint8_t)ERROR_MODE);
       break;
