@@ -214,6 +214,7 @@ void usb_read_programChange(uint8_t channel, uint8_t program){
   
   switch (channel){
     case MIDI_MODES_CHANNEL:
+      Serial.printf("\nRECEIVED:\t%s", get_mode_name((mode_codes_t)program));
       switch (program){
 
         case PENDING_MODE:
@@ -257,6 +258,7 @@ void usb_read_programChange(uint8_t channel, uint8_t program){
           else {
             usb_midi_send_info(NO_CONFIG_FILE, MIDI_ERROR_CHANNEL);
           };
+          break;
 
         case FETCH_MODE:
           usbMIDI.sendSysEx(flash_configSize, flash_config_ptr, false);
