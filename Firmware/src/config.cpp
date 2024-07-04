@@ -25,67 +25,73 @@ verbosity_codes_t verbosity_code;
 error_codes_t error_code;
 
 const char* get_mode_name(mode_codes_t code) {
+  const char* char_code;
   switch (code) {
-    case PENDING_MODE: return "PENDING_MODE";
-    case SYNC_MODE: return "SYNC_MODE";
-    case CALIBRATE_MODE: return "CALIBRATE_MODE";
-    case MATRIX_MODE_RAW: return "MATRIX_MODE_RAW"; 
-    case EDIT_MODE: return "EDIT_MODE";
-    case PLAY_MODE: return "PLAY_MODE";
-    case ALLOCATE_MODE: return "ALLOCATE_MODE";
-    case UPLOAD_MODE: return "UPLOAD_MODE";
-    case APPLY_MODE: return "APPLY_MODE";
-    case WRITE_MODE: return "WRITE_MODE";
-    case LOAD_MODE: return "LOAD_MODE";
-    case FETCH_MODE: return "FETCH_MODE";
-    case STANDALONE_MODE: return "STANDALONE_MODE";
-    case ERROR_MODE: return "ERROR_MODE";
+    case PENDING_MODE: char_code = "PENDING_MODE";
+    case SYNC_MODE: char_code = "SYNC_MODE";
+    case CALIBRATE_MODE: char_code = "CALIBRATE_MODE";
+    case MATRIX_MODE_RAW: char_code = "MATRIX_MODE_RAW"; 
+    case EDIT_MODE: char_code = "EDIT_MODE";
+    case PLAY_MODE: char_code = "PLAY_MODE";
+    case ALLOCATE_MODE: char_code = "ALLOCATE_MODE";
+    case UPLOAD_MODE: char_code = "UPLOAD_MODE";
+    case APPLY_MODE: char_code = "APPLY_MODE";
+    case WRITE_MODE: char_code = "WRITE_MODE";
+    case LOAD_MODE: char_code = "LOAD_MODE";
+    case FETCH_MODE: char_code = "FETCH_MODE";
+    case STANDALONE_MODE: char_code = "STANDALONE_MODE";
+    case ERROR_MODE: char_code = "ERROR_MODE";
     default:
+      char_code = "null";
       break;
   }
-  return 0;
+  return char_code;
 };
 
 const char* get_verbosity_name(verbosity_codes_t code) {
+  const char* char_code;
   switch (code) {
-    case PENDING_MODE_DONE: return "PENDING_MODE_DONE";
-    case SYNC_MODE_DONE: return "SYNC_MODE_DONE";
-    case CALIBRATE_MODE_DONE: return "CALIBRATE_MODE_DONE";
-    case MATRIX_MODE_RAW_DONE: return "MATRIX_MODE_RAW_DONE";
-    case EDIT_MODE_DONE: return "EDIT_MODE_DONE";
-    case PLAY_MODE_DONE: return "PLAY_MODE_DONE";
-    case ALLOCATE_MODE_DONE: return "ALLOCATE_MODE_DONE";
-    case UPLOAD_MODE_DONE: return "UPLOAD_MODE_DONE";
-    case APPLY_MODE_DONE: return "APPLY_MODE_DONE";
-    case WRITE_MODE_DONE: return "WRITE_MODE_DONE";
-    case LOAD_MODE_DONE: return "LOAD_MODE_DONE";
-    case FETCH_MODE_DONE: return "FETCH_MODE_DONE";
-    case STANDALONE_MODE_DONE: return "STANDALONE_MODE_DONE";
-    case DONE_ACTION: return "DONE_ACTION";
+    case PENDING_MODE_DONE: char_code = "PENDING_MODE_DONE";
+    case SYNC_MODE_DONE: char_code = "SYNC_MODE_DONE";
+    case CALIBRATE_MODE_DONE: char_code = "CALIBRATE_MODE_DONE";
+    case MATRIX_MODE_RAW_DONE: char_code = "MATRIX_MODE_RAW_DONE";
+    case EDIT_MODE_DONE: char_code = "EDIT_MODE_DONE";
+    case PLAY_MODE_DONE: char_code = "PLAY_MODE_DONE";
+    case ALLOCATE_MODE_DONE: char_code = "ALLOCATE_MODE_DONE";
+    case UPLOAD_MODE_DONE: char_code = "UPLOAD_MODE_DONE";
+    case APPLY_MODE_DONE: char_code = "APPLY_MODE_DONE";
+    case WRITE_MODE_DONE: char_code = "WRITE_MODE_DONE";
+    case LOAD_MODE_DONE: char_code = "LOAD_MODE_DONE";
+    case FETCH_MODE_DONE: char_code = "FETCH_MODE_DONE";
+    case STANDALONE_MODE_DONE: char_code = "STANDALONE_MODE_DONE";
+    case DONE_ACTION: char_code = "DONE_ACTION";
     default:
+      char_code = "null";
       break;
   }
-  return 0;
+  return char_code;
 };
 
 const char* get_error_name(error_codes_t code) {
+  const char* char_code;
   switch (code) {
-    case WAITING_FOR_CONFIG: return "WAITING_FOR_CONFIG";
-    case CONNECTING_FLASH: return "CONNECTING_FLASH";
-    case FLASH_FULL: return "FLASH_FULL";
-    case FILE_TO_BIG: return "FILE_TO_BIG";
-    case NO_CONFIG_FILE: return "NO_CONFIG_FILE";
-    case WHILE_OPEN_FLASH_FILE: return "WHILE_OPEN_FLASH_FILE";
-    case USBMIDI_CONFIG_LOAD_FAILED: return "USBMIDI_CONFIG_LOAD_FAILED";
-    case FLASH_CONFIG_LOAD_FAILED: return "FLASH_CONFIG_LOAD_FAILED";
-    case FLASH_CONFIG_WRITE_FAILED: return "FLASH_CONFIG_WRITE_FAILED";
-    case CONFIG_APPLY_FAILED: return "CONFIG_APPLY_FAILED";
-    case UNKNOWN_SYSEX: return "UNKNOWN_SYSEX";
-    case TOO_MANY_BLOBS: return "TOO_MANY_BLOBS";
+    case WAITING_FOR_CONFIG: char_code = "WAITING_FOR_CONFIG";
+    case CONNECTING_FLASH: char_code = "CONNECTING_FLASH";
+    case FLASH_FULL: char_code = "FLASH_FULL";
+    case FILE_TO_BIG: char_code = "FILE_TO_BIG";
+    case NO_CONFIG_FILE: char_code = "NO_CONFIG_FILE";
+    case WHILE_OPEN_FLASH_FILE: char_code = "WHILE_OPEN_FLASH_FILE";
+    case USBMIDI_CONFIG_LOAD_FAILED: char_code = "USBMIDI_CONFIG_LOAD_FAILED";
+    case FLASH_CONFIG_LOAD_FAILED: char_code = "FLASH_CONFIG_LOAD_FAILED";
+    case FLASH_CONFIG_WRITE_FAILED: char_code = "FLASH_CONFIG_WRITE_FAILED";
+    case CONFIG_APPLY_FAILED: char_code = "CONFIG_APPLY_FAILED";
+    case UNKNOWN_SYSEX: char_code = "UNKNOWN_SYSEX";
+    case TOO_MANY_BLOBS: char_code = "TOO_MANY_BLOBS";
     default:
+      char_code = "null";
       break;
   }
-  return 0;
+  return char_code;
 };
 
 e256_mode_t e256_m[15] = {
@@ -129,7 +135,7 @@ mode_codes_t e256_lastMode = PENDING_MODE;
 uint8_t e256_level = THRESHOLD;
 
 uint8_t* flash_config_ptr = NULL;
-uint32_t flash_configSize = 0;
+uint32_t flash_config_size = 0;
 
 // Her it should not compile if you didn't install the library
 // [Bounce2]: https://github.com/thomasfredericks/Bounce2
@@ -236,14 +242,13 @@ inline void update_buttons() {
         usb_midi_send_info(WRITE_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
       }
       else {
+        usb_midi_send_info(FLASH_CONFIG_WRITE_FAILED, MIDI_ERROR_CHANNEL);
         #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-          Serial.printf("\nSYSEX_CONFIG_WRITE: "); // FIXME FILE CORRUPTED!
+          Serial.printf("\nSYSEX_CONFIG_WRITE: ");
           printBytes(sysEx_data_ptr, sysEx_data_length);
-        #else
-          usb_midi_send_info(FLASH_CONFIG_WRITE_FAILED, MIDI_ERROR_CHANNEL);
-          set_mode((uint8_t)ERROR_MODE);
         #endif
-      }
+        set_mode((uint8_t)ERROR_MODE);
+      };
     };
   };
   // ACTION: BUTTON_R long press
@@ -342,18 +347,20 @@ inline void update_leds() {
   fade_leds(e256_level);
 };
 
-inline bool config_load_mappings_switchs(const JsonArray& config) {
+// https://arduinojson.org/v7/how-to/upgrade-from-v6/
+inline bool config_load_mappings_switchs(const JsonArray &config) {
   if (config.isNull()) {
     return false;
   }
-
-  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-   Serial.printf("CONF_SIZE:\t%d", config.size());
-   Serial.printf("RECT_FROM:\t%d", config[0]["from"][0]);
-  #endif
-  
   mapping_switchs_alloc(config.size());
 
+  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+    Serial.printf("\nCONF_SIZE:\t%d", config.size());     // print 1 (ok)
+    Serial.printf("\nFROM_X:\t%d", config[0]["from"][0]); // print 537296528 FIXME!
+    Serial.printf("\nTO_X:\t%d", config[0]["to"][0]);     // print 537296528 FIXME!
+    Serial.printf("\nMODE_Z:\t%d", config[0]["mode_z"]);  // print 537296528 FIXME!
+  #endif
+  
   uint8_t midi_status;
   midi_status_t status;
   for (uint8_t i = 0; i < mapp_switchs; i++) {
@@ -380,7 +387,9 @@ inline bool config_load_mappings_sliders(const JsonArray& config) {
   if (config.isNull()) {
     return false;
   };
+  
   mapping_sliders_alloc(config.size());
+  
   for (uint8_t i = 0; i < mapp_sliders; i++) {
     mapp_slidersParams[i].rect.from.x = config[i]["from"][0];
     mapp_slidersParams[i].rect.from.y = config[i]["from"][1];
@@ -390,7 +399,6 @@ inline bool config_load_mappings_sliders(const JsonArray& config) {
     uint8_t midi_status;
     midi_status_t status;
     for (uint8_t j = 0; j<config[i]["touchs"]; j++){
-
       midi_status = config[i][j]["msg"]["dir"]["midi"]["status"];
       midi_msg_status_unpack(midi_status, &status);
       mapp_slidersParams[i].touch[j].dir.midi.type = status.type;
@@ -584,43 +592,48 @@ inline bool config_load_mappings_grids(const JsonArray& config) {
   return true;
 };
 
-bool config_load_mappings(const JsonObject &config) {
+bool config_load_mappings(const JsonObject config) {
   if (config.isNull()) {
     //usb_midi_send_info(CONFIG_FILE_IS_NULL, MIDI_ERROR_CHANNEL);
     return false;
   };
-  if (!config_load_mappings_switchs(config["switchs"])) {
+  if (!config_load_mappings_switchs(config["switch"])) {
     ///usb_midi_send_info(CONFIG_LOAD_SWITCHS_FAILED, MIDI_ERROR_CHANNEL);
     return false;
   };
-  if (!config_load_mappings_sliders(config["sliders"])) {
+  if (!config_load_mappings_sliders(config["slider"])) {
     //usb_midi_send_info(CONFIG_LOAD_SLIDERS_FAILED, MIDI_ERROR_CHANNEL);
     return false;
   };
-  if (!config_load_mappings_knobs(config["knobs"])) {
+  if (!config_load_mappings_knobs(config["knob"])) {
     //usb_midi_send_info(CONFIG_LOAD_KNOBS_FAILED, MIDI_ERROR_CHANNEL);
     return false;
   };
-  if (!config_load_mappings_touchpads(config["touchpads"])) {
+  if (!config_load_mappings_touchpads(config["touchpad"])) {
     //usb_midi_send_info(CONFIG_LOAD_TOUCHPADS_FAILED, MIDI_ERROR_CHANNEL);
     return false;
   };
-  if (!config_load_mappings_polygons(config["polygons"])) {
+  if (!config_load_mappings_polygons(config["polygon"])) {
     //usb_midi_send_info(CONFIG_LOAD_POLYGONS_FAILED, MIDI_ERROR_CHANNEL);
     return false;
   };
-  if (!config_load_mappings_grids(config["grids"])) {
+  if (!config_load_mappings_grids(config["grid"])) {
     //usb_midi_send_info(CONFIG_LOAD_GRIDS_FAILED, MIDI_ERROR_CHANNEL);
     return false;
   };
   return true;
 };
 
-bool apply_config(uint8_t* conf_ptr, uint16_t conf_size) {
+bool apply_config(uint8_t* conf_ptr, uint32_t size) {
+  //DynamicJsonDocument e256_config(conf_size);
+  //StaticJsonDocument<4095> e256_config;
   JsonDocument e256_config;
-  DeserializationError error = deserializeJson(e256_config, conf_ptr);
+  
+  DeserializationError error = deserializeJson(e256_config, conf_ptr, size);
   if (error) {
-    Serial.printf("FAILED_TO_LOAD_CONFIG_FILE!");
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+      Serial.printf("\nDESERIALIZATION_ERROR:\t%s", error.c_str());
+    #endif
     return false;
   };
   if (config_load_mappings(e256_config["mappings"])) {
@@ -646,13 +659,9 @@ bool load_flash_config() {
   while (!SerialFlash.ready());
   if (SerialFlash.exists("config.json")) {
     SerialFlashFile configFile = SerialFlash.open("config.json");
-    flash_configSize = configFile.size();
-    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-      Serial.printf("\nCONF_SIZE: %d", flash_configSize);
-      printBytes(sysEx_data_ptr, sysEx_data_length);
-    #endif
-    flash_config_ptr = (uint8_t *)allocate(flash_config_ptr, flash_configSize);
-    configFile.read(flash_config_ptr, flash_configSize);
+    flash_config_size = configFile.size();
+    flash_config_ptr = (uint8_t *)allocate(flash_config_ptr, flash_config_size);
+    configFile.read(flash_config_ptr, flash_config_size);
     configFile.close();
     SerialFlash.sleep();
     return true;

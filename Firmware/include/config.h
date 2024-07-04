@@ -24,7 +24,7 @@
 #define ENCODER_PIN_A 22
 #define ENCODER_PIN_B 9
 #define FLASH_CHIP_SELECT 6
-#define FLASH_SIZE 4096
+#define FLASH_SIZE 16777216 // 128 Mb
 #define BAUD_RATE 230400
 #define RAW_COLS 16
 #define RAW_ROWS 16
@@ -52,7 +52,7 @@
 #define PiII (float)(PI / 2)
 #define LONG_HOLD 1500
 #define LEVEL_TIMEOUT 3000
-#define PENDING_MODE_TIMEOUT 8000
+#define PENDING_MODE_TIMEOUT 4000
 
 #define MIDI_TRANSMIT_INTERVAL 50 // 20Hz
 
@@ -202,7 +202,7 @@ extern mode_codes_t e256_currentMode;
 extern uint8_t e256_level;
 
 extern uint8_t *flash_config_ptr;
-extern uint32_t flash_configSize;
+extern uint32_t flash_config_size;
 
 void blink(uint8_t iter);
 void set_mode(uint8_t mode);
@@ -211,7 +211,7 @@ void set_level(uint8_t level, uint8_t value);
 void hardware_setup(void);
 void update_controls(void);
 bool load_flash_config(void);
-bool apply_config(uint8_t *conf_ptr, uint16_t conf_size);
+bool apply_config(uint8_t *conf_ptr, uint32_t conf_size);
 
 const char* get_mode_name(mode_codes_t code);
 const char* get_verbosity_name(verbosity_codes_t code);

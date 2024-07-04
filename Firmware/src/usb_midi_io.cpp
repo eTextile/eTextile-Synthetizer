@@ -15,7 +15,7 @@
 #include "allocate.h"
 
 uint32_t bootTime = 0;
-uint16_t sysEx_data_length = 0;
+uint32_t sysEx_data_length = 0;
 uint8_t* sysEx_data_ptr = NULL;
 
 // Setup the USB_MIDI communication port
@@ -35,23 +35,34 @@ void usb_midi_recive(void) {
 
 void usb_midi_pending_mode_timeout(){
   if (e256_currentMode == PENDING_MODE && millis() - bootTime > PENDING_MODE_TIMEOUT){
-      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-        Serial.printf("\nTIME_IS_OUT!");
-      #endif
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+      Serial.printf("\nPENDING_MODE_TIME_OUT");
+    #endif
     if(load_flash_config()){
       #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
         Serial.printf("\nFLASH_CONFIG_LOAD_DONE: ");
-        printBytes(flash_config_ptr, (uint16_t)flash_configSize);
+        printBytes(flash_config_ptr, flash_config_size);
       #endif
+      if (apply_config(flash_config_ptr, flash_config_size)) {
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+          Serial.printf("\nAPPLY_MODE_DONE");
+        #endif
+      }
+      else {
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+          Serial.printf("\nCONFIG_APPLY_FAILED");
+        #endif
+        //set_mode((uint8_t)ERROR_MODE);
+      }
       matrix_calibrate();
       blink(10);
       set_mode((uint8_t)STANDALONE_MODE);
-    } else {
+    }
+    else {
       bootTime = millis();
       set_mode((uint8_t)PENDING_MODE);
-      //set_mode((uint8_t)SYNC_MODE); 
       #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-        Serial.printf("\nNO_CONFIG_FILE_LOADED!");
+        Serial.printf("\nNO_CONFIG_FILE_LOADED");
       #endif
     };
   };
@@ -251,7 +262,7 @@ void usb_read_programChange(uint8_t channel, uint8_t program){
           if(load_flash_config()){
             #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
               Serial.printf("\nSEND_FLASH_CONFIG: ");
-              printBytes(flash_config_ptr, (uint16_t)flash_configSize);
+              printBytes(flash_config_ptr, flash_config_size);
             #endif
             usb_midi_send_info(LOAD_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
           }
@@ -261,7 +272,7 @@ void usb_read_programChange(uint8_t channel, uint8_t program){
           break;
 
         case FETCH_MODE:
-          usbMIDI.sendSysEx(flash_configSize, flash_config_ptr, false);
+          usbMIDI.sendSysEx(flash_config_size, flash_config_ptr, false);
           usbMIDI.send_now();
           usb_midi_send_info(FETCH_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
@@ -274,19 +285,24 @@ void usb_read_programChange(uint8_t channel, uint8_t program){
         case UPLOAD_MODE:
           e256_currentMode = UPLOAD_MODE;
           usb_midi_send_info(UPLOAD_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+            printBytes(sysEx_data_ptr, sysEx_data_length);
+          #endif
           break;
 
         case APPLY_MODE:
-          if (apply_config(sysEx_data_ptr, sysEx_data_length)) {
+          if (apply_config(sysEx_data_ptr,sysEx_data_length)) { // FIXME!!!!!!!!!!!!!!!!!!!
             usb_midi_send_info(APPLY_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
             #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-              Serial.printf("\nCONFIG_APPLY_DONE: ");
-              printBytes(sysEx_data_ptr, sysEx_data_length);
+              Serial.printf("\nAPPLY_MODE_DONE");
             #endif
           }
           else {
             usb_midi_send_info(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
-            set_mode((uint8_t)ERROR_MODE);
+            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+              Serial.printf("\nCONFIG_APPLY_FAILED");
+            #endif
+            //set_mode((uint8_t)ERROR_MODE);
           }
           break;
 

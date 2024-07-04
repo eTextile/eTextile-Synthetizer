@@ -29,8 +29,8 @@ void setup() {
   midi_bus_setup();
   set_mode((uint8_t)PENDING_MODE);
   #if defined(USB_MIDI_SERIAL)
-    //while (!Serial);
-    //Serial.println("START");
+    while (!Serial);
+    Serial.println("START");
   #endif
   bootTime = millis();
 };

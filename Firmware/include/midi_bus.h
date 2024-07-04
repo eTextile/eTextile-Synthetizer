@@ -78,7 +78,7 @@ typedef struct midi_status {
 void midi_bus_setup(void);
 uint8_t midi_msg_status_pack(uint8_t type, uint8_t channel);
 void midi_msg_status_unpack(uint8_t in_status, midi_status_t* out_status);
-void printBytes(const uint8_t* data_ptr, uint16_t length);
+void printBytes(const uint8_t* data_ptr, uint32_t length);
 
 inline void midi_sendOut(midi_t midiMsg){
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);

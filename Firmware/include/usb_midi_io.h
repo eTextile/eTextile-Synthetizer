@@ -16,7 +16,7 @@
 
 extern uint32_t bootTime;
 
-extern uint16_t sysEx_data_length;
+extern uint32_t sysEx_data_length;
 extern uint8_t* sysEx_data_ptr;
 
 void usb_midi_setup(void);

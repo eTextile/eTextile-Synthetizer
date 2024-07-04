@@ -59,7 +59,7 @@ uint8_t mapp_switchs = 0;
 switch_t* mapp_switchParams = NULL;
 static switch_t mapp_switchParams_privStore[MAX_SWITCHS];
 
-void mapping_switchs_alloc(uint8_t switchs_cnt) { // uint8_t OVERFLOW?
+void mapping_switchs_alloc(uint8_t switchs_cnt) {
   mapp_switchs = min(switchs_cnt, MAX_SWITCHS);
   mapp_switchParams = mapp_switchParams_privStore;
 };
@@ -80,15 +80,15 @@ void mapping_switchs_update(blob_t* blob_ptr) {
           Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, mapp_switchParams[i].msg.midi.data1);
         #else
         switch (mapp_switchParams[i].msg.midi.type) {
-        case midi::NoteOn:
-          mapp_switchParams[i].msg.midi.type = midi::NoteOn;
-          midi_sendOut(mapp_switchParams[i].msg.midi);
-          break;
-        case midi::NoteOff:
-          //...
-          break;
-        default:
-          break;
+          case midi::NoteOn:
+            mapp_switchParams[i].msg.midi.type = midi::NoteOn;
+            midi_sendOut(mapp_switchParams[i].msg.midi);
+            break;
+          case midi::NoteOff:
+            //...
+            break;
+          default:
+            break;
         }
         #endif
       };
