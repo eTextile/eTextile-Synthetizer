@@ -45,8 +45,8 @@
 #define Y_MAX 58          // Blob centroid Y max value
 #define Z_MIN 0           // Blob centroid Z min value
 #define Z_MAX 256         // Blob centroid Z max value
-#define WIDTH (X_MAX - X_MIN)
-#define HEIGHT (Y_MAX - Y_MIN)
+#define MATRIX_RESOLUTION_X (X_MAX - X_MIN)
+#define MATRIX_RESOLUTION_Y (Y_MAX - Y_MIN)
 #define IIPi (float)(2 * PI)
 #define IIIPiII (float)(3 * PI) / 2
 #define PiII (float)(PI / 2)
