@@ -37,10 +37,10 @@ const MIDI_TYPES = {
 };
 */
 
-extern llist_t midi_node_stack;                    // Main MIDI node stack
-extern llist_t midiIn;                             // Main MIDI Input linked list
-extern llist_t midiOut;                            // Main MIDI Output linked list
-extern llist_t midiChord;                          // Main MIDI chord linked list
+extern llist_t midi_node_stack; // Main MIDI node stack
+extern llist_t midiIn;          // Main MIDI Input linked list
+extern llist_t midiOut;         // Main MIDI Output linked list
+extern llist_t midiChord;       // Main MIDI chord linked list
 
 // For MIDI status bytes see: https://github.com/PaulStoffregen/MIDI/blob/master/src/midi_Defs.h
 typedef struct midiMsg midi_t;

@@ -154,9 +154,9 @@ extern grid_t *mapp_gridsParams;
 void mapping_grids_alloc(uint8_t grids_cnt);
 
 // DEV
-extern uint8_t mapp_csliders;
-extern slider_t *mapp_cslidersParams;
-void mapping_sliders_alloc(uint8_t csliders_cnt);
+//extern uint8_t mapp_csliders;
+//extern slider_t *mapp_cslidersParams;
+//void mapping_sliders_alloc(uint8_t csliders_cnt);
 
 void mapping_lib_setup(void);
 void mapping_lib_update(void);

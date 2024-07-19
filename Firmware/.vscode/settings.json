@@ -3,6 +3,9 @@
         "string": "cpp",
         "string_view": "cpp",
         "system_error": "cpp",
-        "cmath": "cpp"
+        "cmath": "cpp",
+        "array": "cpp",
+        "initializer_list": "cpp",
+        "utility": "cpp"
     }
 }

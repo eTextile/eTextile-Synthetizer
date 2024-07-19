@@ -225,7 +225,7 @@ void usb_read_programChange(uint8_t channel, uint8_t program){
   
   switch (channel){
     case MIDI_MODES_CHANNEL:
-      Serial.printf("\nRECEIVED:\t%s", get_mode_name((mode_codes_t)program));
+      //Serial.printf("\nRECEIVED:\t%s", get_mode_name((mode_codes_t)program));
       switch (program){
 
         case PENDING_MODE:
@@ -291,10 +291,10 @@ void usb_read_programChange(uint8_t channel, uint8_t program){
           break;
 
         case APPLY_MODE:
-          if (apply_config(sysEx_data_ptr,sysEx_data_length)) { // FIXME!!!!!!!!!!!!!!!!!!!
+          if (apply_config(sysEx_data_ptr, sysEx_data_length)) { // FIXME!!!!!!!!!!!!!!!!!!!
             usb_midi_send_info(APPLY_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
             #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-              Serial.printf("\nAPPLY_MODE_DONE");
+              Serial.printf("\nnCONFIG_APPLY_DONE");
             #endif
           }
           else {

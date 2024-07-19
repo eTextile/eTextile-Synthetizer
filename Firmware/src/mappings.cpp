@@ -130,7 +130,8 @@ void mapping_sliders_setup(void) {
 
 void mapping_sliders_update(blob_t* blob_ptr) {
   for (uint8_t i = 0; i < mapp_sliders; i++) {
-    for (uint8_t j = 0; j < mapp_sliders; j++) {
+    Serial.printf("\nDEBUG_MAPPINGS_SLIDER\tTOUCHS:%d", mapp_slidersParams[i].touchs);
+    for (uint8_t j = 0; j < mapp_slidersParams[i].touchs; j++) {
       if (blob_ptr->centroid.x > mapp_slidersParams[i].rect.from.x &&
           blob_ptr->centroid.x < mapp_slidersParams[i].rect.to.x &&
           blob_ptr->centroid.y > mapp_slidersParams[i].rect.from.y &&
@@ -256,8 +257,8 @@ void mapping_touchpads_update(blob_t* blob_ptr) {
         blob_ptr->centroid.y < mapp_touchpadsParams[i].rect.to.y) {
 
       for (int touch=0; touch<mapp_touchpadsParams[i].touchs; touch++) {
-      
       }
+      
       //if (mapp_touchpadsParams[i].touch[blob_ptr->UID].x) { // Test if x is activated 
         #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
           Serial.printf("\nDEBUG_MAPPINGS_TOUCHPAD\tMIDI_x_cc:%d\tVAL:%d", 
@@ -628,8 +629,8 @@ void mapping_cSliders_update(void) {
 
 void mapping_lib_setup(void){
   mapping_switchs_setup();
-  //mapping_grids_setup();
   //mapping_sliders_setup();
+  //mapping_grids_setup();
   //mapping_knobs_setup();
   //mapping_touchpads_setup();
   //mapping_polygons_setup();
@@ -639,8 +640,8 @@ void mapping_lib_update(void) {
   llist_save_nodes(&midi_node_stack, &midiOut); // Save/rescure all midiOut nodes
   for (blob_t *blob_ptr = (blob_t *)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t *)ITERATOR_NEXT(blob_ptr)){
     mapping_switchs_update(blob_ptr);
+   // mapping_sliders_update(blob_ptr);
     //mapping_grids_update(blob_ptr);
-    //mapping_sliders_update(blob_ptr);
     //mapping_knobs_update(blob_ptr);
     //mapping_touchpads_update(blob_ptr);
     //mapping_polygons_update(blob_ptr);

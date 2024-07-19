@@ -30,7 +30,7 @@ void setup() {
   set_mode((uint8_t)PENDING_MODE);
   #if defined(USB_MIDI_SERIAL)
     while (!Serial);
-    Serial.println("START");
+    Serial.printf("\nVERSION:\t%s", VERSION);
   #endif
   bootTime = millis();
 };
@@ -40,6 +40,7 @@ void loop() {
   matrix_interp();
   matrix_find_blobs();
   update_controls();
+  //mapping_lib_update(); // DEBUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   switch (e256_currentMode) {
     case PENDING_MODE:
@@ -63,9 +64,13 @@ void loop() {
       break;
     case STANDALONE_MODE:
       //update_levels(); // NOT_USED in this branche!
+
       mapping_lib_update();
+      usb_midi_recive();
+      usb_midi_transmit();
+      
       //hardware_midi_recive();
-      hardware_midi_transmit();
+      //hardware_midi_transmit();
       break;
     default:
       usb_midi_recive();
