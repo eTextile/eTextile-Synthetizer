@@ -22,10 +22,10 @@ extern llist_t midiChord;       // Main MIDI chord linked list
 
 typedef struct midiMsg midi_t;
 struct midiMsg {
-  MidiType type;    // (Extract from status byte)
+  MidiType type;    // (Extracted from status byte)
   uint8_t data1;    // [0-127] MIDI controller number or note number
   uint8_t data2;    // [0-127] MIDI controller value or velocity
-  uint8_t channel;  // [1-15] MIDI channel (Extract from status byte)
+  uint8_t channel;  // [1-15] MIDI channel (Extracted from status byte)
 };
 
 typedef struct limit limit_t;

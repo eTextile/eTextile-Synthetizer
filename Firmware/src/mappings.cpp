@@ -7,52 +7,6 @@
 #include "mappings.h"
 
 ///////////////////////////////////////////////
-              /*__TRIGGERS__*/
-///////////////////////////////////////////////
-/*
-uint8_t mapp_trigs = 0;
-switch_t *mapp_trigsParams = NULL;
-static switch_t mapp_trigsParams_privStore[MAX_TRIGGERS];
-
-void mapping_triggers_alloc(uint8_t triggers_cnt) {
-  mapp_trigs = min(triggers_cnt, MAX_TRIGGERS);
-  mapp_trigsParams = mapp_trigsParams_privStore;
-};
-
-inline void mapping_triggers_setup(void) {
-  for (uint8_t i = 0; i < mapp_trigs; i++) {
-  };
-};
-
-void mapping_triggers_update(blob_t* blob_ptr) {
-  for (uint8_t i = 0; i < mapp_trigs; i++) {
-    // Test if the blob is within the key limits
-    if (blob_ptr->centroid.x > mapp_trigsParams[i].rect.from.x &&
-        blob_ptr->centroid.x < mapp_trigsParams[i].rect.to.x &&
-        blob_ptr->centroid.y > mapp_trigsParams[i].rect.from.y &&
-        blob_ptr->centroid.y < mapp_trigsParams[i].rect.to.y) {
-      if (!blob_ptr->lastState) {
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-          Serial.printf("\nDEBUG_MAPPINGS_TRIGGERS\tID:%d\tNOTE_ON:%d", i, mapp_trigParams[i].msg.midi.data1);
-        #else
-          mapp_trigsParams[i].msg.midi.type = midi::NoteOn;
-          midi_sendOut(mapp_trigsParams[i].msg.midi);
-        #endif
-      }
-      else if (!blob_ptr->state) {
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-          Serial.printf("\nDEBUG_MAPPINGS_TRIGGERS\tID;%d\tNOTE_OFF:%d", i, mapp_trigParams[i].msg.midi.data1);
-        #else
-          mapp_trigsParams[i].msg.midi.type = midi::NoteOff;
-          midi_sendOut(mapp_trigsParams[i].msg.midi);
-        #endif
-      };
-    };
-  };
-};
-*/
-
-///////////////////////////////////////////////
               /*__SWITCHS__*/
 ///////////////////////////////////////////////
 uint8_t mapp_switchs = 0;
@@ -82,7 +36,7 @@ void mapping_switchs_update(blob_t* blob_ptr) {
         // Keep sustain 
         break;
       case trigger:
-        //
+        // 
         break;
       }
       case pressure:
