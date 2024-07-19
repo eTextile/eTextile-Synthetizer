@@ -21,16 +21,17 @@ void llist_midi_init(llist_t* llist_ptr, midiNode_t* nodesArray_ptr, const int n
   };
 };
 
-// MIDI struct
+// Extract MIDI type and channel from MIDI status msg
 // https://www.midi.org/specifications-old/item/table-2-expanded-messages-list-status-bytes
-uint8_t midi_msg_status_pack(uint8_t type, uint8_t channel) {
-  uint8_t status = (channel - 1) | (type << 4); 
-  return status;
+void midi_msg_status_unpack(uint8_t in_status, midi_status_t* out_status) {
+  out_status->type = (MidiType)((in_status >> 4) & 0xF); // Save the 4 MSB bits
+  out_status->channel = (in_status & 0xF) + 1; // Save the 4 LSB bits [0000 === chan 1]
 };
 
-void midi_msg_status_unpack(uint8_t in_status, midi_status_t* out_status) {
-  out_status->type = (in_status >> 4) & 0xF; // Save the 4 MSB bits
-  out_status->channel = (in_status & 0xF) + 1; // Save the 4 LSB bits [0000 === chan 1]
+// Concatenate MIDI status msg from MIDI type and channel
+uint8_t midi_msg_status_pack(MidiType type, uint8_t channel) {
+  uint8_t status = (channel - 1) | (uint8_t)type;
+  return status;
 };
 
 void midi_bus_setup(void) {
@@ -43,7 +44,7 @@ void midi_bus_setup(void) {
 /*
 void midi_handle_input(const midi::Message<128u> &midiMsg) {
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
-  node_ptr->midiMsg.type = midiMsg.type;           // Set the MIDI status
+  node_ptr->midiMsg.type = midiMsg.type;           // Set the MIDI type
   node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI note
   node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI velocity
   node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel

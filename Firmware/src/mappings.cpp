@@ -75,31 +75,40 @@ void mapping_switchs_update(blob_t* blob_ptr) {
         blob_ptr->centroid.x < mapp_switchParams[i].rect.to.x &&
         blob_ptr->centroid.y > mapp_switchParams[i].rect.from.y &&
         blob_ptr->centroid.y < mapp_switchParams[i].rect.to.y) {
+      
+      /*
+      switch (mapp_switchParams[i].mode) {
+      case toggle:
+        // Keep sustain 
+        break;
+      case trigger:
+        //
+        break;
+      }
+      case pressure:
+        //
+        break;
+      }
+      */
+
       if (!blob_ptr->lastState) {
+        mapp_switchParams[i].msg.midi.type = midi::NoteOn;
+        //mapp_switchParams[i].msg.midi.data2 = ... // Set the velocity
+        midi_sendOut(mapp_switchParams[i].msg.midi);
         #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
           Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, mapp_switchParams[i].msg.midi.data1);
-        #else
-        switch (mapp_switchParams[i].msg.midi.type) {
-          case midi::NoteOn:
-            mapp_switchParams[i].msg.midi.type = midi::NoteOn;
-            midi_sendOut(mapp_switchParams[i].msg.midi);
-            break;
-          case midi::NoteOff:
-            //...
-            break;
-          default:
-            break;
-        }
         #endif
-      };
-      if (!blob_ptr->state) {
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-          Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_OFF:%d", i, mapp_switchParams[i].msg.midi.data1);
-        #else
+      }
+      else if (!blob_ptr->state) {
           mapp_switchParams[i].msg.midi.type = midi::NoteOff;
           midi_sendOut(mapp_switchParams[i].msg.midi);
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+          Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_OFF:%d", i, mapp_switchParams[i].msg.midi.data1);
         #endif
-      };
+      }
+      else {
+        //
+      }
     };
   };
 };
@@ -158,10 +167,9 @@ void mapping_sliders_update(blob_t* blob_ptr) {
         }
         if (mapp_slidersParams[i].touch[j].dir.midi.data2 != mapp_slidersParams[i].touch[j].dir.last_val) {
           mapp_slidersParams[i].touch[j].dir.last_val = mapp_slidersParams[i].touch[j].dir.midi.data2;
+          midi_sendOut(mapp_slidersParams[i].touch[j].dir.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
             Serial.printf("\nDEBUG_MAPPINGS_SLIDER\tID:%d\tVal:%d", i, mapp_slidersParams[i].touch[j].dir.midi.data2);
-          #else
-            midi_sendOut(mapp_slidersParams[i].touch[j].dir.midi);
           #endif
         };
         // TODO: Z
@@ -183,13 +191,11 @@ void mapping_knobs_alloc(uint8_t knobs_cnt) {
   mapp_knobsParams = mapp_knobsParams_privStore;
 };
 
-void mapping_knobs_setup(void){
-  for (int i = 0; i < mapp_knobs; i++) {
-    for (uint8_t j = 0; j < mapp_sliders; j++) {
-      mapp_knobsParams[i].radius = (mapp_knobsParams[i].rect.to.x - mapp_knobsParams[i].rect.from.x) / 2;
-      mapp_knobsParams[i].center.x = (mapp_knobsParams[i].rect.to.x - mapp_knobsParams[i].rect.from.x); //...
-      mapp_knobsParams[i].center.y = (mapp_knobsParams[i].rect.to.y - mapp_knobsParams[i].rect.from.y); //...
-    }
+void mapping_knobs_setup(void) {
+  for (uint8_t i = 0; i < mapp_knobs; i++) {
+    mapp_knobsParams[i].radius = (mapp_knobsParams[i].rect.to.x - mapp_knobsParams[i].rect.from.x) / 2;
+    mapp_knobsParams[i].center.x = (mapp_knobsParams[i].rect.to.x - mapp_knobsParams[i].rect.from.x); //...
+    mapp_knobsParams[i].center.y = (mapp_knobsParams[i].rect.to.y - mapp_knobsParams[i].rect.from.y); //...
   };
 };
 
@@ -199,27 +205,28 @@ void mapping_knobs_update(blob_t* blob_ptr) {
     float y = blob_ptr->centroid.y - mapp_knobsParams[i].center.y;
     float radius = sqrt(x * x + y * y);
 
-    if (radius < mapp_knobsParams[i].touch[0].radius.midi.data2) {
-      // Rotation of Axes through an angle without shifting Origin
-      float posX = x * cos(mapp_knobsParams[i].offset) + y * sin(mapp_knobsParams[i].offset);
-      float posY = -x * sin(mapp_knobsParams[i].offset) + y * cos(mapp_knobsParams[i].offset);
-      if (posX == 0 && 0 < posY) {
-        mapp_knobsParams[i].touch[0].theta.midi.data2 = PiII;
-      } else if (posX == 0 && posY < 0) {
-        mapp_knobsParams[i].touch[0].theta.midi.data2 = IIIPiII;
-      } else if (posX < 0) {
-        mapp_knobsParams[i].touch[0].theta.midi.data2 = atanf(posY / posX) + PI;
-      } else if (posY < 0) {
-        mapp_knobsParams[i].touch[0].theta.midi.data2 = atanf(posY / posX) + IIPi;
-      } else {
-        mapp_knobsParams[i].touch[0].theta.midi.data2 = atanf(posY / posX);
-      }
-      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-        //Serial.printf("\nDEBUG_MAPPINGS_KNOBSS:\tKnobsID:\t%d\tradius:\t%fTheta:\t%f", i, mapp_knobsParams[i].radius.midi.data2, mapp_knobsParams[i].theta.midi.data2);
-      #else
-        midi_sendOut(mapp_knobsParams[i].touch[0].radius.midi);
-        midi_sendOut(mapp_knobsParams[i].touch[0].theta.midi);
-      #endif
+    for (uint8_t j = 0; j < mapp_knobsParams[i].touchs; j++) {
+      if (radius < mapp_knobsParams[i].touch[j].radius.midi.data2) {
+        // Rotation of Axes through an angle without shifting Origin
+        float posX = x * cos(mapp_knobsParams[i].offset) + y * sin(mapp_knobsParams[i].offset);
+        float posY = -x * sin(mapp_knobsParams[i].offset) + y * cos(mapp_knobsParams[i].offset);
+        if (posX == 0 && 0 < posY) {
+          mapp_knobsParams[i].touch[j].theta.midi.data2 = PiII;
+        } else if (posX == 0 && posY < 0) {
+          mapp_knobsParams[i].touch[j].theta.midi.data2 = IIIPiII;
+        } else if (posX < 0) {
+          mapp_knobsParams[i].touch[j].theta.midi.data2 = atanf(posY / posX) + PI;
+        } else if (posY < 0) {
+          mapp_knobsParams[i].touch[j].theta.midi.data2 = atanf(posY / posX) + IIPi;
+        } else {
+          mapp_knobsParams[i].touch[j].theta.midi.data2 = atanf(posY / posX);
+        }
+        midi_sendOut(mapp_knobsParams[i].touch[j].radius.midi);
+        midi_sendOut(mapp_knobsParams[i].touch[j].theta.midi);
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+          Serial.printf("\nDEBUG_MAPPINGS_KNOBSS:\tKnobsID:\t%d\tradius:\t%fTheta:\t%f", i, mapp_knobsParams[i].touch[j].radius.midi.data2, mapp_knobsParams[i].touch[j].theta.midi.data2);
+        #endif
+      };
     };
   };
 };
@@ -237,53 +244,40 @@ void mapping_touchpads_alloc(uint8_t touchpads_cnt) {
 };
 
 void mapping_touchpads_setup(void){
+  /*
   for (uint8_t i = 0; i < mapp_touchpads; i++) {
-    /*
-    for (uint8_t j = 0; j < mapp_touchpadsParams[i].touchs; j++) {
-      mapp_touchpadsParams[i].touch[j].pos_x.midi.type = midi::ControlChange;
-      mapp_touchpadsParams[i].touch[j].pos_y.midi.type = midi::ControlChange;
-      mapp_touchpadsParams[i].touch[j].pos_z.midi.type = midi::ControlChange;
-    };
-    */
   };
+  */
 };
 
 void mapping_touchpads_update(blob_t* blob_ptr) {
   for (uint8_t i = 0; i < mapp_touchpads; i++) {
-
     if (blob_ptr->centroid.x > mapp_touchpadsParams[i].rect.from.x &&
         blob_ptr->centroid.x < mapp_touchpadsParams[i].rect.to.x &&
         blob_ptr->centroid.y > mapp_touchpadsParams[i].rect.from.y &&
         blob_ptr->centroid.y < mapp_touchpadsParams[i].rect.to.y) {
-
-      for (int touch=0; touch<mapp_touchpadsParams[i].touchs; touch++) {
-      }
       
-      //if (mapp_touchpadsParams[i].touch[blob_ptr->UID].x) { // Test if x is activated 
+      //if (mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_x) { // Test if X is activated
+      mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_x.last_val = mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_x.midi.data2;
+      mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_x.midi.data2 = 
+        round(map(blob_ptr->centroid.x,
+          mapp_touchpadsParams[i].rect.from.x,
+          mapp_touchpadsParams[i].rect.to.x,
+          mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_x.limit.min,
+          mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_x.limit.max
+          )
+        );
+        //midi_sendOut(mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_x.midi);
         #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-          Serial.printf("\nDEBUG_MAPPINGS_TOUCHPAD\tMIDI_x_cc:%d\tVAL:%d", 
+          Serial.printf("\nDEBUG_MAPPINGS_TOUCHPAD\tMIDI_X_CC:%d\tVAL:%d",
           mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_x.midi.data2,
           round(map(blob_ptr->centroid.x, mapp_touchpadsParams[i].rect.from.x, mapp_touchpadsParams[i].rect.to.x, 0, 127)));
-        #else
-          mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_x.midi.data2 = 
-          round(map(blob_ptr->centroid.x,
-            mapp_touchpadsParams[i].rect.from.x,
-            mapp_touchpadsParams[i].rect.to.x,
-            mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_x.limit.min,
-            mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_x.limit.max
-            )
-          );
-          midi_sendOut(mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_x.midi);
         #endif
       //};
 
-      //if (mapp_touchpadsParams[i].touch[blob_ptr->UID].y) {
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-          Serial.printf("\nDEBUG_MAPPINGS_TOUCHPAD\tMIDI_y_cc:%d\tVAL:%d", 
-          mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_y.midi.data2, 
-          round(map(blob_ptr->centroid.y, mapp_touchpadsParams[i].rect.from.y, mapp_touchpadsParams[i].rect.to.y, 0, 127)));
-        #else
-          mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_y.midi.data2 = 
+      //if (mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_y) { // Test if Y is activated
+        mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_y.last_val = mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_y.midi.data2;
+        mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_y.midi.data2 = 
           round(map(blob_ptr->centroid.y,
             mapp_touchpadsParams[i].rect.from.y,
             mapp_touchpadsParams[i].rect.to.y,
@@ -291,26 +285,51 @@ void mapping_touchpads_update(blob_t* blob_ptr) {
             mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_y.limit.max
             )
           );
-          midi_sendOut(mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_y.midi);
+          //midi_sendOut(mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_y.midi);
+          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+            Serial.printf("\nDEBUG_MAPPINGS_TOUCHPAD\tMIDI_Y_CC:%d\tVAL:%d",
+            mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_y.midi.data2,
+            round(map(blob_ptr->centroid.y, mapp_touchpadsParams[i].rect.from.y, mapp_touchpadsParams[i].rect.to.y, 0, 127)));
+          #endif
+      //};
+
+      //if (mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z) { // Test if Z is activated
+      mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.last_val = mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.midi.data2;
+      mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.midi.data2 = 
+        round(map(blob_ptr->centroid.z,
+          Z_MIN,
+          Z_MAX,
+          mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.limit.min,
+          mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.limit.max
+          )
+        );
+        //midi_sendOut(mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.midi);
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+          Serial.printf("\nDEBUG_MAPPINGS_TOUCHPAD\tMIDI_Z_CC:%d\tVAL:%d",
+          mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.midi.data2,
+          map(blob_ptr->centroid.z, 0, 255, 0, 127));
         #endif
       //};
 
-      //if (mapp_touchpadsParams[i].touch[blob_ptr->UID].z) {
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-          Serial.printf("\nDEBUG_MAPPINGS_TOUCHPAD\tMIDI_z_cc:%d\tVAL:%d",
-          mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.midi.data2, map(blob_ptr->centroid.z, 0, 255, 0, 127));
-        #else
-          mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_y.midi.data2 = 
-          round(map(blob_ptr->centroid.z,
-            Z_MIN,
-            Z_MAX,
-            mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.limit.min,
-            mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.limit.max
-            )
-          );
+      if (blob_ptr->state) {
+        if (!blob_ptr->lastState) {
+          if (mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.midi.type == midi::NoteOn){
+            midi_sendOut(mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.midi);
+          }
+        }
+        else {
+          //if (millis() - blob_ptr->transmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
+            //blob_ptr->transmitTimeStamp = millis();
+            midi_sendOut(mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_x.midi);
+            midi_sendOut(mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_y.midi);
+          //};
+        };
+      } else {
+        if (blob_ptr->lastState && blob_ptr->status != NOT_FOUND) {
           midi_sendOut(mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.midi);
-        #endif
-      //};
+        };
+      }
+
     };
   };
 };
@@ -431,30 +450,27 @@ void mapping_grids_update(blob_t *blob_ptr){
       if (blob_ptr->state){ // Test if the blob is alive
         if (&mapp_gridsParams[i].keys[keyPress].msg.midi != mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]){ // Test if the blob is touching a new key
           if (mapp_gridsParams[i].lastKeyPress[blob_ptr->UID] != NULL){ // Test if the blob was touching another key
-          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-            Serial.printf("\nDEBUG_MAPPINGS_GRID\tBLOB_ID:%d\tKEY_SLIDING_OFF:%d", blob_ptr->UID, mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]);
-          #else
             mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]->type = midi::NoteOff;
             midi_sendOut((midi_t)*mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]);
-          #endif
+            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+              Serial.printf("\nDEBUG_MAPPINGS_GRID\tBLOB_ID:%d\tKEY_SLIDING_OFF:%d", blob_ptr->UID, mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]);
+            #endif
             mapp_gridsParams[i].lastKeyPress[blob_ptr->UID] = NULL; // RAZ last key pressed value
           };
+          mapp_gridsParams[i].keys[keyPress].msg.midi.type = midi::NoteOn;
+          midi_sendOut(mapp_gridsParams[i].keys[keyPress].msg.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
             Serial.printf("\nDEBUG_MAPPINGS_GRID\tBLOB_ID:%d\tKEY_PRESS:%d", blob_ptr->UID, mapp_gridsParams[i].keys[keyPress].msg.midi);
-          #else
-            mapp_gridsParams[i].keys[keyPress].msg.midi.type = midi::NoteOn;
-            midi_sendOut(mapp_gridsParams[i].keys[keyPress].msg.midi);
           #endif
-            mapp_gridsParams[i].lastKeyPress[blob_ptr->UID] = &mapp_gridsParams[i].keys[keyPress].msg.midi; // Keep track of last key pressed to switch it OFF when sliding
+          mapp_gridsParams[i].lastKeyPress[blob_ptr->UID] = &mapp_gridsParams[i].keys[keyPress].msg.midi; // Keep track of last key pressed to switch it OFF when sliding
         };
       }
       else { // if !blob_ptr->state
-      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-        Serial.printf("\nDEBUG_MAPPINGS_GRID\tBLOB_ID:%d\tKEY_UP:%d", blob_ptr->UID, mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]);
-      #else
         mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]->type = midi::NoteOff;
         midi_sendOut((midi_t)*mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]);
-      #endif
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+          Serial.printf("\nDEBUG_MAPPINGS_GRID\tBLOB_ID:%d\tKEY_UP:%d", blob_ptr->UID, mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]);
+        #endif
         mapp_gridsParams[i].lastKeyPress[blob_ptr->UID] = NULL; // RAZ last key pressed ptr value
       };
     };

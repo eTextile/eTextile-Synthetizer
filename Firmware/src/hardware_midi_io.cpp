@@ -40,21 +40,7 @@ void hardware_midi_handle_input(const midi::Message<128u> &midiMsg) {
 
 void hardware_midi_transmit(void){
   for (midiNode_t *node_ptr = (midiNode_t *)ITERATOR_START_FROM_HEAD(&midiOut); node_ptr != NULL; node_ptr = (midiNode_t *)ITERATOR_NEXT(node_ptr)){
-    switch (node_ptr->midi.type){
-    case midi::NoteOn:
-      MIDI.sendNoteOn(node_ptr->midi.data1, node_ptr->midi.data2, node_ptr->midi.channel);
-    case midi::NoteOff:
-      MIDI.sendNoteOff(node_ptr->midi.data1, node_ptr->midi.data2, node_ptr->midi.channel);
-      break;
-    case midi::ControlChange:
-      MIDI.sendControlChange(node_ptr->midi.data1, node_ptr->midi.data2, node_ptr->midi.channel);
-      break;
-    case midi::AfterTouchPoly:
-      MIDI.sendAfterTouch(node_ptr->midi.data1, node_ptr->midi.data2, node_ptr->midi.channel);
-      break;
-    default:
-      break;
-    };
+    MIDI.send(node_ptr->midi.type, node_ptr->midi.data1, node_ptr->midi.data2, node_ptr->midi.channel);
   };
   llist_save_nodes(&midi_node_stack, &midiOut);
 };

@@ -16,6 +16,7 @@
 #define VERSION "1.0.21"
 #define SENSOR_UID 1 // Unique sensor ID
 #define FLASH_BUFFER_SIZE 4096
+
 // E256 HARDWARE CONSTANTS
 #define LED_PIN_D1 5
 #define LED_PIN_D2 4
@@ -39,14 +40,21 @@
 #define SIZEOF_FRAME (NEW_FRAME * sizeof(uint8_t))
 #define BLOB_MIN_PIX 6    // Set the minimum blob pixels
 #define BLOB_MAX_PIX 1024 // Set the minimum blob pixels
-#define X_MIN 1           // Blob centroid X min value
-#define X_MAX 58          // Blob centroid X max value
-#define Y_MIN 1           // Blob centroid Y min value
-#define Y_MAX 58          // Blob centroid Y max value
-#define Z_MIN 0           // Blob centroid Z min value
-#define Z_MAX 256         // Blob centroid Z max value
-#define MATRIX_RESOLUTION_X (X_MAX - X_MIN)
-#define MATRIX_RESOLUTION_Y (Y_MAX - Y_MIN)
+
+#define X_PADDING_LEFT   1
+#define X_PADDING_REIGHT 1
+#define Y_PADDING_TOP    1
+#define Y_PADDING_BOTTOM 1
+//#define MATRIX_RESOLUTION_X (NEW_FRAME - X_PADDING_LEFT - X_PADDING_REIGHT)
+//#define MATRIX_RESOLUTION_Y (NEW_FRAME - Y_PADDING_TOP - Y_PADDING_BOTTOM)
+
+#define X_MIN X_PADDING_LEFT                                  // Blob centroid X min value
+#define X_MAX (NEW_FRAME - X_PADDING_LEFT - X_PADDING_REIGHT) // Blob centroid X max value
+#define Y_MIN Y_PADDING_TOP                                   // Blob centroid Y min value
+#define Y_MAX (NEW_FRAME - Y_PADDING_TOP- Y_PADDING_BOTTOM)   // Blob centroid Y max value
+#define Z_MIN 0   // Blob centroid Z min value
+#define Z_MAX 256 // Blob centroid Z max value
+
 #define IIPi (float)(2 * PI)
 #define IIIPiII (float)(3 * PI) / 2
 #define PiII (float)(PI / 2)
@@ -78,6 +86,7 @@
 #define MAX_BLOBS 16 // [0:7] How many blobs can be tracked at the same time
 
 #define MAX_SWITCHS 16
+#define MAX_SWITCHS_TOUCHS 1
 
 #define MAX_SLIDERS 6
 #define MAX_SLIDER_TOUCHS 2

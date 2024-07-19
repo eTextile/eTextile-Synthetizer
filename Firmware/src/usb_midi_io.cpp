@@ -203,7 +203,7 @@ void usb_read_controlChange(uint8_t channel, uint8_t control, uint8_t value){
       break;
     default:
       midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
-      node_ptr->midi.type = midi::ControlChange; // Set the MIDI status
+      node_ptr->midi.type = midi::ControlChange; // Set the MIDI type
       node_ptr->midi.data1 = control;            // Set the MIDI note
       node_ptr->midi.data2 = value;              // Set the MIDI velocity
       node_ptr->midi.channel = channel;          // Set the MIDI channel
