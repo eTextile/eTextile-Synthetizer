@@ -8,6 +8,7 @@
 #define __CONFIG_H__
 
 #include <Arduino.h>
+//#define ENCODER_USE_INTERRUPTS
 #define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h> // https://github.com/PaulStoffregen/Encoder
 
@@ -41,10 +42,10 @@
 #define BLOB_MIN_PIX 6    // Set the minimum blob pixels
 #define BLOB_MAX_PIX 1024 // Set the minimum blob pixels
 
-#define X_PADDING_LEFT   1
-#define X_PADDING_REIGHT 1
-#define Y_PADDING_TOP    1
-#define Y_PADDING_BOTTOM 1
+#define X_PADDING_LEFT   0
+#define X_PADDING_REIGHT 0
+#define Y_PADDING_TOP    0
+#define Y_PADDING_BOTTOM 0
 //#define MATRIX_RESOLUTION_X (NEW_FRAME - X_PADDING_LEFT - X_PADDING_REIGHT)
 //#define MATRIX_RESOLUTION_Y (NEW_FRAME - Y_PADDING_TOP - Y_PADDING_BOTTOM)
 
@@ -52,6 +53,7 @@
 #define X_MAX (NEW_FRAME - X_PADDING_LEFT - X_PADDING_REIGHT) // Blob centroid X max value
 #define Y_MIN Y_PADDING_TOP                                   // Blob centroid Y min value
 #define Y_MAX (NEW_FRAME - Y_PADDING_TOP- Y_PADDING_BOTTOM)   // Blob centroid Y max value
+
 #define Z_MIN 0   // Blob centroid Z min value
 #define Z_MAX 256 // Blob centroid Z max value
 
@@ -72,15 +74,6 @@
 #define MIDI_MODES_CHANNEL 4
 #define MIDI_VERBOSITY_CHANNEL 5
 #define MIDI_ERROR_CHANNEL 6
-
-// E256 STATES CONSTANTS (MIDI_STATES_CHANNEL)
-//#define CALIBRATE_REQUEST 0
-
-// E256 LEVELS CONSTANTS (MIDI_LEVELS_CHANNEL)
-#define THRESHOLD 0 // E256-LEDs: | 1 | 1 |
-#define SIG_IN 1    // E256-LEDs: | 1 | 0 |
-#define SIG_OUT 2   // E256-LEDs: | 0 | 1 |
-#define LINE_OUT 3  // E256-LEDs: | 0 | 0 |
 
 // E256 MAPPING_LIB CONSTANTS
 #define MAX_BLOBS 16 // [0:7] How many blobs can be tracked at the same time
@@ -105,6 +98,15 @@
 
 #define MAX_CSLIDERS 2
 
+typedef enum level_codes {
+  THRESHOLD, // E256-LEDs: | 1 | 1 |
+  SIG_IN,    // E256-LEDs: | 1 | 0 |
+  SIG_OUT,   // E256-LEDs: | 0 | 1 |
+  LINE_OUT   // E256-LEDs: | 0 | 0 |
+} level_codes_t;
+
+extern level_codes_t e256_current_level;
+
 typedef enum mode_codes {
   PENDING_MODE,    // Waiting for mode
   SYNC_MODE,       // Hand chake mode
@@ -123,10 +125,7 @@ typedef enum mode_codes {
   ERROR_MODE       // Unexpected behaviour
 } mode_codes_t;
 
-//#define ALLOCATE_DONE 22 // NEW!
-//#define UPLOAD_DONE 23   // NEW!
-
-extern mode_codes_t mode_code;
+extern mode_codes_t e256_current_mode;
 
 typedef enum verbosity_codes {
   PENDING_MODE_DONE,
@@ -148,7 +147,7 @@ typedef enum verbosity_codes {
   DONE_ACTION
 } verbosity_codes_t;
 
-extern verbosity_codes_t verbosity_code;
+extern verbosity_codes_t e256_verbosity_code;
 
 typedef enum errors_codes {
   WAITING_FOR_CONFIG,
@@ -165,7 +164,7 @@ typedef enum errors_codes {
   TOO_MANY_BLOBS
 } error_codes_t;
 
-extern error_codes_t error_code;
+extern error_codes_t e256_error_code;
 
 typedef struct leds leds_t;
 struct leds {
@@ -180,14 +179,6 @@ struct e256_mode {
   uint16_t timeOn;
   uint16_t timeOff;
   bool toggle;
-};
-
-typedef struct e256_state e256_state_t;
-struct e256_state {
-  leds_t leds;
-  uint16_t timeOn;
-  uint16_t timeOff;
-  uint8_t iter;
 };
 
 typedef struct e256_level e256_level_t;
@@ -207,15 +198,13 @@ struct e256_control {
 };
 
 extern e256_control_t e256_ctr;
-extern mode_codes_t e256_currentMode;
-extern uint8_t e256_level;
 
 extern uint8_t *flash_config_ptr;
 extern uint32_t flash_config_size;
 
 void blink(uint8_t iter);
-void set_mode(uint8_t mode);
-void set_level(uint8_t level, uint8_t value);
+void set_mode(mode_codes_t mode);
+void set_level(level_codes_t level, uint8_t value);
 
 void hardware_setup(void);
 void update_controls(void);
@@ -224,6 +213,7 @@ bool apply_config(uint8_t *conf_ptr, uint32_t conf_size);
 
 const char* get_mode_name(mode_codes_t code);
 const char* get_verbosity_name(verbosity_codes_t code);
+const char* get_level_name(level_codes_t code);
 const char* get_error_name(error_codes_t code);
 
 #endif /*__CONFIG_H__*/

@@ -27,10 +27,10 @@ void setup() {
   hardware_midi_setup();
   usb_midi_setup();
   midi_bus_setup();
-  set_mode((uint8_t)PENDING_MODE);
+  set_mode(PENDING_MODE);
   #if defined(USB_MIDI_SERIAL)
-    while (!Serial);
-    Serial.printf("\nVERSION:\t%s", VERSION);
+    //while (!Serial);
+    //Serial.printf("\nVERSION:\t%s", VERSION);
   #endif
   bootTime = millis();
 };
@@ -40,9 +40,9 @@ void loop() {
   matrix_interp();
   matrix_find_blobs();
   update_controls();
-  //mapping_lib_update(); // DEBUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //mapping_lib_update(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  switch (e256_currentMode) {
+  switch (e256_current_mode) {
     case PENDING_MODE:
       usb_midi_recive();
       usb_midi_pending_mode_timeout();
@@ -63,12 +63,10 @@ void loop() {
       hardware_midi_transmit();
       break;
     case STANDALONE_MODE:
-      //update_levels(); // NOT_USED in this branche!
-
+      update_levels();
       mapping_lib_update();
       usb_midi_recive();
       usb_midi_transmit();
-      
       //hardware_midi_recive();
       //hardware_midi_transmit();
       break;

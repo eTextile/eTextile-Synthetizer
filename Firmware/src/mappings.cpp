@@ -47,15 +47,15 @@ void mapping_switchs_update(blob_t* blob_ptr) {
 
       if (!blob_ptr->lastState) {
         mapp_switchParams[i].msg.midi.type = midi::NoteOn;
-        //mapp_switchParams[i].msg.midi.data2 = ... // Set the velocity
+        //mapp_switchParams[i].msg.midi.data2 = ... // Set the velocity using the blob values
         midi_sendOut(mapp_switchParams[i].msg.midi);
         #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
           Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, mapp_switchParams[i].msg.midi.data1);
         #endif
       }
       else if (!blob_ptr->state) {
-          mapp_switchParams[i].msg.midi.type = midi::NoteOff;
-          midi_sendOut(mapp_switchParams[i].msg.midi);
+        mapp_switchParams[i].msg.midi.type = midi::NoteOff;
+        midi_sendOut(mapp_switchParams[i].msg.midi);
         #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
           Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_OFF:%d", i, mapp_switchParams[i].msg.midi.data1);
         #endif
