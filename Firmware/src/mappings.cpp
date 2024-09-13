@@ -23,6 +23,7 @@ void mapping_switchs_setup(void) {
 };
 
 void mapping_switchs_update(blob_t* blob_ptr) {
+
   for (uint8_t i = 0; i < mapp_switchs; i++) {
     // Test if the blob is within the key limits
     if (blob_ptr->centroid.x > mapp_switchParams[i].rect.from.x &&
@@ -44,10 +45,9 @@ void mapping_switchs_update(blob_t* blob_ptr) {
         break;
       }
       */
-
       if (!blob_ptr->lastState) {
         mapp_switchParams[i].msg.midi.type = midi::NoteOn;
-        //mapp_switchParams[i].msg.midi.data2 = ... // Set the velocity using the blob values
+        //mapp_switchParams[i].msg.midi.data2 = ... // TODO: set the velocity using the blob values
         midi_sendOut(mapp_switchParams[i].msg.midi);
         #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
           Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, mapp_switchParams[i].msg.midi.data1);
@@ -610,7 +610,7 @@ void mapping_lib_update(void) {
   llist_save_nodes(&midi_node_stack, &midiOut); // Save/rescure all midiOut nodes
   for (blob_t *blob_ptr = (blob_t *)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t *)ITERATOR_NEXT(blob_ptr)){
     mapping_switchs_update(blob_ptr);
-   // mapping_sliders_update(blob_ptr);
+    //mapping_sliders_update(blob_ptr);
     //mapping_grids_update(blob_ptr);
     //mapping_knobs_update(blob_ptr);
     //mapping_touchpads_update(blob_ptr);

@@ -65,10 +65,10 @@ void loop() {
     case STANDALONE_MODE:
       update_levels();
       mapping_lib_update();
-      usb_midi_recive();
-      usb_midi_transmit();
+      //usb_midi_recive(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      //usb_midi_transmit(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       //hardware_midi_recive();
-      //hardware_midi_transmit();
+      hardware_midi_transmit();
       break;
     default:
       usb_midi_recive();
