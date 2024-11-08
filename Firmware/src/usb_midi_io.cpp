@@ -15,7 +15,7 @@
 #include "allocate.h"
 
 uint32_t bootTime = 0;
-uint32_t sysEx_data_length = 0;
+size_t sysEx_data_length = 0;
 uint8_t* sysEx_data_ptr = NULL;
 
 // Setup the USB_MIDI communication port
@@ -276,13 +276,10 @@ void usb_read_programChange(uint8_t channel, uint8_t program){
         case UPLOAD_MODE:
           e256_current_mode = UPLOAD_MODE;
           usb_midi_send_info((uint8_t)UPLOAD_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-            printBytes(sysEx_data_ptr, sysEx_data_length);
-          #endif
           break;
 
         case APPLY_MODE:
-          if (apply_config(sysEx_data_ptr, sysEx_data_length)) { // FIXME!!!!!!!!!!!!!!!!!!!
+          if (apply_config(sysEx_data_ptr, sysEx_data_length)) {
             usb_midi_send_info((uint8_t)APPLY_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
             #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
               Serial.printf("\nnCONFIG_APPLY_DONE");
@@ -325,7 +322,7 @@ void usb_read_midi_clock(){
 
 // Send data via MIDI system exclusive message
 // As MIDI buffer is limited to (USB_MIDI_SYSEX_MAX) we must register the data in chunks!
-// Recive: [ SYSEX_BEGIN, SYSEX_DEVICE_ID, SYSEX_IDENTIFIER, SYSEX_SIZE_MSB, SYSEX_SIZE_LSB, SYSEX_END ] 
+// Recive: [ SYSEX_BEGIN, SYSEX_DEVICE_ID, SYSEX_SIZE_MSB, SYSEX_SIZE_LSB, SYSEX_END ] 
 // Send: USBMIDI_CONFIG_ALLOC_DONE
 // Recive: [ SYSEX_BEGIN, SYSEX_DEVICE_ID, SYSEX_DATA, SYSEX_END ]
 // Send: USBMIDI_CONFIG_LOAD_DONE
@@ -335,39 +332,33 @@ void usb_read_systemExclusive(const uint8_t *data_ptr, uint16_t sysEx_chunk_size
   static uint16_t sysEx_last_chunk_size = 0;
   static uint8_t sysEx_chunks = 0;
   static uint8_t sysEx_chunk_count = 0;
-  //static uint8_t sysEx_identifier = 0;
 
   switch (e256_current_mode) {
 
   case ALLOCATE_MODE:
-    //sysEx_identifier = *(data_ptr + 2);
     uint8_t sysEx_data_length_MSB;
     uint8_t sysEx_data_length_LSB;
 
-    sysEx_data_length_MSB = *(data_ptr + 3);
-    sysEx_data_length_LSB = *(data_ptr + 4);
+    sysEx_data_length_MSB = *(data_ptr + 2);
+    sysEx_data_length_LSB = *(data_ptr + 3);
     sysEx_data_length = sysEx_data_length_MSB << 7 | sysEx_data_length_LSB;
 
-    sysEx_chunk_ptr = sysEx_data_ptr = (uint8_t *)allocate(sysEx_data_ptr, sysEx_data_length);
-    sysEx_chunks = (uint8_t)((sysEx_data_length + 3) / USB_MIDI_SYSEX_MAX);
-    sysEx_last_chunk_size = (sysEx_data_length + 3) % USB_MIDI_SYSEX_MAX;
+    sysEx_chunk_ptr = sysEx_data_ptr = (uint8_t *)allocate(sysEx_data_ptr, sysEx_data_length + 1);
+    sysEx_chunks = (uint8_t)(sysEx_data_length + 3 / USB_MIDI_SYSEX_MAX); // +3 adding heder & footer size
+    sysEx_last_chunk_size = sysEx_data_length + 3 % USB_MIDI_SYSEX_MAX; // +3 adding heder & footer size
+    
     if (sysEx_last_chunk_size != 0) sysEx_chunks++;
 
     usb_midi_send_info((uint8_t)ALLOCATE_DONE, MIDI_VERBOSITY_CHANNEL);
-    
-    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-      Serial.printf("\nCONFIG_ALLOC_DONE\tMSB:\t%d", sysEx_data_length_MSB);
-      Serial.printf("\nCONFIG_ALLOC_DONE\tLSB:\t%d", sysEx_data_length_LSB);
-      Serial.printf("\nCONFIG_ALLOC_DONE\tDATA_LENGHT:\t%d", sysEx_data_length);
-    #endif
     break;
 
   case UPLOAD_MODE:
-    if (sysEx_chunks == 1 && complete){ // Only one chunk to load
-      memcpy(sysEx_chunk_ptr, data_ptr + 2, sizeof(uint8_t) * sysEx_chunk_size - 3 ); // Removing heder & footer size
+    if (sysEx_chunks == 1 && complete) { // Only one chunk to load
+      memcpy(sysEx_chunk_ptr, data_ptr + 2, sizeof(uint8_t) * sysEx_chunk_size - 3); // -3 removing heder & footer size
+      usb_midi_send_info((uint8_t)UPLOAD_DONE, MIDI_VERBOSITY_CHANNEL);
     }
     else if (sysEx_chunks > 1 && sysEx_chunk_count == 0) { // First chunk
-      memcpy(sysEx_chunk_ptr, data_ptr + 2, sizeof(uint8_t) * sysEx_chunk_size - 2);
+      memcpy(sysEx_chunk_ptr, data_ptr + 2, sizeof(uint8_t) * sysEx_chunk_size - 2); // -2 removing heder size
       sysEx_chunk_ptr += (sysEx_chunk_size - 2);
       sysEx_chunk_count++;
     }
@@ -377,18 +368,13 @@ void usb_read_systemExclusive(const uint8_t *data_ptr, uint16_t sysEx_chunk_size
       sysEx_chunk_count++;
     }
     else { // Last chunk
-      memcpy(sysEx_chunk_ptr, data_ptr, sizeof(uint8_t) * sysEx_chunk_size - 1);
+      memcpy(sysEx_chunk_ptr, data_ptr, sizeof(uint8_t) * sysEx_chunk_size - 1); // -1 removing footer size
       sysEx_chunk_count = 0;
+      usb_midi_send_info((uint8_t)UPLOAD_DONE, MIDI_VERBOSITY_CHANNEL);
     };
-    usb_midi_send_info((uint8_t)UPLOAD_DONE, MIDI_VERBOSITY_CHANNEL);
-    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-      Serial.printf("\nUPLOAD_DONE: ");
-      printBytes(sysEx_data_ptr, sysEx_data_length);
-    #endif
     break;
 
     default:
-      //sysEx_identifier = *(data_ptr + 2);
       usb_midi_send_info((uint8_t)UNKNOWN_SYSEX, MIDI_ERROR_CHANNEL);
       set_mode(ERROR_MODE);
       break;

@@ -53,12 +53,11 @@ void midi_handle_input(const midi::Message<128u> &midiMsg) {
 };
 */
 
-void printBytes(const uint8_t* data_ptr, uint32_t length) {
-  Serial.printf("\nPRINT_BYTES / DATA_LENGTH: %d", length);
+void printBytes(const uint8_t* data_ptr, size_t data_length) {
+  Serial.printf("\nPRINT_BYTES / DATA_LENGTH: %d", data_length);
   Serial.printf("\nPRINT_BYTES / DATA: ");
-  while (length > 0) {
-    uint8_t b = *data_ptr++;
-    Serial.printf("%c", char(b));
-    length--;
+  for (size_t i = 0; i < data_length; i++) {
+    Serial.printf("%c", char(*data_ptr));
+    data_ptr++;
   };
 };

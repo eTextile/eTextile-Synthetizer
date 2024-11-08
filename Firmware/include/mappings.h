@@ -26,7 +26,7 @@ struct e256_rect {
 
 typedef struct e256_2d_touch touch_2d_t;
 struct e256_2d_touch {
-  msg_t dir;
+  msg_t dir;  // Rreplace dir -> pos
   msg_t pos_z;
 };
 
@@ -58,8 +58,8 @@ typedef struct e256_switch switch_t;
 struct e256_switch{
   rect_t rect;
   msg_t msg;
-  bool state;
-  bool lastState;
+  //bool state; // Do we nead it?
+  //bool lastState; // Do we nead it?
 };
 
 typedef enum {
@@ -108,22 +108,15 @@ struct e256_touchpad {
   touch_3d_t touch[MAX_TOUCHPAD_TOUCHS];
 };
 
-/*
-typedef enum key_mode {
-  TRIGGER,
-  TOGGLE
-} key_mode_t;
-*/
-
 typedef struct e256_grid grid_t;
 struct e256_grid {
-  //key_mode_t mode;
   rect_t rect;
   uint8_t cols;
   uint8_t rows;
   uint8_t keys_count;
   switch_t keys[MAX_GRID_KEYS];
-  midi_t* lastKeyPress[MAX_BLOBS];
+  switch_t* last_keys_ptr[MAX_BLOBS];
+  //key_mode_t mode;
   float scale_factor_x;
   float scale_factor_y;
 };

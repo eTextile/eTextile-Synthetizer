@@ -11,12 +11,26 @@
 #include "midi_bus.h"
 
 // E256 MIDI CONSTANTS
+
+/*
+typedef enum midi_types {
+  NOTE_OFF = 0x8,     // TRIGGER WITH VELOCITY
+  NOTE_ON = 0x9,      // PRESSURE ONLY
+  P_AFTERTOUCH = 0xA, // TRIGGER AND PRESSURE
+  C_CHANGE = 0xB,
+  P_CHANGE = 0xC,
+  C_AFTERTOUCH = 0xD,
+  P_BEND = 0xE,
+  SYS_EX = 0xF
+} midi_types_t;
+*/
+
 #define SYSEX_CONF 0x7C  // DEC: 124
 #define SYSEX_SOUND 0x6C // DEC: 108
 
 extern uint32_t bootTime;
 
-extern uint32_t sysEx_data_length;
+extern size_t sysEx_data_length;
 extern uint8_t* sysEx_data_ptr;
 
 void usb_midi_setup(void);

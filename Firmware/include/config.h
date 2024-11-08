@@ -200,7 +200,7 @@ struct e256_control {
 extern e256_control_t e256_ctr;
 
 extern uint8_t *flash_config_ptr;
-extern uint32_t flash_config_size;
+extern size_t flash_config_size;
 
 void blink(uint8_t iter);
 void set_mode(mode_codes_t mode);
@@ -209,7 +209,7 @@ void set_level(level_codes_t level, uint8_t value);
 void hardware_setup(void);
 void update_controls(void);
 bool load_flash_config(void);
-bool apply_config(uint8_t *conf_ptr, uint32_t conf_size);
+bool apply_config(uint8_t *conf_ptr, size_t conf_size);
 
 const char* get_mode_name(mode_codes_t code);
 const char* get_verbosity_name(verbosity_codes_t code);

@@ -30,39 +30,63 @@ void mapping_switchs_update(blob_t* blob_ptr) {
         blob_ptr->centroid.x < mapp_switchParams[i].rect.to.x &&
         blob_ptr->centroid.y > mapp_switchParams[i].rect.from.y &&
         blob_ptr->centroid.y < mapp_switchParams[i].rect.to.y) {
-      
-      /*
-      switch (mapp_switchParams[i].mode) {
-      case toggle:
-        // Keep sustain 
-        break;
-      case trigger:
-        // 
-        break;
-      }
-      case pressure:
-        //
-        break;
-      }
-      */
-      if (!blob_ptr->lastState) {
-        mapp_switchParams[i].msg.midi.type = midi::NoteOn;
-        //mapp_switchParams[i].msg.midi.data2 = ... // TODO: set the velocity using the blob values
-        midi_sendOut(mapp_switchParams[i].msg.midi);
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-          Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, mapp_switchParams[i].msg.midi.data1);
-        #endif
-      }
-      else if (!blob_ptr->state) {
-        mapp_switchParams[i].msg.midi.type = midi::NoteOff;
-        midi_sendOut(mapp_switchParams[i].msg.midi);
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-          Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_OFF:%d", i, mapp_switchParams[i].msg.midi.data1);
-        #endif
-      }
-      else {
-        //
-      }
+      switch (mapp_switchParams[i].msg.midi.type) {
+        case midi::NoteOff:
+          break;
+        case midi::NoteOn:
+          if (!blob_ptr->lastState) {
+            mapp_switchParams[i].msg.midi.type = midi::NoteOn;
+            //mapp_switchParams[i].msg.midi.data2 = ... // TODO: add the velocity to the blob values!
+            midi_sendOut(mapp_switchParams[i].msg.midi);
+            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+              Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, mapp_switchParams[i].msg.midi.data1);
+            #endif
+          }
+          /*
+          else if (!blob_ptr->state) {
+            mapp_switchParams[i].msg.midi.type = midi::NoteOff;
+            midi_sendOut(mapp_switchParams[i].msg.midi);
+            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+              Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_OFF:%d", i, mapp_switchParams[i].msg.midi.data1);
+            #endif
+          }
+          */
+          break;
+        case midi::AfterTouchPoly:
+          if (!blob_ptr->lastState) {
+            mapp_switchParams[i].msg.midi.type = midi::NoteOn;
+            midi_sendOut(mapp_switchParams[i].msg.midi);
+            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+              Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, mapp_switchParams[i].msg.midi.data1);
+            #endif
+          }
+          else if (!blob_ptr->lastState) {
+            mapp_switchParams[i].msg.midi.type = midi::AfterTouchPoly;
+            midi_sendOut(mapp_switchParams[i].msg.midi);
+            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+              Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tC_CHANGE:%d", i, mapp_switchParams[i].msg.midi.data2);
+            #endif
+          }
+          break;
+        case midi::ControlChange:
+          mapp_switchParams[i].msg.midi.data2 = blob_ptr->centroid.z;
+          midi_sendOut(mapp_switchParams[i].msg.midi);
+          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tC_CHANGE:%d", i, mapp_switchParams[i].msg.midi.data2);
+          #endif
+          break;
+        case midi::ProgramChange:
+          break;
+        case midi::AfterTouchChannel:
+          break;
+        case midi::PitchBend:
+          break;
+        case midi::SystemExclusive:
+          break;
+        default:
+          //Not handled in switch
+          break;
+      };
     };
   };
 };
@@ -368,14 +392,14 @@ uint8_t mapp_grids = 0;
 grid_t *mapp_gridsParams = NULL;
 static grid_t mapp_gridsParams_privStore[MAX_GRIDS];
 
-void mapping_grids_alloc(uint8_t grids_cnt){
+void mapping_grids_alloc(uint8_t grids_cnt) {
   mapp_grids = min(grids_cnt, MAX_GRIDS);
   mapp_gridsParams = mapp_gridsParams_privStore;
 };
 
 // Pre-compute key min & max coordinates using the pre-loaded config file
-void mapping_grids_setup(void){
-  for (uint8_t i = 0; i < mapp_grids; i++){
+void mapping_grids_setup(void) {
+  for (uint8_t i = 0; i < mapp_grids; i++) {
     int grid_size_x = mapp_gridsParams[i].rect.to.x - mapp_gridsParams[i].rect.from.x;
     //float key_size_x = (grid_size_x / mapp_gridsParams[i].cols) - mapp_gridsParams[i].gap;
     int grid_size_y = mapp_gridsParams[i].rect.to.y - mapp_gridsParams[i].rect.from.y;
@@ -387,13 +411,13 @@ void mapping_grids_setup(void){
 
 // Compute the keyPresed position acording to the blobs XY (centroid) coordinates
 // Add corresponding MIDI message to the MIDI out liked list
-void mapping_grids_update(blob_t *blob_ptr){
-  for (uint8_t i = 0; i < mapp_grids; i++){
+void mapping_grids_update(blob_t *blob_ptr) {
+  for (uint8_t i = 0; i < mapp_grids; i++) {
   // Test if the blob is within the grid limits
     if (blob_ptr->centroid.x > mapp_gridsParams[i].rect.from.x &&
         blob_ptr->centroid.x < mapp_gridsParams[i].rect.to.x &&
         blob_ptr->centroid.y > mapp_gridsParams[i].rect.from.y &&
-        blob_ptr->centroid.y < mapp_gridsParams[i].rect.to.y){
+        blob_ptr->centroid.y < mapp_gridsParams[i].rect.to.y) {
       //cast (uint8_t)!?
       uint8_t keyPressX = (uint8_t)lround((blob_ptr->centroid.x - mapp_gridsParams[i].rect.from.x) * mapp_gridsParams[i].scale_factor_x); // Compute X grid position
       uint8_t keyPressY = (uint8_t)lround((blob_ptr->centroid.y - mapp_gridsParams[i].rect.from.y) * mapp_gridsParams[i].scale_factor_y); // Compute Y grid position
@@ -401,31 +425,32 @@ void mapping_grids_update(blob_t *blob_ptr){
       // Serial.printf("\nGRID\tKEY:%d\tPOS_X:%d\tPOS_Y:%d", keyPress, keyPressX, keyPressY);
       // Serial.printf("\nGRID\tBLOB:%d\tBLOB_X:%f\tBLOB_Y:%f", blob_ptr->UID, blob_ptr->centroid.x, blob_ptr->centroid.x);
       
-      if (blob_ptr->state){ // Test if the blob is alive
-        if (&mapp_gridsParams[i].keys[keyPress].msg.midi != mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]){ // Test if the blob is touching a new key
-          if (mapp_gridsParams[i].lastKeyPress[blob_ptr->UID] != NULL){ // Test if the blob was touching another key
-            mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]->type = midi::NoteOff;
-            midi_sendOut((midi_t)*mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]);
+      if (blob_ptr->state) { // Test if the blob is alive
+        if (&mapp_gridsParams[i].keys[keyPress].msg.midi != &mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID]->msg.midi){ // Test if the blob is touching a new key
+          if (mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID] != NULL){ // Test if the blob was touching another key
+            mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID]->msg.midi.type = midi::NoteOff;
+            midi_sendOut(mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID]->msg.midi);
             #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
               Serial.printf("\nDEBUG_MAPPINGS_GRID\tBLOB_ID:%d\tKEY_SLIDING_OFF:%d", blob_ptr->UID, mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]);
             #endif
-            mapp_gridsParams[i].lastKeyPress[blob_ptr->UID] = NULL; // RAZ last key pressed value
+            mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID] = NULL; // RAZ last key pressed value
           };
           mapp_gridsParams[i].keys[keyPress].msg.midi.type = midi::NoteOn;
           midi_sendOut(mapp_gridsParams[i].keys[keyPress].msg.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
             Serial.printf("\nDEBUG_MAPPINGS_GRID\tBLOB_ID:%d\tKEY_PRESS:%d", blob_ptr->UID, mapp_gridsParams[i].keys[keyPress].msg.midi);
           #endif
-          mapp_gridsParams[i].lastKeyPress[blob_ptr->UID] = &mapp_gridsParams[i].keys[keyPress].msg.midi; // Keep track of last key pressed to switch it OFF when sliding
+          mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID] = &mapp_gridsParams[i].keys[keyPress]; // Keep track of last key pressed to switch it OFF when sliding
         };
       }
       else { // if !blob_ptr->state
-        mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]->type = midi::NoteOff;
-        midi_sendOut((midi_t)*mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]);
+        mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID]->msg.midi.type = midi::NoteOff;
+        midi_sendOut(mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID]->msg.midi);
+
         #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
           Serial.printf("\nDEBUG_MAPPINGS_GRID\tBLOB_ID:%d\tKEY_UP:%d", blob_ptr->UID, mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]);
         #endif
-        mapp_gridsParams[i].lastKeyPress[blob_ptr->UID] = NULL; // RAZ last key pressed ptr value
+        mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID] = NULL; // RAZ last key pressed ptr value
       };
     };
   };
@@ -597,12 +622,12 @@ void mapping_cSliders_update(void) {
 };
 */
 
-void mapping_lib_setup(void){
+void mapping_lib_setup(void) {
   mapping_switchs_setup();
-  //mapping_sliders_setup();
-  //mapping_grids_setup();
-  //mapping_knobs_setup();
-  //mapping_touchpads_setup();
+  mapping_sliders_setup();
+  mapping_grids_setup();
+  mapping_knobs_setup();
+  mapping_touchpads_setup();
   //mapping_polygons_setup();
 };
 
@@ -610,11 +635,11 @@ void mapping_lib_update(void) {
   llist_save_nodes(&midi_node_stack, &midiOut); // Save/rescure all midiOut nodes
   for (blob_t *blob_ptr = (blob_t *)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t *)ITERATOR_NEXT(blob_ptr)){
     mapping_switchs_update(blob_ptr);
-    //mapping_sliders_update(blob_ptr);
-    //mapping_grids_update(blob_ptr);
-    //mapping_knobs_update(blob_ptr);
-    //mapping_touchpads_update(blob_ptr);
+    mapping_sliders_update(blob_ptr);
+    mapping_grids_update(blob_ptr);
+    mapping_knobs_update(blob_ptr);
+    mapping_touchpads_update(blob_ptr);
     //mapping_polygons_update(blob_ptr);
     //mapping_cSliders_update(&blob_ptr); // Experimental
-  }
+  };
 };
