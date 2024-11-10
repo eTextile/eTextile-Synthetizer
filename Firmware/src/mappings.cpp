@@ -84,7 +84,7 @@ void mapping_switchs_update(blob_t* blob_ptr) {
         case midi::SystemExclusive:
           break;
         default:
-          //Not handled in switch
+          // Not handled in switch
           break;
       };
     };
@@ -108,9 +108,9 @@ void mapping_sliders_setup(void) {
     uint8_t size_x = mapp_slidersParams[i].rect.to.x - mapp_slidersParams[i].rect.from.x;
     uint8_t size_y = mapp_slidersParams[i].rect.to.y - mapp_slidersParams[i].rect.from.y;
     if (size_x < size_y){
-      mapp_slidersParams[i].dir = VERTICAL;
+      mapp_slidersParams[i].pos = VERTICAL;
     } else {
-      mapp_slidersParams[i].dir = HORIZONTAL;
+      mapp_slidersParams[i].pos = HORIZONTAL;
     };
   };
 };
@@ -123,31 +123,31 @@ void mapping_sliders_update(blob_t* blob_ptr) {
           blob_ptr->centroid.x < mapp_slidersParams[i].rect.to.x &&
           blob_ptr->centroid.y > mapp_slidersParams[i].rect.from.y &&
           blob_ptr->centroid.y < mapp_slidersParams[i].rect.to.y) {
-        switch (mapp_slidersParams[i].dir){
+        switch (mapp_slidersParams[i].pos){
           case VERTICAL:
-            mapp_slidersParams[i].touch[j].dir.midi.data2 = round(map(
+            mapp_slidersParams[i].touch[j].pos.midi.data2 = round(map(
               blob_ptr->centroid.y,
               mapp_slidersParams[i].rect.from.y,
               mapp_slidersParams[i].rect.to.y,
-              mapp_slidersParams[i].touch[j].dir.limit.min,
-              mapp_slidersParams[i].touch[j].dir.limit.max)
+              mapp_slidersParams[i].touch[j].pos.limit.min,
+              mapp_slidersParams[i].touch[j].pos.limit.max)
             );
             break;
           case HORIZONTAL:
-            mapp_slidersParams[i].touch[j].dir.midi.data2 = round(map(
+            mapp_slidersParams[i].touch[j].pos.midi.data2 = round(map(
               blob_ptr->centroid.x,
               mapp_slidersParams[i].rect.from.x,
               mapp_slidersParams[i].rect.to.x,
-              mapp_slidersParams[i].touch[j].dir.limit.min,
-              mapp_slidersParams[i].touch[j].dir.limit.max)
+              mapp_slidersParams[i].touch[j].pos.limit.min,
+              mapp_slidersParams[i].touch[j].pos.limit.max)
             );
             break;
         }
-        if (mapp_slidersParams[i].touch[j].dir.midi.data2 != mapp_slidersParams[i].touch[j].dir.last_val) {
-          mapp_slidersParams[i].touch[j].dir.last_val = mapp_slidersParams[i].touch[j].dir.midi.data2;
-          midi_sendOut(mapp_slidersParams[i].touch[j].dir.midi);
+        if (mapp_slidersParams[i].touch[j].pos.midi.data2 != mapp_slidersParams[i].touch[j].pos.last_val) {
+          mapp_slidersParams[i].touch[j].pos.last_val = mapp_slidersParams[i].touch[j].pos.midi.data2;
+          midi_sendOut(mapp_slidersParams[i].touch[j].pos.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-            Serial.printf("\nDEBUG_MAPPINGS_SLIDER\tID:%d\tVal:%d", i, mapp_slidersParams[i].touch[j].dir.midi.data2);
+            Serial.printf("\nDEBUG_MAPPINGS_SLIDER\tID:%d\tVal:%d", i, mapp_slidersParams[i].touch[j].pos.midi.data2);
           #endif
         };
         // TODO: Z
@@ -271,28 +271,28 @@ void mapping_touchpads_update(blob_t* blob_ptr) {
           #endif
       //};
 
-      //if (mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z) { // Test if Z is activated
-      mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.last_val = mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.midi.data2;
-      mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.midi.data2 = 
+      //if (mapp_touchpadsParams[i].touch[blob_ptr->UID].press) { // Test if Z is activated
+      mapp_touchpadsParams[i].touch[blob_ptr->UID].press.last_val = mapp_touchpadsParams[i].touch[blob_ptr->UID].press.midi.data2;
+      mapp_touchpadsParams[i].touch[blob_ptr->UID].press.midi.data2 = 
         round(map(blob_ptr->centroid.z,
           Z_MIN,
           Z_MAX,
-          mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.limit.min,
-          mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.limit.max
+          mapp_touchpadsParams[i].touch[blob_ptr->UID].press.limit.min,
+          mapp_touchpadsParams[i].touch[blob_ptr->UID].press.limit.max
           )
         );
-        //midi_sendOut(mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.midi);
+        //midi_sendOut(mapp_touchpadsParams[i].touch[blob_ptr->UID].press.midi);
         #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
           Serial.printf("\nDEBUG_MAPPINGS_TOUCHPAD\tMIDI_Z_CC:%d\tVAL:%d",
-          mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.midi.data2,
+          mapp_touchpadsParams[i].touch[blob_ptr->UID].press.midi.data2,
           map(blob_ptr->centroid.z, 0, 255, 0, 127));
         #endif
       //};
 
       if (blob_ptr->state) {
         if (!blob_ptr->lastState) {
-          if (mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.midi.type == midi::NoteOn){
-            midi_sendOut(mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.midi);
+          if (mapp_touchpadsParams[i].touch[blob_ptr->UID].press.midi.type == midi::NoteOn){
+            midi_sendOut(mapp_touchpadsParams[i].touch[blob_ptr->UID].press.midi);
           }
         }
         else {
@@ -304,7 +304,7 @@ void mapping_touchpads_update(blob_t* blob_ptr) {
         };
       } else {
         if (blob_ptr->lastState && blob_ptr->status != NOT_FOUND) {
-          midi_sendOut(mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_z.midi);
+          midi_sendOut(mapp_touchpadsParams[i].touch[blob_ptr->UID].press.midi);
         };
       }
 

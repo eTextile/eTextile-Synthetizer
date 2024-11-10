@@ -26,15 +26,15 @@ struct e256_rect {
 
 typedef struct e256_2d_touch touch_2d_t;
 struct e256_2d_touch {
-  msg_t dir;  // Rreplace dir -> pos
-  msg_t pos_z;
+  msg_t pos;
+  msg_t press;
 };
 
 typedef struct e256_3d_touch touch_3d_t;
 struct e256_3d_touch {
   msg_t pos_x;
   msg_t pos_y;
-  msg_t pos_z;
+  msg_t press;
 };
 
 typedef struct e256_knob_touch touch_param_t;
@@ -70,7 +70,7 @@ typedef enum {
 typedef struct e256_slider slider_t;
 struct e256_slider {
   rect_t rect;
-  dir_t dir;
+  dir_t pos;
   uint8_t touchs;
   touch_2d_t touch[MAX_SLIDER_TOUCHS];
 };
@@ -98,7 +98,7 @@ struct e256_polygon {
   point_t point[MAX_POLYGON_POINTS];
   float m[MAX_POLYGON_POINTS]; // 
   float c[MAX_POLYGON_POINTS]; //
-  bool is_inside; 
+  bool is_inside;
 };
 
 typedef struct e256_touchpad touchpad_t;
