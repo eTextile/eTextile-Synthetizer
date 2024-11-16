@@ -425,32 +425,59 @@ void mapping_grids_update(blob_t *blob_ptr) {
       // Serial.printf("\nGRID\tKEY:%d\tPOS_X:%d\tPOS_Y:%d", keyPress, keyPressX, keyPressY);
       // Serial.printf("\nGRID\tBLOB:%d\tBLOB_X:%f\tBLOB_Y:%f", blob_ptr->UID, blob_ptr->centroid.x, blob_ptr->centroid.x);
       
-      if (blob_ptr->state) { // Test if the blob is alive
-        if (&mapp_gridsParams[i].keys[keyPress].msg.midi != &mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID]->msg.midi){ // Test if the blob is touching a new key
-          if (mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID] != NULL){ // Test if the blob was touching another key
+      switch (mapp_switchParams[i].msg.midi.type) {
+        case midi::NoteOff:
+          break;
+        case midi::NoteOn:
+          if (blob_ptr->state) { // Test if the blob is alive
+            if (&mapp_gridsParams[i].keys[keyPress].msg.midi != &mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID]->msg.midi){ // Test if the blob is touching a new key
+              if (mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID] != NULL){ // Test if the blob was touching another key
+                mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID]->msg.midi.type = midi::NoteOff;
+                midi_sendOut(mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID]->msg.midi);
+                #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+                  Serial.printf("\nDEBUG_MAPPINGS_GRID\tBLOB_ID:%d\tKEY_SLIDING_OFF:%d", blob_ptr->UID, mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]);
+                #endif
+                mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID] = NULL; // RAZ last key pressed value
+              };
+              mapp_gridsParams[i].keys[keyPress].msg.midi.type = midi::NoteOn;
+              midi_sendOut(mapp_gridsParams[i].keys[keyPress].msg.midi);
+              #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+                Serial.printf("\nDEBUG_MAPPINGS_GRID\tBLOB_ID:%d\tKEY_PRESS:%d", blob_ptr->UID, mapp_gridsParams[i].keys[keyPress].msg.midi);
+              #endif
+              mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID] = &mapp_gridsParams[i].keys[keyPress]; // Keep track of last key pressed to switch it OFF when sliding
+            };
+          }
+          else { // if !blob_ptr->state
             mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID]->msg.midi.type = midi::NoteOff;
             midi_sendOut(mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID]->msg.midi);
             #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-              Serial.printf("\nDEBUG_MAPPINGS_GRID\tBLOB_ID:%d\tKEY_SLIDING_OFF:%d", blob_ptr->UID, mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]);
+              Serial.printf("\nDEBUG_MAPPINGS_GRID\tBLOB_ID:%d\tKEY_UP:%d", blob_ptr->UID, mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]);
             #endif
-            mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID] = NULL; // RAZ last key pressed value
+            mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID] = NULL; // RAZ last key pressed ptr value
           };
-          mapp_gridsParams[i].keys[keyPress].msg.midi.type = midi::NoteOn;
-          midi_sendOut(mapp_gridsParams[i].keys[keyPress].msg.midi);
-          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-            Serial.printf("\nDEBUG_MAPPINGS_GRID\tBLOB_ID:%d\tKEY_PRESS:%d", blob_ptr->UID, mapp_gridsParams[i].keys[keyPress].msg.midi);
-          #endif
-          mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID] = &mapp_gridsParams[i].keys[keyPress]; // Keep track of last key pressed to switch it OFF when sliding
-        };
-      }
-      else { // if !blob_ptr->state
-        mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID]->msg.midi.type = midi::NoteOff;
-        midi_sendOut(mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID]->msg.midi);
-
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-          Serial.printf("\nDEBUG_MAPPINGS_GRID\tBLOB_ID:%d\tKEY_UP:%d", blob_ptr->UID, mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]);
-        #endif
-        mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID] = NULL; // RAZ last key pressed ptr value
+          break;
+        case midi::AfterTouchPoly:
+          break;
+        case midi::ControlChange:
+          if (blob_ptr->centroid.z != blob_ptr->last_centroid.z) {
+            mapp_gridsParams[i].keys[keyPress].msg.midi.data2 = blob_ptr->centroid.z;
+            midi_sendOut(mapp_gridsParams[i].keys[keyPress].msg.midi);
+            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+              Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tC_CHANGE:%d", i, mapp_gridsParams[i].msg.midi.data2);
+            #endif
+          }
+          break;
+        case midi::ProgramChange:
+          break;
+        case midi::AfterTouchChannel:
+          break;
+        case midi::PitchBend:
+          break;
+        case midi::SystemExclusive:
+          break;
+        default:
+          // Not handled in switch
+          break;
       };
     };
   };
