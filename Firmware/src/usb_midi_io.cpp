@@ -264,7 +264,7 @@ void usb_read_programChange(uint8_t channel, uint8_t program){
 
         case FETCH_MODE:
           usbMIDI.sendSysEx(flash_config_size, flash_config_ptr, false);
-          usbMIDI.send_now();
+          //usbMIDI.send_now();
           usb_midi_send_info((uint8_t)FETCH_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
         

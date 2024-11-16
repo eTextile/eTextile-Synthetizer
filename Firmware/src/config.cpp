@@ -581,22 +581,22 @@ bool config_load_mappings(const JsonObject config) {
     return false;
   };
   if (config_load_mappings_switchs(config["switch"])) {
-    Serial.println("CONFIG_LOAD_SWITCHS");
+    //Serial.println("CONFIG_LOAD_SWITCHS");
   };
   if (config_load_mappings_sliders(config["slider"])) {
-    Serial.println("CONFIG_LOAD_SLIDER");
+    //Serial.println("CONFIG_LOAD_SLIDER");
   };
   if (config_load_mappings_knobs(config["knob"])) {
-    Serial.println("CONFIG_LOAD_KNOBS");
+    //Serial.println("CONFIG_LOAD_KNOBS");
   };
   if (config_load_mappings_touchpads(config["touchpad"])) {
-    Serial.println("CONFIG_LOAD_TOUCHPAD");
+    //Serial.println("CONFIG_LOAD_TOUCHPAD");
   };
   if (config_load_mappings_grids(config["grid"])) {
-    Serial.println("CONFIG_LOAD_GRID");
+    //Serial.println("CONFIG_LOAD_GRID");
   };
   if (config_load_mappings_polygons(config["polygon"])) {
-    Serial.println("CONFIG_LOAD_POLYGON");
+    //Serial.println("CONFIG_LOAD_POLYGON");
   };
   return true;
 };
