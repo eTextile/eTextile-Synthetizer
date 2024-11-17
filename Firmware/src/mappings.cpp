@@ -38,7 +38,7 @@ void mapping_switchs_update(blob_t* blob_ptr) {
             mapp_switchParams[i].msg.midi.type = midi::NoteOn;
             //mapp_switchParams[i].msg.midi.data2 = ... // TODO: add the velocity to the blob values!
             midi_sendOut(mapp_switchParams[i].msg.midi);
-            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
               Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, mapp_switchParams[i].msg.midi.data1);
             #endif
           }
@@ -56,14 +56,14 @@ void mapping_switchs_update(blob_t* blob_ptr) {
           if (!blob_ptr->lastState) {
             mapp_switchParams[i].msg.midi.type = midi::NoteOn;
             midi_sendOut(mapp_switchParams[i].msg.midi);
-            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
               Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, mapp_switchParams[i].msg.midi.data1);
             #endif
           }
           else if (!blob_ptr->lastState) {
             mapp_switchParams[i].msg.midi.type = midi::AfterTouchPoly;
             midi_sendOut(mapp_switchParams[i].msg.midi);
-            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
               Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tC_CHANGE:%d", i, mapp_switchParams[i].msg.midi.data2);
             #endif
           }
@@ -71,7 +71,7 @@ void mapping_switchs_update(blob_t* blob_ptr) {
         case midi::ControlChange:
           mapp_switchParams[i].msg.midi.data2 = blob_ptr->centroid.z;
           midi_sendOut(mapp_switchParams[i].msg.midi);
-          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
             Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tC_CHANGE:%d", i, mapp_switchParams[i].msg.midi.data2);
           #endif
           break;
@@ -117,41 +117,85 @@ void mapping_sliders_setup(void) {
 
 void mapping_sliders_update(blob_t* blob_ptr) {
   for (uint8_t i = 0; i < mapp_sliders; i++) {
-    Serial.printf("\nDEBUG_MAPPINGS_SLIDER\tTOUCHS:%d", mapp_slidersParams[i].touchs);
+
+    //Serial.printf("\nDEBUG_MAPPINGS_SLIDERS\tTOUCHS:%d", mapp_slidersParams[i].touchs);
+    
     for (uint8_t j = 0; j < mapp_slidersParams[i].touchs; j++) {
       if (blob_ptr->centroid.x > mapp_slidersParams[i].rect.from.x &&
           blob_ptr->centroid.x < mapp_slidersParams[i].rect.to.x &&
           blob_ptr->centroid.y > mapp_slidersParams[i].rect.from.y &&
           blob_ptr->centroid.y < mapp_slidersParams[i].rect.to.y) {
+
         switch (mapp_slidersParams[i].pos){
-          case VERTICAL:
-            mapp_slidersParams[i].touch[j].pos.midi.data2 = round(map(
-              blob_ptr->centroid.y,
-              mapp_slidersParams[i].rect.from.y,
-              mapp_slidersParams[i].rect.to.y,
-              mapp_slidersParams[i].touch[j].pos.limit.min,
-              mapp_slidersParams[i].touch[j].pos.limit.max)
-            );
-            break;
           case HORIZONTAL:
-            mapp_slidersParams[i].touch[j].pos.midi.data2 = round(map(
-              blob_ptr->centroid.x,
-              mapp_slidersParams[i].rect.from.x,
-              mapp_slidersParams[i].rect.to.x,
-              mapp_slidersParams[i].touch[j].pos.limit.min,
-              mapp_slidersParams[i].touch[j].pos.limit.max)
-            );
+            if(blob_ptr->centroid.x != blob_ptr->last_centroid.x){
+              mapp_slidersParams[i].touch[j].pos.midi.data2 = round(map(
+                blob_ptr->centroid.x,
+                mapp_slidersParams[i].rect.from.x,
+                mapp_slidersParams[i].rect.to.x,
+                mapp_slidersParams[i].touch[j].pos.limit.min,
+                mapp_slidersParams[i].touch[j].pos.limit.max)
+              );
+              midi_sendOut(mapp_slidersParams[i].touch[j].pos.midi);
+              #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SLIDERS)
+                Serial.printf("\nDEBUG_MAPPINGS_SLIDERS\tID:%d\tVal:%d", i, mapp_slidersParams[i].touch[j].pos.midi.data2);
+              #endif   
+            };
             break;
-        }
-        if (mapp_slidersParams[i].touch[j].pos.midi.data2 != mapp_slidersParams[i].touch[j].pos.last_val) {
-          mapp_slidersParams[i].touch[j].pos.last_val = mapp_slidersParams[i].touch[j].pos.midi.data2;
-          midi_sendOut(mapp_slidersParams[i].touch[j].pos.midi);
-          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-            Serial.printf("\nDEBUG_MAPPINGS_SLIDER\tID:%d\tVal:%d", i, mapp_slidersParams[i].touch[j].pos.midi.data2);
-          #endif
+          case VERTICAL:
+            if(blob_ptr->centroid.y != blob_ptr->last_centroid.y){
+              mapp_slidersParams[i].touch[j].pos.midi.data2 = round(map(
+                blob_ptr->centroid.y,
+                mapp_slidersParams[i].rect.from.y,
+                mapp_slidersParams[i].rect.to.y,
+                mapp_slidersParams[i].touch[j].pos.limit.min,
+                mapp_slidersParams[i].touch[j].pos.limit.max)
+              );
+              midi_sendOut(mapp_slidersParams[i].touch[j].pos.midi);
+              #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SLIDERS)
+                Serial.printf("\nDEBUG_MAPPINGS_SLIDERS\tID:%d\tVal:%d", i, mapp_slidersParams[i].touch[j].pos.midi.data2);
+              #endif   
+            }
+            break;
         };
-        // TODO: Z
-        break;
+
+        switch (mapp_slidersParams[i].touch[j].press.midi.type) {
+          case midi::NoteOff:
+            break;
+          case midi::NoteOn:
+            break;
+          case midi::AfterTouchPoly:
+            break;
+          case midi::ControlChange:
+            if (blob_ptr->centroid.z != blob_ptr->last_centroid.z) {
+              /*
+              round(map(
+                blob_ptr->centroid.z,
+                mapp_slidersParams[i].rect.from.x,
+                mapp_slidersParams[i].rect.to.x,
+                mapp_slidersParams[i].touch[j].press.limit.min,
+                mapp_slidersParams[i].touch[j].press.limit.max)
+              */
+              mapp_slidersParams[i].touch[j].press.midi.data2 = blob_ptr->centroid.z;
+              midi_sendOut(mapp_slidersParams[i].touch[j].press.midi);
+              #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPING_SLIDERS)
+                Serial.printf("\nDEBUG_MAPPINGS_SLIDERS\tID:%d\tC_CHANGE:%d", i, mapp_gridsParams[i].msg.midi.data2);
+              #endif
+            }
+            break;
+          case midi::ProgramChange:
+            break;
+          case midi::AfterTouchChannel:
+            break;
+          case midi::PitchBend:
+            break;
+          case midi::SystemExclusive:
+            break;
+          default:
+            // Not handled
+            break;
+        };
+
       };
     };  
   };
@@ -201,8 +245,8 @@ void mapping_knobs_update(blob_t* blob_ptr) {
         }
         midi_sendOut(mapp_knobsParams[i].touch[j].radius.midi);
         midi_sendOut(mapp_knobsParams[i].touch[j].theta.midi);
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-          Serial.printf("\nDEBUG_MAPPINGS_KNOBSS:\tKnobsID:\t%d\tradius:\t%fTheta:\t%f", i, mapp_knobsParams[i].touch[j].radius.midi.data2, mapp_knobsParams[i].touch[j].theta.midi.data2);
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_KNOBS)
+          Serial.printf("\nDEBUG_MAPPINGS_KNOBS:\tKnobsID:\t%d\tradius:\t%fTheta:\t%f", i, mapp_knobsParams[i].touch[j].radius.midi.data2, mapp_knobsParams[i].touch[j].theta.midi.data2);
         #endif
       };
     };
@@ -246,7 +290,7 @@ void mapping_touchpads_update(blob_t* blob_ptr) {
           )
         );
         //midi_sendOut(mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_x.midi);
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_TOUCHPAD)
           Serial.printf("\nDEBUG_MAPPINGS_TOUCHPAD\tMIDI_X_CC:%d\tVAL:%d",
           mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_x.midi.data2,
           round(map(blob_ptr->centroid.x, mapp_touchpadsParams[i].rect.from.x, mapp_touchpadsParams[i].rect.to.x, 0, 127)));
@@ -264,7 +308,7 @@ void mapping_touchpads_update(blob_t* blob_ptr) {
             )
           );
           //midi_sendOut(mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_y.midi);
-          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_TOUCHPAD)
             Serial.printf("\nDEBUG_MAPPINGS_TOUCHPAD\tMIDI_Y_CC:%d\tVAL:%d",
             mapp_touchpadsParams[i].touch[blob_ptr->UID].pos_y.midi.data2,
             round(map(blob_ptr->centroid.y, mapp_touchpadsParams[i].rect.from.y, mapp_touchpadsParams[i].rect.to.y, 0, 127)));
@@ -282,7 +326,7 @@ void mapping_touchpads_update(blob_t* blob_ptr) {
           )
         );
         //midi_sendOut(mapp_touchpadsParams[i].touch[blob_ptr->UID].press.midi);
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_TOUCHPAD)
           Serial.printf("\nDEBUG_MAPPINGS_TOUCHPAD\tMIDI_Z_CC:%d\tVAL:%d",
           mapp_touchpadsParams[i].touch[blob_ptr->UID].press.midi.data2,
           map(blob_ptr->centroid.z, 0, 255, 0, 127));
@@ -369,7 +413,7 @@ void mapping_polygons_update(blob_t* blob_ptr) {
     };
     if (mapp_polygonsParams[p].is_inside) {
       // TODO: get the max width & max height and scale it to [0-1]
-      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_POLYGONS)
         Serial.printf("\nDEBUG_MAPPINGS_POLYGONS\tPoint %f %f is inside polygon %d\n", blob_ptr->centroid.x, blob_ptr->centroid.y, p);
       #else
       //
@@ -377,7 +421,7 @@ void mapping_polygons_update(blob_t* blob_ptr) {
       break;
     }
     else {
-      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_POLYGONS)
         printf("\nDEBUG_MAPPINGS_POLYGONS\tPoint %f %f does not lie within any polygon\n", blob_ptr->centroid.x, blob_ptr->centroid.y);
       #endif
     }
@@ -434,15 +478,15 @@ void mapping_grids_update(blob_t *blob_ptr) {
               if (mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID] != NULL){ // Test if the blob was touching another key
                 mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID]->msg.midi.type = midi::NoteOff;
                 midi_sendOut(mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID]->msg.midi);
-                #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-                  Serial.printf("\nDEBUG_MAPPINGS_GRID\tBLOB_ID:%d\tKEY_SLIDING_OFF:%d", blob_ptr->UID, mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]);
+                #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_GRIDS)
+                  Serial.printf("\nDEBUG_MAPPINGS_GRIDS\tBLOB_ID:%d\tKEY_SLIDING_OFF:%d", blob_ptr->UID, mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]);
                 #endif
                 mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID] = NULL; // RAZ last key pressed value
               };
               mapp_gridsParams[i].keys[keyPress].msg.midi.type = midi::NoteOn;
               midi_sendOut(mapp_gridsParams[i].keys[keyPress].msg.midi);
-              #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-                Serial.printf("\nDEBUG_MAPPINGS_GRID\tBLOB_ID:%d\tKEY_PRESS:%d", blob_ptr->UID, mapp_gridsParams[i].keys[keyPress].msg.midi);
+              #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_GRIDS)
+                Serial.printf("\nDEBUG_MAPPINGS_GRIDS\tBLOB_ID:%d\tKEY_PRESS:%d", blob_ptr->UID, mapp_gridsParams[i].keys[keyPress].msg.midi);
               #endif
               mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID] = &mapp_gridsParams[i].keys[keyPress]; // Keep track of last key pressed to switch it OFF when sliding
             };
@@ -450,8 +494,8 @@ void mapping_grids_update(blob_t *blob_ptr) {
           else { // if !blob_ptr->state
             mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID]->msg.midi.type = midi::NoteOff;
             midi_sendOut(mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID]->msg.midi);
-            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-              Serial.printf("\nDEBUG_MAPPINGS_GRID\tBLOB_ID:%d\tKEY_UP:%d", blob_ptr->UID, mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]);
+            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_GRIDS)
+              Serial.printf("\nDEBUG_MAPPINGS_GRIDS\tBLOB_ID:%d\tKEY_UP:%d", blob_ptr->UID, mapp_gridsParams[i].lastKeyPress[blob_ptr->UID]);
             #endif
             mapp_gridsParams[i].last_keys_ptr[blob_ptr->UID] = NULL; // RAZ last key pressed ptr value
           };
@@ -462,8 +506,8 @@ void mapping_grids_update(blob_t *blob_ptr) {
           if (blob_ptr->centroid.z != blob_ptr->last_centroid.z) {
             mapp_gridsParams[i].keys[keyPress].msg.midi.data2 = blob_ptr->centroid.z;
             midi_sendOut(mapp_gridsParams[i].keys[keyPress].msg.midi);
-            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-              Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tC_CHANGE:%d", i, mapp_gridsParams[i].msg.midi.data2);
+            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_GRIDS)
+              Serial.printf("\nDEBUG_MAPPINGS_GRIDS\tID:%d\tC_CHANGE:%d", i, mapp_gridsParams[i].msg.midi.data2);
             #endif
           }
           break;
