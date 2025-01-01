@@ -55,7 +55,7 @@
 #define Y_MAX (NEW_FRAME - Y_PADDING_TOP- Y_PADDING_BOTTOM)   // Blob centroid Y max value
 
 #define Z_MIN 0   // Blob centroid Z min value
-#define Z_MAX 256 // Blob centroid Z max value
+#define Z_MAX 255 // Blob centroid Z max value
 
 #define IIPi (float)(2 * PI)
 #define IIIPiII (float)(3 * PI) / 2
