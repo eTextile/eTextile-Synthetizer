@@ -51,11 +51,11 @@ struct e256_knob {
   point_t center;
   float radius;
   uint8_t touchs;
-  touch_param_t touch[MAX_KNOB_TOUCHS];
+  touch_param_t touch[MAX_KNOB_TOUCHS]; // TODO: replace with MAX_BLOBS
 };
 
 typedef struct e256_switch switch_t;
-struct e256_switch{
+struct e256_switch {
   rect_t rect;
   msg_t msg;
   //bool state; // Do we nead it?
@@ -72,7 +72,7 @@ struct e256_slider {
   rect_t rect;
   dir_t pos;
   uint8_t touchs;
-  touch_2d_t touch[MAX_SLIDER_TOUCHS];
+  touch_2d_t touch[MAX_SLIDER_TOUCHS]; // TODO: replace with MAX_BLOBS
 };
 
 typedef struct cTrack cTrack_t;
@@ -105,7 +105,8 @@ typedef struct e256_touchpad touchpad_t;
 struct e256_touchpad {
   rect_t rect;
   uint8_t touchs;
-  touch_3d_t touch[MAX_TOUCHPAD_TOUCHS];
+  touch_3d_t touch[MAX_TOUCHPAD_TOUCHS]; // TODO: replace with MAX_BLOBS!?
+  uint8_t touchs_count;
 };
 
 typedef struct e256_grid grid_t;
