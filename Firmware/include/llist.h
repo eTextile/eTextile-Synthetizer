@@ -22,7 +22,7 @@ struct llist {
 
 ////////////// Linked list - Fonction prototypes //////////////
 void  llist_raz(llist_t* llist_ptr);
-void  llist_init(llist_t* nodes_ptr, void* nodeArray_ptr, const int nodes);
+void  llist_init(llist_t* llist_ptr, void* nodesArray_ptr, const int item_count, const int item_size);
 void* llist_pop_front(llist_t* llist_ptr);
 void  llist_extract_node(llist_t* llist_ptr, void* prevData_ptr, void* data_ptr);
 void  llist_push_front(llist_t* llist_ptr, void* data_ptr);

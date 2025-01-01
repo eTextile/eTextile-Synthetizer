@@ -477,15 +477,16 @@ inline bool config_load_mappings_touchpads(const JsonArray& config) {
   };
   mapping_touchpads_alloc(config.size());
   for (uint8_t i = 0; i < mapp_touchpads; i++) {
+    mapp_touchpadsParams[i].touchs = config[i]["touchs"].as<uint8_t>();
     mapp_touchpadsParams[i].rect.from.x = config[i]["from"][0].as<float>();
     mapp_touchpadsParams[i].rect.from.y = config[i]["from"][1].as<float>();
     mapp_touchpadsParams[i].rect.to.x = config[i]["to"][0].as<float>();
     mapp_touchpadsParams[i].rect.to.y = config[i]["to"][1].as<float>();
-    
-    Serial.print(mapp_touchpadsParams[i].touchs); // DEBUG!
+    //mapp_gridsParams[i].mode = config[i]["mode_z"].as<uint8_t>();
 
-    if (config[i]["touchs"].as<uint8_t>() < MAX_TOUCHPAD_TOUCHS) {
+    if (mapp_touchpadsParams[i].touchs < MAX_TOUCHPAD_TOUCHS) {
       mapp_touchpadsParams[i].touchs = config[i]["touchs"].as<uint8_t>();
+
       midi_status_t status;
       for (uint8_t j = 0; j < config[i]["touchs"].as<uint8_t>(); j++) {
         midi_msg_status_unpack(config[i][j]["pos_x"]["msg"]["midi"]["status"].as<uint8_t>(), &status);
@@ -554,7 +555,7 @@ inline bool config_load_mappings_grids(const JsonArray& config) {
     mapp_gridsParams[i].rect.to.y = config[i]["to"][1].as<float>();
     mapp_gridsParams[i].cols = config[i]["cols"].as<uint8_t>();
     mapp_gridsParams[i].rows = config[i]["rows"].as<uint8_t>();
-    //mapp_gridsParams[i].mode = config[i]["mode"].as<uint8_t>();
+    //mapp_gridsParams[i].mode = config[i]["mode_z"].as<uint8_t>();
     mapp_gridsParams[i].keys_count = mapp_gridsParams[i].cols * mapp_gridsParams[i].rows;
 
     midi_status_t status;

@@ -10,6 +10,15 @@ void llist_raz(llist_t* llist_ptr) {
   llist_ptr->head_ptr = llist_ptr->tail_ptr = NULL;
 };
 
+void llist_init(llist_t* llist_ptr, void* nodesArray_ptr, const int item_count, const int item_size){
+  uint8_t* item_ptr = (uint8_t*)nodesArray_ptr;
+  llist_raz(llist_ptr);
+  for (int i = 0; i < item_count; i++) {
+    llist_push_front(llist_ptr, item_ptr);
+    item_ptr += item_size;
+  };
+};
+
 void* llist_pop_front(llist_t* llist_ptr) {
   lnode_t* node = llist_ptr->head_ptr;
   if (node != NULL) {

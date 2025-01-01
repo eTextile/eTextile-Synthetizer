@@ -30,23 +30,9 @@ llist_t llist_blobs_stack;                // Free nodes stack
 llist_t llist_blobs_temp;                 // Intermediate blobs linked list
 llist_t llist_blobs;                      // Output blobs linked list
 
-inline void llist_lifo_init(llist_t* llist_ptr, xylr_t* nodesArray_ptr, const int nodes) {
-  llist_raz(llist_ptr);
-  for (int i = 0; i < nodes; i++) {
-    llist_push_front(llist_ptr, &nodesArray_ptr[i]);
-  };
-};
-
-inline void llist_blob_init(llist_t* llist_ptr, blob_t* nodesArray_ptr, const int nodes) {
-  llist_raz(llist_ptr);
-  for (int i = 0; i < nodes; i++) {
-    llist_push_front(llist_ptr, &nodesArray_ptr[i]);
-  };
-};
-
 void blob_setup(void) {
-  llist_lifo_init(&llist_context_stack, &lifoArray[0], LIFO_NODES); // Add X nodes to the llist_context_stack
-  llist_blob_init(&llist_blobs_stack, &blobArray[0], MAX_BLOBS);    // Add X nodes to the llist_blobs_stack
+  llist_init(&llist_context_stack, &lifoArray[0], LIFO_NODES, sizeof(lifoArray[0])); // Add X nodes to the llist_context_stack
+  llist_init(&llist_blobs_stack, &blobArray[0], MAX_BLOBS, sizeof(blobArray[0])); // Add X nodes to the llist_blobs_stack
   llist_raz(&llist_context);
   llist_raz(&llist_blobs_temp);
   llist_raz(&llist_blobs);
@@ -212,7 +198,10 @@ void matrix_find_blobs(void) {
           blob_ptr->last_centroid = blob_ptr->centroid;
           blob_ptr->centroid.x = constrain(blob_cx / blob_pixels, X_MIN, X_MAX) - X_MIN ;
           blob_ptr->centroid.y = constrain(blob_cy / blob_pixels, Y_MIN, Y_MAX) - Y_MIN;
-          blob_ptr->centroid.z = blob_depth - e256_ctr.levels[THRESHOLD].val;
+          
+          // blob_ptr->centroid.z = blob_depth - e256_ctr.levels[THRESHOLD].val; // TODO add a limit to avoid negative numbers!
+          blob_depth > e256_ctr.levels[THRESHOLD].val ? blob_ptr->centroid.z = (blob_depth - e256_ctr.levels[THRESHOLD].val) : blob_ptr->centroid.z = 0; // TESTING
+
           blob_ptr->box.w = (blob_x2 - blob_x1);
           blob_ptr->box.h = blob_height;
           llist_push_front(&llist_blobs_temp, blob_ptr);

@@ -14,13 +14,6 @@ llist_t midiIn;                             // Main MIDI Input linked list
 llist_t midiOut;                            // Main MIDI Output linked list
 llist_t midiChord;                          // Main MIDI chord linked list
 
-void llist_midi_init(llist_t* llist_ptr, midiNode_t* nodesArray_ptr, const int nodes) {
-  llist_raz(llist_ptr);
-  for (int i = 0; i < nodes; i++) {
-    llist_push_front(llist_ptr, &nodesArray_ptr[i]);
-  };
-};
-
 // Extract MIDI type and channel from MIDI status msg
 // https://www.midi.org/specifications-old/item/table-2-expanded-messages-list-status-bytes
 void midi_msg_status_unpack(uint8_t in_status, midi_status_t* out_status) {
@@ -35,7 +28,7 @@ uint8_t midi_msg_status_pack(MidiType type, uint8_t channel) {
 };
 
 void midi_bus_setup(void) {
-  llist_midi_init(&midi_node_stack, &midiNodeArray[0], MIDI_NODES); // Add X nodes to the midi_node_stack
+  llist_init(&midi_node_stack, &midiNodeArray[0], MIDI_NODES, sizeof(midiNodeArray[0])); // Add X nodes to the midi_node_stack
   llist_raz(&midiIn);
   llist_raz(&midiOut);
   llist_raz(&midiChord);

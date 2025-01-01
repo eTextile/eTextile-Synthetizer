@@ -58,7 +58,7 @@ uint8_t midi_msg_status_pack(MidiType type, uint8_t channel);
 void midi_msg_status_unpack(uint8_t in_status, midi_status_t* out_status);
 void printBytes(const uint8_t* data_ptr, size_t length);
 
-inline void midi_sendOut(midi_t midiMsg){
+inline void midi_sendOut(midi_t midiMsg) {
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
   node_ptr->midi = midiMsg;
   llist_push_front(&midiOut, node_ptr);
