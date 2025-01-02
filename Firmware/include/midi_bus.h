@@ -13,8 +13,6 @@
 #include <MIDI.h>  // https://github.com/FortySevenEffects/arduino_midi_library > https://github.com/PaulStoffregen/MIDI
 using namespace midi;
 
-#define MIDI_NODES    128
-
 extern llist_t midi_node_stack; // Main MIDI node stack
 extern llist_t midiIn;          // Main MIDI Input linked list
 extern llist_t midiOut;         // Main MIDI Output linked list
@@ -43,7 +41,7 @@ struct msg {
 
 typedef struct midiNode midiNode_t;
 struct midiNode {
-  lnode_t node;
+  //lnode_t node;
   midi_t midi;
 };
 

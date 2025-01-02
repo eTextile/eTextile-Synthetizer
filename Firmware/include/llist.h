@@ -12,6 +12,7 @@
 typedef struct lnode lnode_t;
 struct lnode {
   lnode_t* next_ptr;
+  uint8_t* data_ptr;
 };
 
 typedef struct llist llist_t;
@@ -21,8 +22,9 @@ struct llist {
 };
 
 ////////////// Linked list - Fonction prototypes //////////////
+void  llist_setup();
 void  llist_raz(llist_t* llist_ptr);
-void  llist_init(llist_t* llist_ptr, void* nodesArray_ptr, const int item_count, const int item_size);
+void  lliste_builde(llist_t* llist_ptr, void* nodes_array_ptr, const int item_count, const int item_size);
 void* llist_pop_front(llist_t* llist_ptr);
 void  llist_extract_node(llist_t* llist_ptr, void* prevData_ptr, void* data_ptr);
 void  llist_push_front(llist_t* llist_ptr, void* data_ptr);

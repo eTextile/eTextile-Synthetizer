@@ -7,6 +7,7 @@
 #include "config.h"
 #include "scan.h"
 #include "interp.h"
+#include "llist.h"
 #include "blob.h"
 #include "median.h"
 #include "midi_bus.h"
@@ -22,6 +23,7 @@ void setup() {
   hardware_setup();
   scan_setup();
   interp_setup();
+  llist_setup();
   blob_setup();
   mapping_lib_setup();
   hardware_midi_setup();

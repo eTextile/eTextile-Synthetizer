@@ -69,7 +69,7 @@ struct image {
 
 typedef struct xylr xylr_t;
 struct xylr {
-  lnode_t node;
+  //lnode_t node;
   uint8_t x;
   uint8_t y;
   uint8_t l;
@@ -106,7 +106,7 @@ typedef enum status {
 
 typedef struct blob blob_t;
 struct blob {
-  lnode_t node;
+  //lnode_t node;
   uint8_t UID;
   status_t status;
   uint32_t debounceTimeStamp;

@@ -7,7 +7,9 @@
 #include "midi_bus.h"
 #include "blob.h"
 
-midiNode_t midiNodeArray[MIDI_NODES] = {0}; // Memory allocation for all MIDI I/O messages
+#define MIDI_NODES 128
+
+midiNode_t midi_nodes_array[MIDI_NODES] = {}; // Memory allocation for all MIDI I/O messages
 
 llist_t midi_node_stack;                    // Main MIDI node stack
 llist_t midiIn;                             // Main MIDI Input linked list
@@ -28,7 +30,7 @@ uint8_t midi_msg_status_pack(MidiType type, uint8_t channel) {
 };
 
 void midi_bus_setup(void) {
-  llist_init(&midi_node_stack, &midiNodeArray[0], MIDI_NODES, sizeof(midiNodeArray[0])); // Add X nodes to the midi_node_stack
+  lliste_builde(&midi_node_stack, &midi_nodes_array[0], MIDI_NODES, sizeof(midi_nodes_array[0])); // Add X nodes to the midi_node_stack
   llist_raz(&midiIn);
   llist_raz(&midiOut);
   llist_raz(&midiChord);

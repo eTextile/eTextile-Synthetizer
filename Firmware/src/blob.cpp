@@ -18,7 +18,7 @@
 #define LIFO_NODES          512           // Set the maximum nodes number
 #define X_STRIDE            4             // Speed up X scanning
 #define Y_STRIDE            2             // Speed up Y scanning
-#define DEBOUNCE_TIME       50            // Avioding undesired bouncing effect when taping on the sensor or sliding.
+#define DEBOUNCE_TIME       50            // Avioding undesired bouncing effect when tapping or sliding on the sensor
 
 uint8_t bitmapArray[NEW_FRAME] = {0};     // Store (64*64) binary values
 xylr_t lifoArray[LIFO_NODES] = {0};       // Store lifo nodes
@@ -31,8 +31,8 @@ llist_t llist_blobs_temp;                 // Intermediate blobs linked list
 llist_t llist_blobs;                      // Output blobs linked list
 
 void blob_setup(void) {
-  llist_init(&llist_context_stack, &lifoArray[0], LIFO_NODES, sizeof(lifoArray[0])); // Add X nodes to the llist_context_stack
-  llist_init(&llist_blobs_stack, &blobArray[0], MAX_BLOBS, sizeof(blobArray[0])); // Add X nodes to the llist_blobs_stack
+  lliste_builde(&llist_context_stack, &lifoArray[0], LIFO_NODES, sizeof(lifoArray[0])); // Add X nodes to the llist_context_stack
+  lliste_builde(&llist_blobs_stack, &blobArray[0], MAX_BLOBS, sizeof(blobArray[0])); // Add X nodes to the llist_blobs_stack
   llist_raz(&llist_context);
   llist_raz(&llist_blobs_temp);
   llist_raz(&llist_blobs);

@@ -6,16 +6,35 @@
 
 #include "llist.h"
 
+#define LLIST_NODES_STACK  1000 // Set the maximum nodes number
+
+lnode_t llist_nodes_array[LLIST_NODES_STACK] = {0}; // Store linked list nodes
+
+llist_t llinst_nodes_stack;
+
+void llist_setup() {
+  lliste_builde(&llinst_nodes_stack, &llist_nodes_array[0], LLIST_NODES_STACK, sizeof(llist_nodes_array[0])); // Add X nodes to the llinst_nodes_stack
+};
+
 void llist_raz(llist_t* llist_ptr) {
   llist_ptr->head_ptr = llist_ptr->tail_ptr = NULL;
 };
 
-void llist_init(llist_t* llist_ptr, void* nodesArray_ptr, const int item_count, const int item_size){
-  uint8_t* item_ptr = (uint8_t*)nodesArray_ptr;
+void lliste_builde(llist_t* llist_ptr, void* nodes_array_ptr, const int item_count, const int item_size) {
+  uint8_t* item_ptr = (uint8_t*)nodes_array_ptr;
   llist_raz(llist_ptr);
   for (int i = 0; i < item_count; i++) {
-    llist_push_front(llist_ptr, item_ptr);
-    item_ptr += item_size;
+    lnode_t* node = (lnode_t*)llist_pop_front(&llinst_nodes_stack);
+    if (node != NULL){ 
+      node->data_ptr = item_ptr;
+      llist_push_front(llist_ptr, item_ptr);
+      item_ptr += item_size;
+    } 
+    else {
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
+        Serial.print("Not enough nodes in the stack!");
+      #endif
+    };
   };
 };
 
