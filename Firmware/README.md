@@ -3,7 +3,7 @@
 
 ## Easy step-by-step User Guide
 1. Poweirng the **eTextile-MIDI-interface**:
-    - Use the included power cable with a **common 5V USB power supplie**
+    - Use the included power cable with a **common 5V USB power supply**
     - Or use the same cable to plug the interface to your laptop USB port
 2. For data communication between the eTextile-MIDI-interface and the web app or music software:
     - use both cables: the power cable and the Micro USB cable (Type B)
@@ -39,8 +39,8 @@
 2. The firmware boot in [PENDING_MODE]
 3. If [PENDING_MODE_TIMEOUT] ocurre it switch to [STANDALONE_MODE]
 4. The device proceed with **loaded_flash_config()**
-    - If [FLASH_CONFIG_LOAD_FAILED]: the **BUILTIN_LEDS** will blink **ERROR_CODE**  
     - If [FLASH_CONFIG_LOAD_DONE]: the **BUILTIN_LEDS** will blink **STANDALONE_MODE**
+    - If [FLASH_CONFIG_LOAD_FAILED]: the **BUILTIN_LEDS** will blink **ERROR_CODE**
 5. The eTextile-MIDI-interface with TUI mappings is now RUNING!
 6. By using a mini-jack (TRS-A) on the MIDI-OUT socket your custom eTextile-MIDI-interface is now able to talk MIDI to your external MIDI SYNTH
 
