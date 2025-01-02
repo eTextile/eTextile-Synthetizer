@@ -31,8 +31,8 @@ llist_t llist_blobs_temp;                 // Intermediate blobs linked list
 llist_t llist_blobs;                      // Output blobs linked list
 
 void blob_setup(void) {
-  lliste_builde(&llist_context_stack, &lifoArray[0], LIFO_NODES, sizeof(lifoArray[0])); // Add X nodes to the llist_context_stack
-  lliste_builde(&llist_blobs_stack, &blobArray[0], MAX_BLOBS, sizeof(blobArray[0])); // Add X nodes to the llist_blobs_stack
+  lliste_builder(&llist_context_stack, &lifoArray[0], LIFO_NODES, sizeof(lifoArray[0])); // Add X nodes to the llist_context_stack
+  lliste_builder(&llist_blobs_stack, &blobArray[0], MAX_BLOBS, sizeof(blobArray[0])); // Add X nodes to the llist_blobs_stack
   llist_raz(&llist_context);
   llist_raz(&llist_blobs_temp);
   llist_raz(&llist_blobs);

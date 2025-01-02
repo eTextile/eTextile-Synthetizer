@@ -30,7 +30,7 @@ uint8_t midi_msg_status_pack(MidiType type, uint8_t channel) {
 };
 
 void midi_bus_setup(void) {
-  lliste_builde(&midi_node_stack, &midi_nodes_array[0], MIDI_NODES, sizeof(midi_nodes_array[0])); // Add X nodes to the midi_node_stack
+  lliste_builder(&midi_node_stack, &midi_nodes_array[0], MIDI_NODES, sizeof(midi_nodes_array[0])); // Add X nodes to the midi_node_stack
   llist_raz(&midiIn);
   llist_raz(&midiOut);
   llist_raz(&midiChord);

@@ -24,7 +24,7 @@ struct llist {
 ////////////// Linked list - Fonction prototypes //////////////
 void  llist_setup();
 void  llist_raz(llist_t* llist_ptr);
-void  lliste_builde(llist_t* llist_ptr, void* nodes_array_ptr, const int item_count, const int item_size);
+void  lliste_builder(llist_t* llist_ptr, void* nodes_array_ptr, const int item_count, const int item_size);
 void* llist_pop_front(llist_t* llist_ptr);
 void  llist_extract_node(llist_t* llist_ptr, void* prevData_ptr, void* data_ptr);
 void  llist_push_front(llist_t* llist_ptr, void* data_ptr);
