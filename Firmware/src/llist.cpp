@@ -47,6 +47,7 @@ static lnode_t* llist_pop_node(llist_t* llist_ptr) {
       Serial.print("Not enough nodes in the pool!");
     #endif
     set_mode(ERROR_MODE);
+    return NULL;
   };
 };
 
