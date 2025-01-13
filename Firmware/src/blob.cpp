@@ -24,23 +24,31 @@ uint8_t bitmapArray[NEW_FRAME] = {0};     // Store (64*64) binary values
 xylr_t lifoArray[LIFO_NODES] = {0};       // Store lifo nodes
 blob_t blobArray[MAX_BLOBS] = {0};        // Store blobs
 
-llist_t llist_context_stack;              // Free nodes stack
+llist_t llist_context_pool;               // Free nodes pool
 llist_t llist_context;                    // Used nodes
-llist_t llist_blobs_stack;                // Free nodes stack
-llist_t llist_blobs_temp;                 // Intermediate blobs linked list
-llist_t llist_blobs;                      // Output blobs linked list
+llist_t llist_blobs_pool;                 // Free nodes pool
+
+llist_t llist_current_blobs;               // Intermediate blobs linked list
+llist_t llist_previous_blobs;             // Output blobs linked list
 
 void blob_setup(void) {
-  llist_builder(&llist_context_stack, &lifoArray[0], LIFO_NODES, sizeof(lifoArray[0])); // Add X nodes to the llist_context_stack
-  llist_builder(&llist_blobs_stack, &blobArray[0], MAX_BLOBS, sizeof(blobArray[0])); // Add X nodes to the llist_blobs_stack
+  llist_builder(&llist_context_pool, &lifoArray[0], LIFO_NODES, sizeof(lifoArray[0])); // Add X nodes to the llist_context_pool
+  llist_builder(&llist_blobs_pool, &blobArray[0], MAX_BLOBS, sizeof(blobArray[0])); // Add X nodes to the llist_blobs_pool
   llist_raz(&llist_context);
-  llist_raz(&llist_blobs_temp);
-  llist_raz(&llist_blobs);
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs_stack); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+  llist_raz(&llist_current_blobs);
+  llist_raz(&llist_previous_blobs);
+
+  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs_pool); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
+    blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
     blob_ptr->UID = 255;
     blob_ptr->lastState = false;
     blob_ptr->state = false;
   };
+};
+
+inline uint16_t set_id(void){
+  static uint16_t UID = 0;
+  return (uint16_t)UID++; // Is casting a solution to not freeze when overflowing?
 };
 
 /////////////////////////////// Scanline flood fill algorithm / SFF
@@ -125,7 +133,7 @@ void matrix_find_blobs(void) {
                 if ((!IMAGE_GET_PIXEL_FAST(bmp_row_ptr_B, i))
                     && (PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, i), e256_ctr.levels[THRESHOLD].val))) {
 
-                  xylr_t* context = (xylr_t*)llist_pop_front(&llist_context_stack);
+                  xylr_t* context = (xylr_t*)llist_pop_front(&llist_context_pool);
                   context->x = posX;
                   context->y = posY;
                   context->l = left;
@@ -153,7 +161,7 @@ void matrix_find_blobs(void) {
               if (!IMAGE_GET_PIXEL_FAST(bmp_row_ptr_B, i) &&
                   PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, i), e256_ctr.levels[THRESHOLD].val)) {
 
-                xylr_t* context = (xylr_t*)llist_pop_front(&llist_context_stack);
+                xylr_t* context = (xylr_t*)llist_pop_front(&llist_context_pool);
                 context->x = posX;
                 context->y = posY;
                 context->l = left;
@@ -183,7 +191,7 @@ void matrix_find_blobs(void) {
             right = context->r;
             top_left = context->t_l;
             bot_left = context->b_l;
-            llist_push_front(&llist_context_stack, context);
+            llist_push_front(&llist_context_pool, context);
             blob_height++;
           }; // END while_B
 
@@ -194,17 +202,15 @@ void matrix_find_blobs(void) {
 
         if (blob_pixels > BLOB_MIN_PIX && blob_pixels < BLOB_MAX_PIX && blob_count < MAX_BLOBS) {
           blob_count++;
-          blob_t* blob_ptr = (blob_t*)llist_pop_front(&llist_blobs_stack);
+          blob_t* blob_ptr = (blob_t*)llist_pop_front(&llist_blobs_pool);
           blob_ptr->last_centroid = blob_ptr->centroid;
           blob_ptr->centroid.x = constrain(blob_cx / blob_pixels, X_MIN, X_MAX) - X_MIN ;
           blob_ptr->centroid.y = constrain(blob_cy / blob_pixels, Y_MIN, Y_MAX) - Y_MIN;
-          
-          // blob_ptr->centroid.z = blob_depth - e256_ctr.levels[THRESHOLD].val; // TODO add a limit to avoid negative numbers!
-          blob_depth > e256_ctr.levels[THRESHOLD].val ? blob_ptr->centroid.z = (blob_depth - e256_ctr.levels[THRESHOLD].val) : blob_ptr->centroid.z = 0; // TESTING
-
+          // Subtract threshold and avoid negative numbers
+          blob_depth > e256_ctr.levels[THRESHOLD].val ? blob_ptr->centroid.z = (blob_depth - e256_ctr.levels[THRESHOLD].val) : blob_ptr->centroid.z = 0;
           blob_ptr->box.w = (blob_x2 - blob_x1);
           blob_ptr->box.h = blob_height;
-          llist_push_front(&llist_blobs_temp, blob_ptr);
+          llist_push_front(&llist_current_blobs, blob_ptr);
         };
         posX = oldX;
         posY = oldY;
@@ -212,66 +218,71 @@ void matrix_find_blobs(void) {
     };
   };
 
-  /////////////////////////////// PERSISTANT BLOB ID
+  /////////////////////////////// PERSISTANT BLOBS IDs
 
   // DEAD BLOBS REMOVER
-  blob_t* prevBlob_ptr = NULL;
-  while (1) {
-    bool deadFound = false;
-    for (blob_t* blobOut_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blobOut_ptr != NULL; blobOut_ptr = (blob_t*)ITERATOR_NEXT(blobOut_ptr)) {
-      if (blobOut_ptr->status == TO_REMOVE) {
-        deadFound = true;
-        blobOut_ptr->UID = 255;
-        blobOut_ptr->status = FREE;
-        //blobOut_ptr->state = false; // __TO_REMOVE_LATER__
-        blobOut_ptr->lastState = false;
-        llist_extract_node(&llist_blobs, prevBlob_ptr, blobOut_ptr);
-        llist_push_front(&llist_blobs_stack, blobOut_ptr);
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FIND_BLOBS)
-          Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p removed from **llist_blobs**", (lnode_t*)blobOut_ptr);
-        #endif
-        break;
-      };
-      prevBlob_ptr = blobOut_ptr;
-    };
-    if (!deadFound) {
-      break;
-    };
-  };
+  llist_t blobs_to_keep;
+  llist_raz(&blobs_to_keep);
+  blob_t* is_dead_blob_ptr = NULL;
 
-  // NEW BLOBS MANAGMENT
-  // Look for corresponding blobs into the **llist_blobs_temp** and **llist_blobs**
-  uint8_t minID = 0;
-  blob_t* nearestBlob_ptr = NULL;
-  for (blob_t* blobIn_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs_temp); blobIn_ptr != NULL; blobIn_ptr = (blob_t*)ITERATOR_NEXT(blobIn_ptr)) {
-    float minDist = 255.0f;
-    for (blob_t* blobOut_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blobOut_ptr != NULL; blobOut_ptr = (blob_t*)ITERATOR_NEXT(blobOut_ptr)) {
-      float dist = sqrtf(pow(blobIn_ptr->centroid.x - blobOut_ptr->centroid.x, 2) + pow(blobIn_ptr->centroid.y - blobOut_ptr->centroid.y, 2));
-      if (dist < minDist) {
-        minDist = dist;
-        nearestBlob_ptr = blobOut_ptr;
-      };
-    };
-    // If the distance between curent blob and last blob position is less than minDist:
-    // Give the nearestBlob UID to the input blob.
-    if (minDist < 4) {
+  while ((is_dead_blob_ptr = (blob_t*)llist_pop_front(&llist_previous_blobs)) != NULL) {
+    if (is_dead_blob_ptr->status == TO_REMOVE) {
+      llist_push_front(&llist_blobs_pool, is_dead_blob_ptr);
       #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FIND_BLOBS)
-        //Serial.printf("\nDEBUG_FIND_BLOBS / the minimum distance between blobs from llist_blobs_temp & llist_blobs is: %f ", minDist);
-        Serial.printf("\nDEBUG_FIND_BLOBS / Found corresponding blob: %p in the **llist_blobs**", (lnode_t*)nearestBlob_ptr);
+        Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p removed", (lnode_t*)prev_blob_ptr);
       #endif
-      blobIn_ptr->debounceTimeStamp = millis();
-      blobIn_ptr->UID = nearestBlob_ptr->UID;
-      blobIn_ptr->state = true;
-      blobIn_ptr->lastState = true;
     }
     else {
+      llist_push_front(&blobs_to_keep, is_dead_blob_ptr);
+    };
+  };
+  llist_swap_llist(&llist_previous_blobs, &blobs_to_keep);
+  
+  // NEW BLOBS MANAGMENT
+  // Look for corresponding blobs into the **llist_current_blobs** and **llist_previous_blobs**
+  //uint8_t minID = 0;
+  blob_t* nearest_blob_ptr = NULL;
+  for (lnode_t* curr_node_ptr = ITERATOR_START_FROM_HEAD(&llist_current_blobs); curr_node_ptr != NULL; curr_node_ptr = ITERATOR_NEXT(curr_node_ptr)) {
+    blob_t* curr_blob_ptr = (blob_t*)ITERATOR_DATA(curr_node_ptr);
+    float min_dist = 255.0f;
+    for (lnode_t* prev_node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); prev_node_ptr != NULL; prev_node_ptr = ITERATOR_NEXT(prev_node_ptr)) {
+      blob_t* prev_blob_ptr = (blob_t*)ITERATOR_DATA(prev_node_ptr);
+      float dist = sqrtf(pow(curr_blob_ptr->centroid.x - prev_blob_ptr->centroid.x, 2) + pow(curr_blob_ptr->centroid.y - prev_blob_ptr->centroid.y, 2));
+      if (dist < min_dist) {
+        min_dist = dist;
+        nearest_blob_ptr = prev_blob_ptr;
+      };
+    };
+    // If the distance between current blob and last blob position is less than min_dist:
+    // Give the nearest_blob UID to the input blob.
+    if (min_dist < 4) {
+      curr_blob_ptr->UID = nearest_blob_ptr->UID;
+      curr_blob_ptr->state = true;
+      curr_blob_ptr->lastState = true;
+      curr_blob_ptr->debounceTimeStamp = millis();
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FIND_BLOBS)
+        //Serial.printf("\nDEBUG_FIND_BLOBS / the minimum distance between blobs from llist_current_blobs & llist_previous_blobs is: %f ", min_dist);
+        Serial.printf("\nDEBUG_FIND_BLOBS / Found corresponding blob: %p in the **llist_previous_blobs**", (lnode_t*)nearest_blob_ptr);
+      #endif
+    }
+    else {
+      // Found a new blob! We nead to give it an ID
+      curr_blob_ptr->UID = set_id();
+      curr_blob_ptr->state = true;
+      curr_blob_ptr->lastState = false;
+      curr_blob_ptr->debounceTimeStamp = millis();
+
+      /*
       // Found a new blob! We nead to give it a UID
       // Find the smallest missing UID in the outputBlobs linked list
-      // BUG: when two blobs are arriving in the new frame they get the same ID (FIXED or NOT?)
+      // BUG: when two blobs are arriving in the new frame they get the same ID (FIXME!)
+      // TODO: make a function that return the highest id in the linked list.
+      // First blob is 1
       while (1) {
         bool isFree = true;
-        for (blob_t* blobOut_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blobOut_ptr != NULL; blobOut_ptr = (blob_t*)ITERATOR_NEXT(blobOut_ptr)) {
-          if (blobOut_ptr->UID == minID) {
+        for (lnode_t* prev_node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); prev_node_ptr != NULL; prev_node_ptr = ITERATOR_NEXT(prev_node_ptr)) {
+          blob_t* prev_blob_ptr = (blob_t*)ITERATOR_DATA(prev_node_ptr);
+          if (prev_blob_ptr->UID == minID) {
             #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FIND_BLOBS)
               Serial.printf("\nDEBUG_FIND_BLOBS / USED_ID: %d ", minID);
             #endif
@@ -284,66 +295,61 @@ void matrix_find_blobs(void) {
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FIND_BLOBS)
             Serial.printf("\nDEBUG_FIND_BLOBS / Found new blob and select ID: %d", minID);
           #endif
-          blobIn_ptr->UID = minID;
-          blobIn_ptr->state = true;
-          blobIn_ptr->lastState = false;
-          blobIn_ptr->debounceTimeStamp = millis();
+          curr_blob_ptr->UID = minID;
+          curr_blob_ptr->state = true;
+          curr_blob_ptr->lastState = false;
+          curr_blob_ptr->debounceTimeStamp = millis();
           minID++;
           break;
         };
-      }; // while_end / The ID of the new blob is set with the smallest missing ID
+      }; // while_end / The UID of the new blob is set with the smallest missing ID
+      */
     };
   };
 
-  // DEAD BLOBS MANAGMENT
-  // Look for dead blobs in the outputBlobs linked list
-  // If found flag it NOT_FOUND or TO_REMOVE and add it to the temporary input blobs linked list
-  while (1) {
-    bool allDone = true;
-    blob_t* prevBlob_ptr = NULL;
-    for (blob_t* blobOut_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blobOut_ptr != NULL; blobOut_ptr = (blob_t*)ITERATOR_NEXT(blobOut_ptr)) {
-      bool found = false;
-      for (blob_t* blobIn_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs_temp); blobIn_ptr != NULL; blobIn_ptr = (blob_t*)ITERATOR_NEXT(blobIn_ptr)) {
-        if (blobIn_ptr->UID == blobOut_ptr->UID) {
-          found = true;
-          break;
-        };
-      };
-      if (!found) {
-        allDone = false;
-        if ((millis() - blobOut_ptr->debounceTimeStamp) < DEBOUNCE_TIME) {
-          blobOut_ptr->status = NOT_FOUND;
-          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FIND_BLOBS)
-            Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **llist_blobs** linked list is NOT_FOUND(%d)", (lnode_t*)blobOut_ptr, blobOut_ptr->UID);
-          #endif
-        } 
-        else {
-          blobOut_ptr->state = false;
-          blobOut_ptr->status = TO_REMOVE;
-          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FIND_BLOBS)
-            Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **llist_blobs** linked list taged TO_REMOVE(%d)", (lnode_t*)blobOut_ptr, blobOut_ptr->UID);
-          #endif
-        };
-        llist_extract_node(&llist_blobs, prevBlob_ptr, blobOut_ptr);
-        llist_push_front(&llist_blobs_temp, blobOut_ptr);
+  // DEAD BLOBS MANAGMENT // Work around!
+  // Look for existing blobs in the llist_previous_blobs that doesn't exist in the llist_current_blobs linked list
+  // Disappeared blobs are flaged NOT_FOUND or TO_REMOVE then added to the temporary input blobs linked list
+  llist_raz(&blobs_to_keep);
+  blob_t* prev_blob_ptr = NULL;
+  while ((prev_blob_ptr = (blob_t*)llist_pop_front(&llist_previous_blobs)) != NULL) {
+    bool found = false;
+    for (lnode_t* curr_node_ptr = ITERATOR_START_FROM_HEAD(&llist_current_blobs); curr_node_ptr != NULL; curr_node_ptr = ITERATOR_NEXT(curr_node_ptr)) {
+      blob_t* curr_blob_ptr = (blob_t*)ITERATOR_DATA(curr_node_ptr);
+      if (prev_blob_ptr->UID == curr_blob_ptr->UID) {
+        found = true;
+        llist_push_front(&llist_blobs_pool, prev_blob_ptr);
         break;
       };
-      prevBlob_ptr = blobOut_ptr;
     };
-    if (allDone) {
+    if (!found) {
+      if ((millis() - prev_blob_ptr->debounceTimeStamp) < DEBOUNCE_TIME) {
+        prev_blob_ptr->status = NOT_FOUND;
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FIND_BLOBS)
+          Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **llist_previous_blobs** linked list is NOT_FOUND(%d)", (lnode_t*)prev_blob_ptr, prev_blob_ptr->UID);
+        #endif
+      }
+      else {
+        prev_blob_ptr->state = false;
+        prev_blob_ptr->status = TO_REMOVE;
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FIND_BLOBS)
+          Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **llist_previous_blobs** linked list taged TO_REMOVE(%d)", (lnode_t*)prev_blob_ptr, prev_blob_ptr->UID);
+        #endif
+      };
+      llist_push_front(&blobs_to_keep, prev_blob_ptr);
       break;
     };
   };
-
-  llist_swap_llist(&llist_blobs, &llist_blobs_temp);       // Swap outputBlobs linked list nodes with inputBlobs linked list nodes
-  llist_save_nodes(&llist_blobs_stack, &llist_blobs_temp); // Save/rescure all nodes from the temporay blobs Linked list
+  llist_concat_nodes(&llist_current_blobs, &blobs_to_keep);
 
   #if defined(RUNING_MEDIAN)
     runing_median();
   #endif
 
 #if defined(VELOCITY)
-for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+
+for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
+  blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
   if (!blob_ptr->lastState) {
     blob_ptr->velocity.TimeStamp = millis();
     blob_ptr->last_centroid = blob_ptr->centroid;
@@ -358,7 +364,6 @@ for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_pt
       blob_ptr->last_centroid = blob_ptr->centroid;
     };
   };
-
 };
 #endif
 
@@ -373,7 +378,8 @@ for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_pt
   Serial.printf("\n");
 #endif
 #if defined(USB_MIDI_SERIAL) && defined(DEBUG_BLOBS)
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
+    blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
     Serial.printf("\nDEBUG_BLOBS:%d\tLS:%d\tS:%d\tX:%f\tY:%f\tZ:%d\tW:%d\tH:%d\tVXY:%f\tVZ:%f",
                   blob_ptr->UID,
                   blob_ptr->lastState,
@@ -389,7 +395,7 @@ for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_pt
   };
   #endif
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FIND_BLOBS)
-    if ((lnode_t*)llist_blobs_temp.head_ptr != NULL) {
+    if ((lnode_t*)llist_current_blobs.head_ptr != NULL) {
       Serial.printf("\n___________DEBUG_FIND_BLOBS / END_OF_FRAME");
     }
   #endif

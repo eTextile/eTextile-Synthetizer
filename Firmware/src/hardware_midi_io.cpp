@@ -26,7 +26,7 @@ void hardware_midi_handle_input(const midi::Message<128u> &midiMsg) {
   // I dont understand the midiMsg struct!
   // can it be casted or direct pushed to our I/O midi linked list?
   //midi_t* midiMsg = (midi_t*)dataPacket;
-  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
+  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_nodes_pool);  // Get a node from the MIDI nodes stack
   node_ptr->midi.type = midiMsg.type;       // Set the MIDI type
   node_ptr->midi.data1 = midiMsg.data1;     // Set the MIDI note
   node_ptr->midi.data2 = midiMsg.data2;     // Set the MIDI velocity
@@ -39,8 +39,9 @@ void hardware_midi_handle_input(const midi::Message<128u> &midiMsg) {
 };
 
 void hardware_midi_transmit(void){
-  for (midiNode_t *node_ptr = (midiNode_t *)ITERATOR_START_FROM_HEAD(&midiOut); node_ptr != NULL; node_ptr = (midiNode_t *)ITERATOR_NEXT(node_ptr)){
-    MIDI.send(node_ptr->midi.type, node_ptr->midi.data1, node_ptr->midi.data2, node_ptr->midi.channel);
+  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&midiOut); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)){
+    midiNode_t* midi_node_ptr = (midiNode_t*)ITERATOR_DATA(node_ptr);
+    MIDI.send(midi_node_ptr->midi.type, midi_node_ptr->midi.data1, midi_node_ptr->midi.data2, midi_node_ptr->midi.channel);
   };
-  llist_save_nodes(&midi_node_stack, &midiOut);
+  llist_concat_nodes(&midi_nodes_pool, &midiOut);
 };

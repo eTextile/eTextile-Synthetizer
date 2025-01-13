@@ -26,7 +26,7 @@ typedef enum {
   BH  // [7] Blob Height
 } blob_params_t;
 
-extern llist_t llist_blobs;            // Exposed local declaration see blob.cpp
+extern llist_t llist_previous_blobs; // Exposed local declaration see blob.cpp
 
 typedef struct image image_t;
 struct image {

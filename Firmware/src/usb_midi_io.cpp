@@ -41,7 +41,7 @@ void usb_midi_pending_mode_timeout(){
     if(load_flash_config()){
       #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
         Serial.printf("\nFLASH_CONFIG_LOAD_DONE: ");
-        printBytes(flash_config_ptr, flash_config_size);
+        print_bytes(flash_config_ptr, flash_config_size);
       #endif
       if (apply_config(flash_config_ptr, flash_config_size)) {
         #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
@@ -100,7 +100,8 @@ void usb_midi_transmit() {
     */
     case EDIT_MODE:
       // Send all blobs values over USB using MIDI format
-      for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+      for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
+        blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
         if (blob_ptr->state) {
           if (!blob_ptr->lastState) {
             usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, BS); // sendNoteOn(note, velocity, channel);
@@ -150,7 +151,7 @@ void usb_midi_send_info(uint8_t msg, uint8_t channel){
 };
 
 void usb_read_noteOn(uint8_t channel, uint8_t note, uint8_t velocity){
-  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
+  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_nodes_pool);
   node_ptr->midi.type = midi::NoteOn;
   node_ptr->midi.data1 = note;
   node_ptr->midi.data2 = velocity;
@@ -168,7 +169,7 @@ void usb_read_noteOn(uint8_t channel, uint8_t note, uint8_t velocity){
 };
 
 void usb_read_noteOff(uint8_t channel, uint8_t note, uint8_t velocity){
-  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
+  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_nodes_pool);
   node_ptr->midi.type = midi::NoteOff;
   node_ptr->midi.data1 = note;
   node_ptr->midi.data2 = velocity;
@@ -193,7 +194,7 @@ void usb_read_controlChange(uint8_t channel, uint8_t control, uint8_t value){
       set_level((level_codes_t)control, value);
       break;
     default:
-      midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
+      midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_nodes_pool);  // Get a node from the MIDI nodes stack
       node_ptr->midi.type = midi::ControlChange; // Set the MIDI type
       node_ptr->midi.data1 = control;            // Set the MIDI note
       node_ptr->midi.data2 = value;              // Set the MIDI velocity
@@ -253,7 +254,7 @@ void usb_read_programChange(uint8_t channel, uint8_t program){
           if(load_flash_config()){
             #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
               Serial.printf("\nSEND_FLASH_CONFIG: ");
-              printBytes(flash_config_ptr, flash_config_size);
+              print_bytes(flash_config_ptr, flash_config_size);
             #endif
             usb_midi_send_info((uint8_t)LOAD_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
           }

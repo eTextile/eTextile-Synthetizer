@@ -13,7 +13,7 @@
 #include <MIDI.h>  // https://github.com/FortySevenEffects/arduino_midi_library > https://github.com/PaulStoffregen/MIDI
 using namespace midi;
 
-extern llist_t midi_node_stack; // Main MIDI node stack
+extern llist_t midi_nodes_pool; // Main MIDI node stack
 extern llist_t midiIn;          // Main MIDI Input linked list
 extern llist_t midiOut;         // Main MIDI Output linked list
 extern llist_t midiChord;       // Main MIDI chord linked list
@@ -54,10 +54,10 @@ typedef struct midi_status {
 void midi_bus_setup(void);
 uint8_t midi_msg_status_pack(MidiType type, uint8_t channel);
 void midi_msg_status_unpack(uint8_t in_status, midi_status_t* out_status);
-void printBytes(const uint8_t* data_ptr, size_t length);
+void print_bytes(const uint8_t* data_ptr, size_t length);
 
 inline void midi_sendOut(midi_t midiMsg) {
-  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
+  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_nodes_pool);
   node_ptr->midi = midiMsg;
   llist_push_front(&midiOut, node_ptr);
 };

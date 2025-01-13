@@ -13,7 +13,8 @@ struct seq {
 };
 
 void tapTempo(void) {
-  for (midiNode_t* midiNode_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiOut); midiNode_ptr != NULL; midiNode_ptr = (midiNode_t*)ITERATOR_NEXT(midiNode_ptr)) {
+  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&midiOut); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
+    midiNode_t* midiNode_ptr = (midiNode_t*)ITERATOR_DATA(node_ptr);
     // TODO
   };
 };

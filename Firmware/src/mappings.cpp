@@ -6,87 +6,102 @@
 
 #include "mappings.h"
 
+llist_t llist_controls; // Controls nodes
+
+
+void llist_set_touch(blob_t* blob_dst_ptr, blob_t* blob_src_ptr){
+
+}
+
 ///////////////////////////////////////////////
               /*__SWITCHS__*/
 ///////////////////////////////////////////////
 uint8_t mapp_switchs = 0;
-switch_t* mapp_switchParams = NULL;
-static switch_t mapp_switchParams_privStore[MAX_SWITCHS];
+switch_t* mapp_switch_params = NULL;
+static switch_t mapp_switch_params_privStore[MAX_SWITCHS];
 
 void mapping_switchs_alloc(uint8_t switchs_cnt) {
   mapp_switchs = min(switchs_cnt, MAX_SWITCHS);
-  mapp_switchParams = mapp_switchParams_privStore;
+  mapp_switch_params = mapp_switch_params_privStore;
 };
 
 void mapping_switchs_setup(void) {
-  // N/A
+  // NA
 };
 
-void mapping_switchs_update(blob_t* blob_ptr) {
-
+inline void mapping_switchs_dispatcher(blob_t* blob_ptr) {
   for (uint8_t i = 0; i < mapp_switchs; i++) {
     // Test if the blob is within the key limits
-    if (blob_ptr->centroid.x > mapp_switchParams[i].rect.from.x &&
-        blob_ptr->centroid.x < mapp_switchParams[i].rect.to.x &&
-        blob_ptr->centroid.y > mapp_switchParams[i].rect.from.y &&
-        blob_ptr->centroid.y < mapp_switchParams[i].rect.to.y) {
-      switch (mapp_switchParams[i].msg.midi.type) {
-        case midi::NoteOff:
-          break;
-        case midi::NoteOn:
-          if (!blob_ptr->lastState) {
-            mapp_switchParams[i].msg.midi.type = midi::NoteOn;
-            //mapp_switchParams[i].msg.midi.data2 = ... // TODO: add the velocity to the blob values!
-            midi_sendOut(mapp_switchParams[i].msg.midi);
-            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
-              Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, mapp_switchParams[i].msg.midi.data1);
-            #endif
-          }
-          /*
-          else if (!blob_ptr->state) {
-            mapp_switchParams[i].msg.midi.type = midi::NoteOff;
-            midi_sendOut(mapp_switchParams[i].msg.midi);
-            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-              Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_OFF:%d", i, mapp_switchParams[i].msg.midi.data1);
-            #endif
-          }
-          */
-          break;
-        case midi::AfterTouchPoly:
-          if (!blob_ptr->lastState) {
-            mapp_switchParams[i].msg.midi.type = midi::NoteOn;
-            midi_sendOut(mapp_switchParams[i].msg.midi);
-            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
-              Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, mapp_switchParams[i].msg.midi.data1);
-            #endif
-          }
-          else if (!blob_ptr->lastState) {
-            mapp_switchParams[i].msg.midi.type = midi::AfterTouchPoly;
-            midi_sendOut(mapp_switchParams[i].msg.midi);
-            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
-              Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tC_CHANGE:%d", i, mapp_switchParams[i].msg.midi.data2);
-            #endif
-          }
-          break;
-        case midi::ControlChange:
-          mapp_switchParams[i].msg.midi.data2 = blob_ptr->centroid.z;
-          midi_sendOut(mapp_switchParams[i].msg.midi);
+    if (blob_ptr->centroid.x > mapp_switch_params[i].rect.from.x &&
+        blob_ptr->centroid.x < mapp_switch_params[i].rect.to.x &&
+        blob_ptr->centroid.y > mapp_switch_params[i].rect.from.y &&
+        blob_ptr->centroid.y < mapp_switch_params[i].rect.to.y) {
+        llist_set_touch(mapp_switch_params[i].touch, blob_ptr);
+    }
+    else {
+      // TODO: llist_remove_touch(&mapp_switch_params[i].touchs, blob_ptr);
+    };
+  };
+};
+
+inline void mapping_switchs_update(blob_t* blob_ptr) {
+  for (uint8_t i = 0; i < mapp_switchs; i++) {
+    switch (mapp_switch_params[i].msg.midi.type) {
+      case midi::NoteOff:
+        break;
+      case midi::NoteOn:
+        if (!blob_ptr->lastState) {
+          mapp_switch_params[i].msg.midi.type = midi::NoteOn;
+          //mapp_switch_params[i].msg.midi.data2 = ... // TODO: add the velocity to the blob values!
+          midi_sendOut(mapp_switch_params[i].msg.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
-            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tC_CHANGE:%d", i, mapp_switchParams[i].msg.midi.data2);
+            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, mapp_switch_params[i].msg.midi.data1);
           #endif
-          break;
-        case midi::ProgramChange:
-          break;
-        case midi::AfterTouchChannel:
-          break;
-        case midi::PitchBend:
-          break;
-        case midi::SystemExclusive:
-          break;
-        default:
-          // Not handled in switch
-          break;
-      };
+        }
+        /*
+        else if (!blob_ptr->state) {
+          mapp_switch_params[i].msg.midi.type = midi::NoteOff;
+          midi_sendOut(mapp_switch_params[i].msg.midi);
+          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_OFF:%d", i, mapp_switch_params[i].msg.midi.data1);
+          #endif
+        }
+        */
+        break;
+      case midi::AfterTouchPoly:
+        if (!blob_ptr->lastState) {
+          mapp_switch_params[i].msg.midi.type = midi::NoteOn;
+          midi_sendOut(mapp_switch_params[i].msg.midi);
+          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
+            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, mapp_switch_params[i].msg.midi.data1);
+          #endif
+        }
+        else if (!blob_ptr->lastState) {
+          mapp_switch_params[i].msg.midi.type = midi::AfterTouchPoly;
+          midi_sendOut(mapp_switch_params[i].msg.midi);
+          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
+            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tC_CHANGE:%d", i, mapp_switch_params[i].msg.midi.data2);
+          #endif
+        }
+        break;
+      case midi::ControlChange:
+        mapp_switch_params[i].msg.midi.data2 = blob_ptr->centroid.z;
+        midi_sendOut(mapp_switch_params[i].msg.midi);
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
+          Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tC_CHANGE:%d", i, mapp_switch_params[i].msg.midi.data2);
+        #endif
+        break;
+      case midi::ProgramChange:
+        break;
+      case midi::AfterTouchChannel:
+        break;
+      case midi::PitchBend:
+        break;
+      case midi::SystemExclusive:
+        break;
+      default:
+        // Not handled in switch
+        break;
     };
   };
 };
@@ -334,7 +349,7 @@ void mapping_touchpads_update(blob_t* blob_ptr) {
         case midi::NoteOff:
           if (!blob_ptr->lastState) {
             mapp_touchpadsParams[i].touch[blob_ptr->UID].press.midi.type = midi::NoteOn;
-            //mapp_switchParams[i].msg.midi.data2 = ... // TODO: add the velocity to the blob values!
+            //mapp_switch_params[i].msg.midi.data2 = ... // TODO: add the velocity to the blob values!
             midi_sendOut(mapp_touchpadsParams[i].touch[blob_ptr->UID].press.midi);
             #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
               Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, mapp_touchpadsParams[i].msg.midi.data1);
@@ -351,7 +366,7 @@ void mapping_touchpads_update(blob_t* blob_ptr) {
         case midi::NoteOn:
           if (!blob_ptr->lastState) {
             mapp_touchpadsParams[i].touch[blob_ptr->UID].press.midi.type = midi::NoteOn;
-            //mapp_switchParams[i].msg.midi.data2 = ... // TODO: add the velocity to the blob values!
+            //mapp_switch_params[i].msg.midi.data2 = ... // TODO: add the velocity to the blob values!
             midi_sendOut(mapp_touchpadsParams[i].touch[blob_ptr->UID].press.midi);
             #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
               Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, mapp_touchpadsParams[i].msg.midi.data1);
@@ -537,7 +552,7 @@ void mapping_grids_update(blob_t *blob_ptr) {
       // Serial.printf("\nGRID\tKEY:%d\tPOS_X:%d\tPOS_Y:%d", keyPress, keyPressX, keyPressY);
       // Serial.printf("\nGRID\tBLOB:%d\tBLOB_X:%f\tBLOB_Y:%f", blob_ptr->UID, blob_ptr->centroid.x, blob_ptr->centroid.x);
       
-      switch (mapp_switchParams[i].msg.midi.type) {
+      switch (mapp_switch_params[i].msg.midi.type) {
         case midi::NoteOff:
           break;
         case midi::NoteOn:
@@ -617,9 +632,9 @@ void mapping_grids_populate_dynamic(void) {
             midiNode_t* prevNode_ptr = NULL;
             for (midiNode_t* nodeOut_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiChord); nodeOut_ptr != NULL; nodeOut_ptr = (midiNode_t*)ITERATOR_NEXT(nodeOut_ptr)) {
               if (nodeIn_ptr->midi.data2 == nodeOut_ptr->midi.data2) {
-                llist_push_front(&midi_node_stack, llist_pop_front(&midiIn));
+                llist_push_front(&midi_nodes_pool, llist_pop_front(&midiIn));
                 llist_extract_node(&midiChord, prevNode_ptr, nodeOut_ptr);
-                llist_push_front(&midi_node_stack, nodeOut_ptr);
+                llist_push_front(&midi_nodes_pool, nodeOut_ptr);
                 break;
               };
               prevNode_ptr = nodeOut_ptr;
@@ -706,7 +721,7 @@ inline void mapping_csliders_setup() {
 }
 
 void mapping_cSliders_update(void) {
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_previous_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     float x = blob_ptr->centroid.x - CS_RADIUS;
     float y = blob_ptr->centroid.y - CS_RADIUS;
     float radius = sqrt(x * x + y * y);
@@ -763,17 +778,21 @@ void mapping_cSliders_update(void) {
 */
 
 void mapping_lib_setup(void) {
+  llist_raz(&llist_controls);
+
   mapping_switchs_setup();
   mapping_sliders_setup();
   mapping_grids_setup();
   mapping_knobs_setup();
   mapping_touchpads_setup();
   //mapping_polygons_setup();
+
 };
 
 void mapping_lib_update(void) {
-  llist_save_nodes(&midi_node_stack, &midiOut); // Save/rescure all midiOut nodes
-  for (blob_t *blob_ptr = (blob_t *)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t *)ITERATOR_NEXT(blob_ptr)) {
+  llist_concat_nodes(&midi_nodes_pool, &midiOut); // Save/rescure all midiOut nodes
+  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
+    blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
     mapping_switchs_update(blob_ptr);
     mapping_sliders_update(blob_ptr);
     mapping_grids_update(blob_ptr);

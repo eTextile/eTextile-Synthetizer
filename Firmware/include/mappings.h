@@ -57,6 +57,7 @@ struct e256_knob {
 typedef struct e256_switch switch_t;
 struct e256_switch {
   rect_t rect;
+  blob_t* touch;
   msg_t msg;
   //bool state; // Do we nead it?
   //bool lastState; // Do we nead it?
@@ -105,7 +106,7 @@ typedef struct e256_touchpad touchpad_t;
 struct e256_touchpad {
   rect_t rect;
   uint8_t touchs;
-  touch_3d_t touch[MAX_TOUCHPAD_TOUCHS]; // TODO: replace with MAX_BLOBS!?
+  touch_3d_t touch[MAX_TOUCHPAD_TOUCHS];
   uint8_t touchs_count;
 };
 
@@ -123,7 +124,7 @@ struct e256_grid {
 };
 
 extern uint8_t mapp_switchs;
-extern switch_t* mapp_switchParams;
+extern switch_t* mapp_switch_params;
 void mapping_switchs_alloc(uint8_t switchs_cnt);
 
 extern uint8_t mapp_sliders;

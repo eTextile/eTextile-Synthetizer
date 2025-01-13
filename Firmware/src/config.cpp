@@ -247,7 +247,7 @@ inline void update_buttons() {
         usb_midi_send_info((uint8_t)FLASH_CONFIG_WRITE_FAILED, MIDI_ERROR_CHANNEL);
         #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
           Serial.printf("\nSYSEX_CONFIG_WRITE: ");
-          printBytes(sysEx_data_ptr, sysEx_data_length);
+          print_bytes(sysEx_data_ptr, sysEx_data_length);
         #endif
         set_mode(ERROR_MODE);
       };
@@ -354,19 +354,19 @@ inline bool config_load_mappings_switchs(const JsonArray &config) {
   mapping_switchs_alloc(config.size());
   midi_status_t status;
   for (uint8_t i = 0; i < mapp_switchs; i++) {
-    mapp_switchParams[i].rect.from.x = config[i]["from"][0].as<float>();
-    mapp_switchParams[i].rect.from.y = config[i]["from"][1].as<float>();
-    mapp_switchParams[i].rect.to.x = config[i]["to"][0].as<float>();
-    mapp_switchParams[i].rect.to.y = config[i]["to"][1].as<float>();
+    mapp_switch_params[i].rect.from.x = config[i]["from"][0].as<float>();
+    mapp_switch_params[i].rect.from.y = config[i]["from"][1].as<float>();
+    mapp_switch_params[i].rect.to.x = config[i]["to"][0].as<float>();
+    mapp_switch_params[i].rect.to.y = config[i]["to"][1].as<float>();
     midi_msg_status_unpack(config[i]["msg"][0]["press"]["midi"]["status"].as<uint8_t>(), &status);
-    mapp_switchParams[i].msg.midi.type = status.type;
-    mapp_switchParams[i].msg.midi.data1 = config[i]["msg"][0]["press"]["midi"]["data1"].as<uint8_t>();
-    mapp_switchParams[i].msg.midi.data2 = config[i]["msg"][0]["press"]["midi"]["data2"].as<uint8_t>();
-    mapp_switchParams[i].msg.midi.channel = status.channel;
-    if (mapp_switchParams[i].msg.midi.type == midi::ControlChange ||
-      mapp_switchParams[i].msg.midi.type == midi::AfterTouchPoly) {
-      mapp_switchParams[i].msg.limit.min = config[i]["msg"][0]["press"]["limit"]["min"].as<uint8_t>();
-      mapp_switchParams[i].msg.limit.max = config[i]["msg"][0]["press"]["limit"]["max"].as<uint8_t>(); 
+    mapp_switch_params[i].msg.midi.type = status.type;
+    mapp_switch_params[i].msg.midi.data1 = config[i]["msg"][0]["press"]["midi"]["data1"].as<uint8_t>();
+    mapp_switch_params[i].msg.midi.data2 = config[i]["msg"][0]["press"]["midi"]["data2"].as<uint8_t>();
+    mapp_switch_params[i].msg.midi.channel = status.channel;
+    if (mapp_switch_params[i].msg.midi.type == midi::ControlChange ||
+      mapp_switch_params[i].msg.midi.type == midi::AfterTouchPoly) {
+      mapp_switch_params[i].msg.limit.min = config[i]["msg"][0]["press"]["limit"]["min"].as<uint8_t>();
+      mapp_switch_params[i].msg.limit.max = config[i]["msg"][0]["press"]["limit"]["max"].as<uint8_t>(); 
     }
   }
   return true;

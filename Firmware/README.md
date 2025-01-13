@@ -26,7 +26,7 @@
 4. The App will proceed with [CONFIG_FILE_REQUEST]
 5. The device can answer [FLASH_CONFIG_LOAD_DONE] or [FLASH_CONFIG_LOAD_FAILED]
     - if [FLASH_CONFIG_LOAD_DONE]
-      - Right after the device will send it **curent config file** using (MIDI_SYSTEM_EXCLUSIVE_MSG)
+      - Right after the device will send it **current config file** using (MIDI_SYSTEM_EXCLUSIVE_MSG)
       - then the web app will load the config on the sceen
       - This config can be modified and re-uplod to the device, **erasing the previous config file** :-(
       - A config manager is would be cool :-)

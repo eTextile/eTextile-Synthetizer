@@ -25,8 +25,8 @@ void running_median_setup(void) {
 // or overwrites the oldest if buffer is full
 void runing_median(void) {
 
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-
+  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
+    blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
     if (!blob_ptr->lastState) {
       filter[blob_ptr->UID].count = 1; // Circular buffer fill index
       filter[blob_ptr->UID].index = 1; // Circular buffer runing index
