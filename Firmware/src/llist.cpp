@@ -25,17 +25,9 @@ void llist_builder(llist_t* llist_ptr, void* nodes_array_ptr, const int item_cou
   llist_raz(llist_ptr);
   for (int i = 0; i < item_count; i++) {
     lnode_t* node = (lnode_t*)llist_pop_front(&llist_nodes_pool);
-    if (node != NULL){
-      node->data_ptr = item_ptr;
-      llist_push_front(llist_ptr, item_ptr);
-      item_ptr += item_size;
-    }
-    else {
-      set_mode(ERROR_MODE);
-      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-        Serial.print("Not enough nodes in the stack!");
-      #endif
-    };
+    node->data_ptr = item_ptr;
+    llist_push_front(llist_ptr, item_ptr);
+    item_ptr += item_size;
   };
 };
 
@@ -51,7 +43,10 @@ static lnode_t* llist_pop_node(llist_t* llist_ptr) {
     return node;
   }
   else {
-    return NULL;
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
+      Serial.print("Not enough nodes in the pool!");
+    #endif
+    set_mode(ERROR_MODE);
   };
 };
 
@@ -80,42 +75,21 @@ static void llist_push_node_back(llist_t* llist_ptr, lnode_t* node_ptr) {
 void* llist_pop_front(llist_t* llist_ptr) {
   lnode_t* node_ptr = llist_pop_node(llist_ptr);
   void* data_ptr;
-  if (node_ptr != NULL) {
-    data_ptr = node_ptr->data_ptr;
-    llist_push_node_front(&llist_nodes_pool, node_ptr);
-    return data_ptr;
-  }
-  else {
-    return NULL;
-  };
+  data_ptr = node_ptr->data_ptr;
+  llist_push_node_front(&llist_nodes_pool, node_ptr);
+  return data_ptr;
 };
 
 void llist_push_front(llist_t* llist_ptr, void* data_ptr) {
   lnode_t* node_ptr = llist_pop_node(&llist_nodes_pool);
-  if (node_ptr != NULL) {
-    node_ptr->data_ptr = data_ptr;
-    llist_push_node_front(llist_ptr, node_ptr);
-  }
-  else {
-    set_mode(ERROR_MODE);
-    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-      Serial.print("Not enough nodes in the stack!");
-    #endif
-  };
+  node_ptr->data_ptr = data_ptr;
+  llist_push_node_front(llist_ptr, node_ptr);
 };
 
 void llist_push_back(llist_t* llist_ptr, void* data_ptr) {
   lnode_t* node_ptr = llist_pop_node(&llist_nodes_pool);
-  if (node_ptr != NULL) {
-    node_ptr->data_ptr = data_ptr;
-    llist_push_node_back(llist_ptr, node_ptr);
-  }
-  else{
-    set_mode(ERROR_MODE);
-    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-      Serial.print("Not enough nodes in the stack!");
-    #endif
-  };
+  node_ptr->data_ptr = data_ptr;
+  llist_push_node_back(llist_ptr, node_ptr);
 };
 
 void llist_swap_llist(llist_t* llistA_ptr, llist_t* llistB_ptr) {
