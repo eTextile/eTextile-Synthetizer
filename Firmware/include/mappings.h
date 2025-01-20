@@ -123,34 +123,47 @@ struct e256_grid {
   float scale_factor_y;
 };
 
+typedef struct e256_common common_t;
+struct e256_common {
+  blob_t* blob;
+  void* (*update_controls_ptr)(void*);
+};
+
 extern uint8_t mapp_switchs;
 extern switch_t* mapp_switch_params;
 void mapping_switchs_alloc(uint8_t switchs_cnt);
 
+/*
+struct switch_t {
+  common_t mapping_func;
+  extern switch_t* mapp_switch_params;
+};
+*/
+
 extern uint8_t mapp_sliders;
-extern slider_t *mapp_slidersParams;
+extern slider_t *mapp_sliders_params;
 void mapping_sliders_alloc(uint8_t sliders_cnt);
 
 extern uint8_t mapp_knobs;
-extern knob_t *mapp_knobsParams;
+extern knob_t *mapp_knobs_params;
 void mapping_knobs_alloc(uint8_t knobs_cnt);
 
 extern uint8_t mapp_polygons;
-extern polygon_t *mapp_polygonsParams;
+extern polygon_t *mapp_polygons_params;
 void mapping_polygons_alloc(uint8_t polygons_cnt);
 
 extern uint8_t mapp_touchpads;
-extern touchpad_t *mapp_touchpadsParams;
+extern touchpad_t *mapp_touchpads_params;
 void mapping_touchpads_alloc(uint8_t touchpads_cnt);
 
 // DEV
 extern uint8_t mapp_grids;
-extern grid_t *mapp_gridsParams;
+extern grid_t *mapp_grids_params;
 void mapping_grids_alloc(uint8_t grids_cnt);
 
 // DEV
 //extern uint8_t mapp_csliders;
-//extern slider_t *mapp_cslidersParams;
+//extern slider_t *mapp_csliders_params;
 //void mapping_sliders_alloc(uint8_t csliders_cnt);
 
 void mapping_lib_setup(void);
