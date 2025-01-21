@@ -12,6 +12,8 @@
 #include "llist.h"
 #include "midi_bus.h"
 
+#include <ArduinoJson.h>
+
 typedef struct e256_point point_t;
 struct e256_point {
   float x;
@@ -57,7 +59,6 @@ struct e256_knob {
 typedef struct e256_switch switch_t;
 struct e256_switch {
   rect_t rect;
-  blob_t* touch;
   msg_t msg;
   //bool state; // Do we nead it?
   //bool lastState; // Do we nead it?
@@ -123,22 +124,10 @@ struct e256_grid {
   float scale_factor_y;
 };
 
-typedef struct e256_common common_t;
-struct e256_common {
-  blob_t* blob;
-  void* (*update_controls_ptr)(void*);
-};
-
 extern uint8_t mapp_switchs;
 extern switch_t* mapp_switch_params;
 void mapping_switchs_alloc(uint8_t switchs_cnt);
-
-/*
-struct switch_t {
-  common_t mapping_func;
-  extern switch_t* mapp_switch_params;
-};
-*/
+void mapping_switch_create(const JsonObject &config);
 
 extern uint8_t mapp_sliders;
 extern slider_t *mapp_sliders_params;

@@ -351,23 +351,10 @@ inline bool config_load_mappings_switchs(const JsonArray &config) {
   if (config.isNull()) {
     return false;
   }
-  mapping_switchs_alloc(config.size());
-  midi_status_t status;
-  for (uint8_t i = 0; i < mapp_switchs; i++) {
-    mapp_switch_params[i].rect.from.x = config[i]["from"][0].as<float>();
-    mapp_switch_params[i].rect.from.y = config[i]["from"][1].as<float>();
-    mapp_switch_params[i].rect.to.x = config[i]["to"][0].as<float>();
-    mapp_switch_params[i].rect.to.y = config[i]["to"][1].as<float>();
-    midi_msg_status_unpack(config[i]["msg"][0]["press"]["midi"]["status"].as<uint8_t>(), &status);
-    mapp_switch_params[i].msg.midi.type = status.type;
-    mapp_switch_params[i].msg.midi.data1 = config[i]["msg"][0]["press"]["midi"]["data1"].as<uint8_t>();
-    mapp_switch_params[i].msg.midi.data2 = config[i]["msg"][0]["press"]["midi"]["data2"].as<uint8_t>();
-    mapp_switch_params[i].msg.midi.channel = status.channel;
-    if (mapp_switch_params[i].msg.midi.type == midi::ControlChange ||
-      mapp_switch_params[i].msg.midi.type == midi::AfterTouchPoly) {
-      mapp_switch_params[i].msg.limit.min = config[i]["msg"][0]["press"]["limit"]["min"].as<uint8_t>();
-      mapp_switch_params[i].msg.limit.max = config[i]["msg"][0]["press"]["limit"]["max"].as<uint8_t>(); 
-    }
+  uint8_t n = config.size();
+  mapping_switchs_alloc(n);
+  for (uint8_t i = 0; i < n; i++) {
+    mapping_switch_create(config[i]);
   }
   return true;
 }
@@ -376,38 +363,10 @@ inline bool config_load_mappings_sliders(const JsonArray& config) {
   if (config.isNull()) {
     return false;
   };
-  
-  mapping_sliders_alloc(config.size());
-  
-  for (uint8_t i = 0; i < mapp_sliders; i++) {
-    mapp_sliders_params[i].rect.from.x = config[i]["from"][0].as<float>();
-    mapp_sliders_params[i].rect.from.y = config[i]["from"][1].as<float>();
-    mapp_sliders_params[i].rect.to.x = config[i]["to"][0].as<float>();
-    mapp_sliders_params[i].rect.to.y = config[i]["to"][1].as<float>();
-    mapp_sliders_params[i].touchs = config[i]["touchs"].as<uint8_t>();
-
-    midi_status_t status;
-    for (uint8_t j = 0; j<config[i]["touchs"].as<uint8_t>(); j++){
-      
-      midi_msg_status_unpack(config[i]["msg"][j]["pos"]["midi"]["status"].as<uint8_t>(), &status);
-      mapp_sliders_params[i].touch[j].pos.midi.type = status.type;
-      mapp_sliders_params[i].touch[j].pos.midi.data1 = config[i]["msg"][j]["pos"]["midi"]["data1"].as<uint8_t>();
-      mapp_sliders_params[i].touch[j].pos.midi.data2 = config[i]["msg"][j]["pos"]["midi"]["data2"].as<uint8_t>();
-      mapp_sliders_params[i].touch[j].pos.midi.channel = status.channel;
-      mapp_sliders_params[i].touch[j].pos.limit.min = config[i]["msg"][j]["pos"]["limit"]["min"].as<uint8_t>();
-      mapp_sliders_params[i].touch[j].pos.limit.max = config[i]["msg"][j]["pos"]["limit"]["max"].as<uint8_t>();
-
-      midi_msg_status_unpack(config[i]["msg"][j]["press"]["midi"]["status"].as<uint8_t>(), &status);
-      mapp_sliders_params[i].touch[j].press.midi.type = status.type;
-      mapp_sliders_params[i].touch[j].press.midi.data1 = config[i]["msg"][j]["press"]["midi"]["data1"].as<uint8_t>();
-      mapp_sliders_params[i].touch[j].press.midi.data2 = config[i]["msg"][j]["press"]["midi"]["data2"].as<uint8_t>();
-      mapp_sliders_params[i].touch[j].press.midi.channel = status.channel;
-      if (mapp_sliders_params[i].touch[j].pos.midi.type == midi::ControlChange ||
-        mapp_sliders_params[i].touch[j].pos.midi.type == midi::AfterTouchPoly){
-        mapp_sliders_params[i].touch[j].press.limit.min = config[i]["msg"][j]["press"]["limit"]["min"].as<uint8_t>();
-        mapp_sliders_params[i].touch[j].press.limit.max = config[i]["msg"][j]["press"]["limit"]["max"].as<uint8_t>();
-      };
-    };
+  uint8_t n = config.size();
+  mapping_sliders_alloc(n);
+  for (uint8_t i = 0; i < n; i++) {
+    mapping_slider_create(config[i]);
   };
   return true;
 };
