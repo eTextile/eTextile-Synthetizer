@@ -6,7 +6,6 @@
 
 #include "mapp_touchpad.h"
 
-struct mapp_touchpad_s;
 typedef struct mapp_touchpad_s mapp_touchpad_t;
 struct mapp_touchpad_s {
   common_t common;
@@ -69,159 +68,160 @@ void mapping_touchpad_create(const JsonObject &config) {
 void mapping_touchpad_play(blob_t*);
 
 bool mapping_touchpad_interact(blob_t* blob_ptr, common_t* common_ptr) {
-  mapp_touchpad_t* mapp_touchpad = (mapp_touchpad_t*)common_ptr;
-if (blob_ptr->centroid.x > mapp_touchpad->params.rect.from.x &&
-        blob_ptr->centroid.x < mapp_touchpad->params.rect.to.x &&
-        blob_ptr->centroid.y > mapp_touchpad->params.rect.from.y &&
-        blob_ptr->centroid.y < mapp_touchpad->params.rect.to.y) {
+  mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)common_ptr;
+  for (uint8_t j = 0; j < touchpad_ptr->params.touchs; j++) {
+    if (blob_ptr->centroid.x > touchpad_ptr->params.rect.from.x &&
+          blob_ptr->centroid.x < touchpad_ptr->params.rect.to.x &&
+          blob_ptr->centroid.y > touchpad_ptr->params.rect.from.y &&
+          blob_ptr->centroid.y < touchpad_ptr->params.rect.to.y) {
       blob_ptr->action.func_ptr = &mapping_touchpad_play;
-      blob_ptr->action.mapping_ptr = mapp_touchpad;
-      //blob_ptr->action.data_ptr = &mapp_touchpad->params.touch[j];
+      blob_ptr->action.mapping_ptr = touchpad_ptr;
+      blob_ptr->action.data_ptr = &touchpad_ptr->params.touch[j];
       return true;
     }
+  }
   return false;
 };
 
 void mapping_touchpad_play(blob_t* blob_ptr) {
-  mapp_touchpad_t* mapp_touchpad = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
+  mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.data_ptr;
 
   // Each controleur have touch/blobs limitation
   if (!blob_ptr->lastState) {
-    if (mapp_touchpad->params.touchs_count < mapp_touchpad->params.touchs) {
-      mapp_touchpad->params.touchs_count++;
-      //blob_ptr->UID vs 
-      mapp_touchpad->params.touch[blob_ptr->UID].pos_x.midi; // FIXME!
+    if (touchpad_ptr->params.touchs_count < touchpad_ptr->params.touchs) {
+      touchpad_ptr->params.touchs_count++;
+      midi_sendOut(touch_ptr->press.midi);
     }
   }
   else if (!blob_ptr->state) {
-    if (mapp_touchpad->params.touchs_count < mapp_touchpad->params.touchs) {
-      mapp_touchpad->params.touchs_count--;
+    if (touchpad_ptr->params.touchs_count < touchpad_ptr->params.touchs) {
+      touchpad_ptr->params.touchs_count--;
     }
   }
 
-      /*
-      if (blob_ptr->centroid.x != blob_ptr->last_centroid.x) { // This is float :-(
-        mapp_touchpad->params.touch[blob_ptr->UID].pos_x.midi.data2 = round(map(
-            blob_ptr->centroid.x,
-            mapp_touchpad->params.rect.from.x,
-            mapp_touchpad->params.rect.to.x,
-            mapp_touchpad->params.touch[blob_ptr->UID].pos_x.limit.min,
-            mapp_touchpad->params.touch[blob_ptr->UID].pos_x.limit.max));
-        // Change here!
-        midi_sendOut(mapp_touchpad->params.touch[blob_ptr->UID].pos_x.midi);
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_TOUCHPAD)
-          Serial.printf("\nDEBUG_MAPPINGS_TOUCHPADS\tMIDI_X_CC:%d\tVAL:%d",
-          mapp_touchpad->params.touch[blob_ptr->UID].pos_x.midi.data2,
-          round(map(blob_ptr->centroid.x, mapp_touchpad->params.rect.from.x, mapp_touchpad->params.rect.to.x, 0, 127)));
+  /*
+  if (blob_ptr->centroid.x != blob_ptr->last_centroid.x) { // This is float :-(
+    touch_ptr->pos_x.midi.data2 = round(map(
+        blob_ptr->centroid.x,
+        touchpad_ptr->params.rect.from.x,
+        touchpad_ptr->params.rect.to.x,
+        touch_ptr->pos_x.limit.min,
+        touch_ptr->pos_x.limit.max));
+    // Change here!
+    midi_sendOut(touch_ptr->pos_x.midi);
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_TOUCHPAD)
+      Serial.printf("\nDEBUG_MAPPINGS_TOUCHPADS\tMIDI_X_CC:%d\tVAL:%d",
+      touch_ptr->pos_x.midi.data2,
+      round(map(blob_ptr->centroid.x, touchpad_ptr->params.rect.from.x, touchpad_ptr->params.rect.to.x, 0, 127)));
+    #endif
+  };
+
+  if (blob_ptr->centroid.y != blob_ptr->last_centroid.y) { // This is float :-(
+    touch_ptr->pos_y.last_val = touch_ptr->pos_y.midi.data2;
+    touch_ptr->pos_y.midi.data2 = round(map(
+        blob_ptr->centroid.y,
+        touchpad_ptr->params.rect.from.y,
+        touchpad_ptr->params.rect.to.y,
+        touch_ptr->pos_y.limit.min,
+        touch_ptr->pos_y.limit.max));
+    // Change here!
+    midi_sendOut(touch_ptr->pos_y.midi);
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_TOUCHPAD)
+      Serial.printf("\nDEBUG_MAPPINGS_TOUCHPADS\tMIDI_Y_CC:%d\tVAL:%d",
+      touch_ptr->pos_y.midi.data2,
+      round(map(blob_ptr->centroid.y, touchpad_ptr->params.rect.from.y, touchpad_ptr->params.rect.to.y, 0, 127)));
+    #endif
+  };
+
+  switch (touch_ptr->press.midi.type) {
+    case midi::NoteOff:
+      if (!blob_ptr->lastState) {
+        touch_ptr->press.midi.type = midi::NoteOn;
+        //touch_ptr->press.midi.data2 = ... // TODO: add the velocity to the blob values!
+        midi_sendOut(touch_ptr->press.midi);
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
+          Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, touchpad_ptr->params.msg.midi.data1);
         #endif
-      };
-
-      if (blob_ptr->centroid.y != blob_ptr->last_centroid.y) { // This is float :-(
-        mapp_touchpad->params.touch[blob_ptr->UID].pos_y.last_val = mapp_touchpad->params.touch[blob_ptr->UID].pos_y.midi.data2;
-        mapp_touchpad->params.touch[blob_ptr->UID].pos_y.midi.data2 = round(map(
-            blob_ptr->centroid.y,
-            mapp_touchpad->params.rect.from.y,
-            mapp_touchpad->params.rect.to.y,
-            mapp_touchpad->params.touch[blob_ptr->UID].pos_y.limit.min,
-            mapp_touchpad->params.touch[blob_ptr->UID].pos_y.limit.max));
-        // Change here!
-        midi_sendOut(mapp_touchpad->params.touch[blob_ptr->UID].pos_y.midi);
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_TOUCHPAD)
-          Serial.printf("\nDEBUG_MAPPINGS_TOUCHPADS\tMIDI_Y_CC:%d\tVAL:%d",
-          mapp_touchpad->params.touch[blob_ptr->UID].pos_y.midi.data2,
-          round(map(blob_ptr->centroid.y, mapp_touchpad->params.rect.from.y, mapp_touchpad->params.rect.to.y, 0, 127)));
-        #endif
-      };
-
-      switch (mapp_touchpad->params.touch[blob_ptr->UID].press.midi.type) {
-        case midi::NoteOff:
-          if (!blob_ptr->lastState) {
-            mapp_touchpad->params.touch[blob_ptr->UID].press.midi.type = midi::NoteOn;
-            //mapp_switch->params.msg.midi.data2 = ... // TODO: add the velocity to the blob values!
-            midi_sendOut(mapp_touchpad->params.touch[blob_ptr->UID].press.midi);
-            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
-              Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, mapp_touchpad->params.msg.midi.data1);
-            #endif
-          }
-          else if (!blob_ptr->state) {
-            mapp_touchpad->params.msg.midi.type = midi::NoteOff;
-            midi_sendOut(mapp_touchpad->params.msg.midi);
-            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-              Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_OFF:%d", i, mapp_touchpad->params.msg.midi.data1);
-            #endif
-          }
-          break;
-        case midi::NoteOn:
-          if (!blob_ptr->lastState) {
-            mapp_touchpad->params.touch[blob_ptr->UID].press.midi.type = midi::NoteOn;
-            //mapp_switch->params.msg.midi.data2 = ... // TODO: add the velocity to the blob values!
-            midi_sendOut(mapp_touchpad->params.touch[blob_ptr->UID].press.midi);
-            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
-              Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, mapp_touchpad->params.msg.midi.data1);
-            #endif
-          }      
-          break;
-        case midi::AfterTouchPoly:
-          break;
-        case midi::ControlChange:
-          mapp_touchpad->params.touch[blob_ptr->UID].press.midi.data2 = 
-            round(map(
-              blob_ptr->centroid.z,
-              Z_MIN,
-              Z_MAX,
-              mapp_touchpad->params.touch[j].press.limit.min,
-              mapp_touchpad->params.touch[j].press.limit.max);
-          midi_sendOut(mapp_touchpad->params.touch[blob_ptr->UID].press.midi);
-          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
-            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tC_CHANGE:%d", i, mapp_touchpad->params.touch[blob_ptr->UID].press.midi.data2);
-          #endif
-          break;
-        case midi::ProgramChange:
-          break;
-        case midi::AfterTouchChannel:
-          break;
-        case midi::PitchBend:
-          break;
-        case midi::SystemExclusive:
-          break;
-        default:
-          // Not handled in switch
-          break;
-      };
-
-      if (blob_ptr->centroid.z != blob_ptr->last_centroid.z) {
-        mapp_touchpad->params.t[i]ouch[blob_ptr->UID].press.midi.data2 = round(map(
-            blob_ptr->centroid.z,
-            Z_MIN,
-            Z_MAX,
-            mapp_touchpad->params.touch[blob_ptr->UID].press.limit.min,
-            mapp_touchpad->params.touch[blob_ptr->UID].press.limit.max));
-        midi_sendOut(mapp_touchpad->params.touch[blob_ptr->UID].press.midi);
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_TOUCHPAD)
-          Serial.printf("\nDEBUG_MAPPINGS_TOUCHPADS\tMIDI_Z_CC:%d\tVAL:%d",
-          mapp_touchpad->params.touch[blob_ptr->UID].press.midi.data2,
-          map(blob_ptr->centroid.z, 0, 255, 0, 127));
-        #endif
-      };
-
-      if (blob_ptr->state) {
-        if (!blob_ptr->lastState) {
-          if (mapp_touchpad->params.touch[blob_ptr->UID].press.midi.type == midi::NoteOn) {
-            midi_sendOut(mapp_touchpad->params.touch[blob_ptr->UID].press.midi);
-          }
-        }
-        else {
-          //if (millis() - blob_ptr->transmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
-            //blob_ptr->transmitTimeStamp = millis();
-            midi_sendOut(mapp_touchpad->params.touch[blob_ptr->UID].pos_x.midi);
-            midi_sendOut(mapp_touchpad->params.touch[blob_ptr->UID].pos_y.midi);
-          //};
-        };
-      } else {
-        if (blob_ptr->lastState && blob_ptr->status != NOT_FOUND) {
-          midi_sendOut(mapp_touchpad->params.touch[blob_ptr->UID].press.midi);
-        };
       }
-   */
+      else if (!blob_ptr->state) {
+        touch_ptr->press.midi.type = midi::NoteOff;
+        midi_sendOut(touch_ptr->press.midi);
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
+          Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_OFF:%d", i, touchpad_ptr->params.msg.midi.data1);
+        #endif
+      }
+      break;
+    case midi::NoteOn:
+      if (!blob_ptr->lastState) {
+        touch_ptr->press.midi.type = midi::NoteOn;
+        //mapp_switch->params.msg.midi.data2 = ... // TODO: add the velocity to the blob values!
+        midi_sendOut(touch_ptr->press.midi);
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
+          Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, touchpad_ptr->params.msg.midi.data1);
+        #endif
+      }      
+      break;
+    case midi::AfterTouchPoly:
+      break;
+    case midi::ControlChange:
+      touch_ptr->press.midi.data2 = 
+        round(map(
+          blob_ptr->centroid.z,
+          Z_MIN,
+          Z_MAX,
+          touch_ptr->press.limit.min,
+          touch_ptr->press.limit.max));
+      midi_sendOut(touch_ptr->press.midi);
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
+        Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tC_CHANGE:%d", i, touch_ptr->press.midi.data2);
+      #endif
+      break;
+    case midi::ProgramChange:
+      break;
+    case midi::AfterTouchChannel:
+      break;
+    case midi::PitchBend:
+      break;
+    case midi::SystemExclusive:
+      break;
+    default:
+      // Not handled in switch
+      break;
+  };
+
+  if (blob_ptr->centroid.z != blob_ptr->last_centroid.z) {
+    touch_ptr->press.midi.data2 = round(map(
+        blob_ptr->centroid.z,
+        Z_MIN,
+        Z_MAX,
+        touch_ptr->press.limit.min,
+        touch_ptr->press.limit.max));
+    midi_sendOut(touch_ptr->press.midi);
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_TOUCHPAD)
+      Serial.printf("\nDEBUG_MAPPINGS_TOUCHPADS\tMIDI_Z_CC:%d\tVAL:%d",
+      touch_ptr->press.midi.data2,
+      map(blob_ptr->centroid.z, 0, 255, 0, 127));
+    #endif
+  };
+
+  if (blob_ptr->state) {
+    if (!blob_ptr->lastState) {
+      if (touch_ptr->press.midi.type == midi::NoteOn) {
+        midi_sendOut(touch_ptr->press.midi);
+      }
+    }
+    else {
+      //if (millis() - blob_ptr->transmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
+        //blob_ptr->transmitTimeStamp = millis();
+        midi_sendOut(touch_ptr->pos_x.midi);
+        midi_sendOut(touch_ptr->pos_y.midi);
+      //};
+    };
+  } else {
+    if (blob_ptr->lastState && blob_ptr->status != NOT_FOUND) {
+      midi_sendOut(touch_ptr->press.midi);
+    };
+  }
+*/
 };

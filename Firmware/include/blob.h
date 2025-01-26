@@ -28,8 +28,8 @@ typedef enum {
 
 extern llist_t llist_previous_blobs; // Exposed local declaration see blob.cpp
 
-typedef struct image image_t;
-struct image {
+typedef struct image_s image_t;
+struct image_s {
   uint8_t* pData;
   uint8_t numCols;
   uint8_t numRows;
@@ -67,9 +67,8 @@ struct image {
 #define MIN(a, b)({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
 #define MAX(a, b)({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
 
-typedef struct xylr xylr_t;
-struct xylr {
-  //lnode_t node;
+typedef struct xylr_s xylr_t;
+struct xylr_s {
   uint8_t x;
   uint8_t y;
   uint8_t l;
@@ -78,21 +77,21 @@ struct xylr {
   uint8_t b_l;
 };
 
-typedef struct vertrice vertrice_t;
-struct vertrice {
-  float   x;
-  float   y;
+typedef struct vertrice_s vertrice_t;
+struct vertrice_s {
+  float x;
+  float y;
   uint8_t z;
 };
 
-typedef struct box box_t;
-struct box {
+typedef struct box_s box_t;
+struct box_s {
   uint8_t w; // TODO: make it as float // use from 
   uint8_t h; // TODO: make it as float // use to
 };
 
-typedef struct velocity velocity_t;
-struct velocity {
+typedef struct velocity_s velocity_t;
+struct velocity_s {
   unsigned long timeStamp;
   float xy;
   float z;

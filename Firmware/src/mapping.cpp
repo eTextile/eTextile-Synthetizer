@@ -9,7 +9,9 @@
 llist_t llist_controls;
 
 void mapping_lib_update(void) {
+  
   llist_concat_nodes(&midi_nodes_pool, &midiOut); // Save/rescure all midiOut nodes
+
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
     for (lnode_t* common_node_ptr = ITERATOR_START_FROM_HEAD(&llist_controls); common_node_ptr != NULL; common_node_ptr = ITERATOR_NEXT(common_node_ptr)) {

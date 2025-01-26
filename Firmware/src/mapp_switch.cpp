@@ -26,16 +26,18 @@ void mapping_switch_play(blob_t*);
 // Test if the blob is within the key limits
 bool mapping_switch_interact(blob_t* blob_ptr, common_t* common_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)common_ptr;
-  if (blob_ptr->centroid.x > switch_ptr->params.rect.from.x &&
-      blob_ptr->centroid.x < switch_ptr->params.rect.to.x &&
-      blob_ptr->centroid.y > switch_ptr->params.rect.from.y &&
-      blob_ptr->centroid.y < switch_ptr->params.rect.to.y) {
-    blob_ptr->action.mapping_ptr = switch_ptr;
-    blob_ptr->action.func_ptr = &mapping_switch_play;
-    blob_ptr->action.mapping_ptr = switch_ptr;
-    //blob_ptr->action.data_ptr = &switch_ptr->params.touch[j];
-    return true;
-  }
+  //for (uint8_t j = 0; j < switch_ptr->params.touchs; j++) {
+    if (blob_ptr->centroid.x > switch_ptr->params.rect.from.x &&
+        blob_ptr->centroid.x < switch_ptr->params.rect.to.x &&
+        blob_ptr->centroid.y > switch_ptr->params.rect.from.y &&
+        blob_ptr->centroid.y < switch_ptr->params.rect.to.y) {
+      blob_ptr->action.mapping_ptr = switch_ptr;
+      blob_ptr->action.func_ptr = &mapping_switch_play;
+      blob_ptr->action.mapping_ptr = switch_ptr;
+      //blob_ptr->action.data_ptr = &switch_ptr->params.touch[j];
+      return true;
+    }
+  //}
   return false;
 };
 
