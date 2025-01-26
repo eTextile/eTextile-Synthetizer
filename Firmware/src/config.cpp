@@ -18,7 +18,6 @@
 #include "mapping.h"
 #include "mapp_switch.h"
 #include "mapp_slider.h"
-#include "mapp_knob.h"
 #include "mapp_touchpad.h"
 #include "mapp_knob.h"
 #include "mapp_grid.h"

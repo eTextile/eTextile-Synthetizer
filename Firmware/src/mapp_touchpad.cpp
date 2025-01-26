@@ -63,6 +63,7 @@ void mapping_touchpad_create(const JsonObject &config) {
       };
     };
   };
+  llist_push_back(&llist_controls, touchpad_ptr);
 };
 
 void mapping_touchpad_play(blob_t*);
