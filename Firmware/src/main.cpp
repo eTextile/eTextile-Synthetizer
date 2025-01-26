@@ -11,7 +11,7 @@
 #include "blob.h"
 #include "median.h"
 #include "midi_bus.h"
-#include "mappings.h"
+#include "mapping.h"
 #include "usb_midi_io.h"
 #include "hardware_midi_io.h"
 #include "sound_card.h"
@@ -25,7 +25,6 @@ void setup() {
   interp_setup();
   llist_setup();
   blob_setup();
-  mapping_lib_setup();
   hardware_midi_setup();
   usb_midi_setup();
   midi_bus_setup();

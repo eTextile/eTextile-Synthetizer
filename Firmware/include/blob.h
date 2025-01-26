@@ -104,9 +104,18 @@ typedef enum status {
   TO_REMOVE
 } status_t;
 
-typedef struct blob blob_t;
-struct blob {
-  //lnode_t node;
+typedef struct blob_s blob_t;
+
+typedef void blob_action_func_t(blob_t*);
+
+typedef struct blob_action_s blob_action_t;
+struct blob_action_s {
+  blob_action_func_t* func_ptr;
+  void* data_ptr; // TODO: data_ptr -> params_ptr
+  void* mapping_ptr;
+};
+
+struct blob_s {
   uint8_t UID;
   status_t status;
   uint32_t debounceTimeStamp;
@@ -118,6 +127,7 @@ struct blob {
   vertrice_t centroid;
   vertrice_t last_centroid;
   velocity_t velocity;
+  blob_action_t action;
 };
 
 void blob_setup(void);
