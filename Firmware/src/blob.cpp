@@ -14,6 +14,7 @@
 #include "interp.h"
 #include "blob.h"
 #include "median.h"
+#include "mapping.h"
 
 #define LIFO_NODES          512           // Set the maximum nodes number
 #define X_STRIDE            4             // Speed up X scanning
@@ -54,6 +55,11 @@ inline uint16_t set_id(void){
 /////////////////////////////// Scanline flood fill algorithm / SFF
 /////////////////////////////// Connected-component labeling / CCL
 void matrix_find_blobs(void) {
+
+  for (lnode_t* curr_node_ptr = ITERATOR_START_FROM_HEAD(&llist_current_blobs); curr_node_ptr != NULL; curr_node_ptr = ITERATOR_NEXT(curr_node_ptr)) {
+    blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(curr_node_ptr);
+    blob_ptr->status = MISSING;
+  }
 
   memset((uint8_t*)bitmapArray, 0, SIZEOF_FRAME);
   uint8_t blob_count = 0;
@@ -202,15 +208,26 @@ void matrix_find_blobs(void) {
 
         if (blob_pixels > BLOB_MIN_PIX && blob_pixels < BLOB_MAX_PIX && blob_count < MAX_BLOBS) {
           blob_count++;
-          blob_t* blob_ptr = (blob_t*)llist_pop_front(&llist_blobs_pool);
-          blob_ptr->last_centroid = blob_ptr->centroid;
-          blob_ptr->centroid.x = constrain(blob_cx / blob_pixels, X_MIN, X_MAX) - X_MIN ;
-          blob_ptr->centroid.y = constrain(blob_cy / blob_pixels, Y_MIN, Y_MAX) - Y_MIN;
+          blob_t* new_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs_pool);
+          new_blob_ptr->last_centroid = new_blob_ptr->centroid;
+          new_blob_ptr->centroid.x = constrain(blob_cx / blob_pixels, X_MIN, X_MAX) - X_MIN ;
+          new_blob_ptr->centroid.y = constrain(blob_cy / blob_pixels, Y_MIN, Y_MAX) - Y_MIN;
           // Subtract threshold and avoid negative numbers
-          blob_depth > e256_ctr.levels[THRESHOLD].val ? blob_ptr->centroid.z = (blob_depth - e256_ctr.levels[THRESHOLD].val) : blob_ptr->centroid.z = 0;
-          blob_ptr->box.w = (blob_x2 - blob_x1);
-          blob_ptr->box.h = blob_height;
-          llist_push_front(&llist_current_blobs, blob_ptr);
+          blob_depth > e256_ctr.levels[THRESHOLD].val ? new_blob_ptr->centroid.z = (blob_depth - e256_ctr.levels[THRESHOLD].val) : new_blob_ptr->centroid.z = 0;
+          new_blob_ptr->box.w = (blob_x2 - blob_x1);
+          new_blob_ptr->box.h = blob_height;
+
+          blob_t* existing_blob_ptr = (blob_t*)llist_find(&llist_current_blobs, new_blob_ptr, (llist_compare_func_t*)&is_blob_existing);
+          if (existing_blob_ptr != NULL) {
+            existing_blob_ptr->status = PRESENT;
+            existing_blob_ptr->debounceTimeStamp = millis();
+            llist_push_back(&llist_blobs_pool, new_blob_ptr);
+          } else {
+            new_blob_ptr->state = NEW;
+            new_blob_ptr->UID = set_id();
+            new_blob_ptr->debounceTimeStamp = millis();
+            llist_push_back(&llist_current_blobs, new_blob_ptr);
+          }
         };
         posX = oldX;
         posY = oldY;
@@ -218,6 +235,7 @@ void matrix_find_blobs(void) {
     };
   };
 
+  /*
   /////////////////////////////// PERSISTANT BLOBS IDs
 
   // DEAD BLOBS REMOVER
@@ -303,7 +321,7 @@ void matrix_find_blobs(void) {
           break;
         };
       }; // while_end / The UID of the new blob is set with the smallest missing ID
-      */
+      /////////////////////////////////
     };
   };
 
@@ -341,7 +359,8 @@ void matrix_find_blobs(void) {
     };
   };
   llist_concat_nodes(&llist_current_blobs, &blobs_to_keep);
-
+  */
+  
   #if defined(RUNING_MEDIAN)
     runing_median();
   #endif
@@ -399,4 +418,16 @@ for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_p
       Serial.printf("\n___________DEBUG_FIND_BLOBS / END_OF_FRAME");
     }
   #endif
+};
+
+bool is_blob_existing(blob_t* blob_A_ptr, blob_t* new_blob_ptr){
+  if (blob_A_ptr->action.mapping_ptr != NULL){
+    float dist = sqrtf(pow(blob_A_ptr->centroid.x - new_blob_ptr->centroid.x, 2) + pow(blob_A_ptr->centroid.y - new_blob_ptr->centroid.y, 2));
+    if (dist < 10) { // SET IT AS GLOBAL !!
+      common_t* mapping_ptr = (common_t*)blob_A_ptr->action.mapping_ptr;
+      mapping_ptr->interact_func_ptr(new_blob_ptr, mapping_ptr);
+      return true;
+    };
+  }
+  return false;
 };

@@ -128,7 +128,7 @@ void usb_midi_transmit() {
             //};
           };
         } else {
-          if (blob_ptr->lastState && blob_ptr->status != NOT_FOUND) {
+          if (blob_ptr->lastState && blob_ptr->status != MISSING) { ///////////////////////// TO_TEST!
             usbMIDI.sendNoteOff(blob_ptr->UID + 1, 0, BS); // sendNoteOff(note, velocity, channel);
             usbMIDI.send_now();
           };

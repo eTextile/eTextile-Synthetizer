@@ -21,6 +21,10 @@ struct llist {
   lnode_t* tail_ptr;
 };
 
+typedef bool llist_compare_func_t (void*, void*);
+
+void* llist_find(llist_t* llist_ptr, void* data_ptr, llist_compare_func_t* func_ptr);
+
 ////////////// Linked list - Fonction prototypes //////////////
 void llist_setup(void);
 void llist_raz(llist_t* llist_ptr);

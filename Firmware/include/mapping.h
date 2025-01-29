@@ -49,7 +49,7 @@ extern llist_t llist_controls;
 typedef struct common_s common_t;
 
 typedef bool interact_t(blob_t*, common_t*); 
-typedef void play_t(blob_t*, common_t*);
+typedef void play_t(blob_t*);
 
 struct common_s {
   //blob_t* blob_ptr;

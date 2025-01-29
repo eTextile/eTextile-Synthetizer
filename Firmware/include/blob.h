@@ -97,10 +97,18 @@ struct velocity_s {
   float z;
 };
 
+/*
 typedef enum status {
   FREE,
-  NOT_FOUND,
-  TO_REMOVE
+  NOT_FOUND, // INACTIVE
+  TO_REMOVE 
+} status_t;
+*/
+
+typedef enum status {
+  NEW,
+  PRESENT,
+  MISSING
 } status_t;
 
 typedef struct blob_s blob_t;
@@ -118,7 +126,7 @@ struct blob_action_s {
 struct blob_s {
   uint8_t UID;
   status_t status;
-  uint32_t debounceTimeStamp;
+  uint32_t debounceTimeStamp; // time to leav
   uint32_t transmitTimeStamp;
   box_t box;
   uint16_t pixels;
@@ -132,5 +140,6 @@ struct blob_s {
 
 void blob_setup(void);
 void matrix_find_blobs(void);
+bool is_blob_existing(blob_t* blob_A_ptr, blob_t* new_blob_ptr);
 
 #endif /*__BLOB_H__*/
