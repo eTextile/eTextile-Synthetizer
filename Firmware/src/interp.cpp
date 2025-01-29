@@ -1,10 +1,11 @@
 /*
-  This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
+  This file is part of the eTextile-Synthesizer project - https://synth.eTextile.org
   Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
-
-  TODO: https://github.com/Pharap/FixedPointsArduino
 */
+
+// Bilinear interpolation
+// TODO: https://github.com/Pharap/FixedPointsArduino
 
 #include "interp.h"
 #include "config.h"
@@ -22,13 +23,9 @@ float coef_B[SCALE_X * SCALE_Y] = {0};
 float coef_C[SCALE_X * SCALE_Y] = {0};
 float coef_D[SCALE_X * SCALE_Y] = {0};
 
-image_t interpFrame;                       // Interpolated frame values
+image_t interpFrame; // Interpolated frame values
 
-/*
-    Bilinear interpolation
-    Pre-compute the four coefficient values for all interpolated output matrix positions
-*/
-
+// Pre-compute the four coefficient values for all interpolated output matrix positions
 void interp_setup(void) {
   interpFrame.pData = &interpFrameArray[0];
   interpFrame.numCols = NEW_COLS;
@@ -55,8 +52,7 @@ inline void update_interpThreshold(e256_level_t* levels_ptr){
 // Bilinear interpolation
 void matrix_interp(void) {
   update_interpThreshold(&e256_ctr.levels[THRESHOLD]);
-  // Clear interpFrameArray
-  memset((uint8_t*)interpFrameArray, 0, SIZEOF_FRAME);
+  memset((uint8_t*)interpFrameArray, 0, SIZEOF_FRAME); // Clear interpFrameArray
   for (uint8_t rowPos = 0; rowPos < IRAW_ROWS; rowPos++) {
     uint16_t indexA = rowPos * INTERP_STRIDE;
     uint8_t* rawRowA_ptr = COMPUTE_IMAGE_ROW_PTR(&rawFrame, rowPos);

@@ -1,5 +1,5 @@
 /*
-  This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
+  This file is part of the eTextile-Synthesizer project - https://synth.eTextile.org
   Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
@@ -22,6 +22,15 @@
 #include "mapp_knob.h"
 #include "mapp_grid.h"
 #include "mapp_polygon.h"
+
+typedef union {
+  switch_t _switch;
+  slider_t _slider;
+  touchpad_t _touchpad;
+  knob_t knob;
+  grid_t grid;
+  polygon_t polygon;
+}mapping_u;
 
 Bounce BUTTON_L = Bounce();
 Bounce BUTTON_R = Bounce();

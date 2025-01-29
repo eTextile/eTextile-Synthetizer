@@ -1,5 +1,5 @@
 /*
-  This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
+  This file is part of the eTextile-Synthesizer project - https://synth.eTextile.org
   Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
@@ -22,25 +22,23 @@ void mapping_knobs_alloc(uint8_t knobs_cnt) {
 
 void mapping_knob_play(blob_t*);
 
-bool mapping_knob_interact(blob_t* blob_ptr, common_t* common_ptr) {
-  mapp_knob_t* knob_ptr = (mapp_knob_t*)common_ptr;
-  for (uint8_t j = 0; j < knob_ptr->params.touchs; j++) {
-    if (blob_ptr->centroid.x > knob_ptr->params.rect.from.x &&
-        blob_ptr->centroid.x < knob_ptr->params.rect.to.x &&
-        blob_ptr->centroid.y > knob_ptr->params.rect.from.y &&
-        blob_ptr->centroid.y < knob_ptr->params.rect.to.y) {
-      blob_ptr->action.func_ptr = &mapping_knob_play;
-      blob_ptr->action.mapping_ptr = knob_ptr;
-      blob_ptr->action.data_ptr = &knob_ptr->params.touch[j];
-      return true;
-    }
-  }
+bool mapping_knob_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
+  mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
+  if (blob_ptr->centroid.x > knob_ptr->params.rect.from.x &&
+      blob_ptr->centroid.x < knob_ptr->params.rect.to.x &&
+      blob_ptr->centroid.y > knob_ptr->params.rect.from.y &&
+      blob_ptr->centroid.y < knob_ptr->params.rect.to.y) {
+    blob_ptr->action.mapping_ptr = knob_ptr;
+    //blob_ptr->action.touch_ptr = &knob_ptr->params.touch[j]; FIXME!
+    blob_ptr->action.func_ptr = &mapping_knob_play;
+    return true;
+  };
   return false;
 };
 
 void mapping_knob_play(blob_t* blob_ptr) {
     mapp_knob_t* knob_ptr = (mapp_knob_t*)blob_ptr->action.mapping_ptr;
-    touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.data_ptr;
+    touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
     
     float x = blob_ptr->centroid.x - knob_ptr->params.center.x;
     float y = blob_ptr->centroid.y - knob_ptr->params.center.y;
@@ -79,7 +77,6 @@ void mapping_knob_create(const JsonObject &config) {
     knob_ptr->params.rect.to.y = config["to"][1].as<float>();
     knob_ptr->params.radius = config["radius"].as<float>();
     knob_ptr->params.offset = config["offset"].as<uint8_t>();
-    
     midi_status_t status;
     for (uint8_t j = 0; j<config["touchs"].as<uint8_t>(); j++){
       midi_msg_status_unpack(config["msg"][j]["radius"]["midi"]["status"].as<uint8_t>(), &status);
@@ -92,7 +89,6 @@ void mapping_knob_create(const JsonObject &config) {
         knob_ptr->params.touch[j].radius.limit.min = config["msg"][j]["radius"]["limit"]["min"].as<uint8_t>();
         knob_ptr->params.touch[j].radius.limit.max = config["msg"][j]["radius"]["limit"]["max"].as<uint8_t>();
       }
-
       midi_msg_status_unpack(config["msg"][j]["theta"]["midi"]["status"].as<uint8_t>(), &status);
       knob_ptr->params.touch[j].theta.midi.type = status.type;
       knob_ptr->params.touch[j].theta.midi.data1 = config["msg"][j]["theta"]["midi"]["data1"].as<uint8_t>();
@@ -103,7 +99,6 @@ void mapping_knob_create(const JsonObject &config) {
         knob_ptr->params.touch[j].theta.limit.min = config["msg"][j]["theta"]["limit"]["min"].as<uint8_t>();
         knob_ptr->params.touch[j].theta.limit.max = config["msg"][j]["theta"]["limit"]["max"].as<uint8_t>();
       }
-
       midi_msg_status_unpack(config["msg"][j]["pressure"]["midi"]["status"].as<uint8_t>(), &status);
       knob_ptr->params.touch[j].pressure.midi.type = status.type;
       knob_ptr->params.touch[j].pressure.midi.data1 = config["msg"][j]["press"]["midi"]["data1"].as<uint8_t>();

@@ -15,7 +15,5 @@ struct polygon_s {
 
 void mapping_polygons_alloc(uint8_t polygons_cnt);
 void mapping_polygon_create(const JsonObject &config);
-//bool mapping_polygon_interact(blob_t* blob_ptr, common_t* common_ptr);
-//void mapping_polygon_play(blob_t* blob_ptr);
 
 #endif /*__MAPPING_POLYGON_H__*/

@@ -1,5 +1,5 @@
 /*
-  This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
+  This file is part of the eTextile-Synthesizer project - https://synth.eTextile.org
   Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
@@ -68,25 +68,23 @@ void mapping_touchpad_create(const JsonObject &config) {
 
 void mapping_touchpad_play(blob_t*);
 
-bool mapping_touchpad_interact(blob_t* blob_ptr, common_t* common_ptr) {
-  mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)common_ptr;
-  for (uint8_t j = 0; j < touchpad_ptr->params.touchs; j++) {
-    if (blob_ptr->centroid.x > touchpad_ptr->params.rect.from.x &&
-          blob_ptr->centroid.x < touchpad_ptr->params.rect.to.x &&
-          blob_ptr->centroid.y > touchpad_ptr->params.rect.from.y &&
-          blob_ptr->centroid.y < touchpad_ptr->params.rect.to.y) {
-      blob_ptr->action.func_ptr = &mapping_touchpad_play;
-      blob_ptr->action.mapping_ptr = touchpad_ptr;
-      blob_ptr->action.data_ptr = &touchpad_ptr->params.touch[j];
-      return true;
-    }
+bool mapping_touchpad_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
+  mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
+  if (blob_ptr->centroid.x > touchpad_ptr->params.rect.from.x &&
+        blob_ptr->centroid.x < touchpad_ptr->params.rect.to.x &&
+        blob_ptr->centroid.y > touchpad_ptr->params.rect.from.y &&
+        blob_ptr->centroid.y < touchpad_ptr->params.rect.to.y) {
+    blob_ptr->action.mapping_ptr = touchpad_ptr;
+    //blob_ptr->action.touch_ptr = &touchpad_ptr->params.touch[j];
+    blob_ptr->action.func_ptr = &mapping_touchpad_play;
+    return true;
   }
   return false;
 };
 
 void mapping_touchpad_play(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
-  touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.data_ptr;
+  touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
 
   // Each controleur have touch/blobs limitation
   if (!blob_ptr->lastState) {

@@ -1,5 +1,5 @@
 /*
-  This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
+  This file is part of the eTextile-Synthesizer project - https://synth.eTextile.org
   Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
@@ -26,8 +26,8 @@ void mapping_polygons_alloc(uint8_t polygons_cnt) {
 void mapping_polygon_play(blob_t*);
 
 // Test if the blob is within the key limits
-bool mapping_polygon_interact(blob_t* blob_ptr, common_t* common_ptr) {
-  mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)common_ptr;
+bool mapping_polygon_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
+  mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)mapping_ptr;
   int i, j = (polygon_ptr->params.point_cnt - 1);
   polygon_ptr->params.is_inside = false;
   for (i = 0; i < polygon_ptr->params.point_cnt; i++) {
@@ -43,8 +43,8 @@ bool mapping_polygon_interact(blob_t* blob_ptr, common_t* common_ptr) {
   };
   if (polygon_ptr->params.is_inside) {
     blob_ptr->action.mapping_ptr = polygon_ptr;
+    //blob_ptr->action.touch_ptr = &polygon_ptr->params.touch[j];
     blob_ptr->action.func_ptr = &mapping_polygon_play;
-    //blob_ptr->action.data_ptr = &polygon_ptr->params.touch[j];
     return true;
   }
   return false;
@@ -54,7 +54,7 @@ bool mapping_polygon_interact(blob_t* blob_ptr, common_t* common_ptr) {
 // We can draw polygons to define zones et/ou zones overlaps playing MIDI_NOTES
 void mapping_polygon_play(blob_t* blob_ptr) {
   //mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
-  //touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.data_ptr;
+  //touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
   // TODO: get the max width & max height and scale it to [0-1]
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_POLYGONS)
     Serial.printf("\nDEBUG_MAPPINGS_POLYGONS\tPoint %f %f is inside polygon %d\n", blob_ptr->centroid.x, blob_ptr->centroid.y, p);

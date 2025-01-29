@@ -1,5 +1,5 @@
 /*
-  This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
+  This file is part of the eTextile-Synthesizer project - https://synth.eTextile.org
   Copyright (c) 2014-2022 Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
@@ -16,15 +16,12 @@ void mapping_lib_update(void) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
     for (lnode_t* common_node_ptr = ITERATOR_START_FROM_HEAD(&llist_controls); common_node_ptr != NULL; common_node_ptr = ITERATOR_NEXT(common_node_ptr)) {
       common_t* common_ptr = (common_t*)ITERATOR_DATA(common_node_ptr);
-      if (common_ptr->test_ptr(blob_ptr, common_ptr)){
-        common_ptr->play_ptr(blob_ptr, common_ptr);
+      if (common_ptr->interact_func_ptr(blob_ptr, common_ptr)) {
+        common_ptr->play_func_ptr(blob_ptr);
       };
     };
   };
 };
-
-
-
 
 
 
@@ -41,6 +38,27 @@ void mapping_lib_update(void) {
 ///////////////////////////////////////////////
               /*__C_SLIDERS__*/ 
 ///////////////////////////////////////////////
+
+/*
+typedef struct cSlider_s cSlider_t;
+struct cSlider_s {
+  midi_t midiMsg;
+  uint8_t id;
+  float thetaMin;
+  float thetaMax;
+  float lastVal;
+};
+*/
+
+/*
+typedef struct cTrack_s cTrack_t;
+struct cTrack_s {
+  uint8_t sliders;
+  uint8_t index;
+  float offset;
+};
+*/
+
 // https://www.flickr.com/photos/maurin/50866229007/in/dateposted-public/
 // CIRCULAR_SLIDERS_CONSTANTS
 // This is not yet modified to work with loaded config file!!

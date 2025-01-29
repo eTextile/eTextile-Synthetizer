@@ -1,5 +1,5 @@
 /*
-  This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
+  This file is part of the eTextile-Synthesizer project - https://synth.eTextile.org
   Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
@@ -22,16 +22,16 @@ void mapping_sliders_alloc(uint8_t sliders_cnt) {
 
 void mapping_slider_play(blob_t*);
 
-bool mapping_slider_interact(blob_t* blob_ptr, common_t* common_ptr) {
-  mapp_slider_t* slider_ptr = (mapp_slider_t*)common_ptr;
+bool mapping_slider_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
+  mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
   for (uint8_t j = 0; j < slider_ptr->params.touchs; j++) {
     if (blob_ptr->centroid.x > slider_ptr->params.rect.from.x &&
         blob_ptr->centroid.x < slider_ptr->params.rect.to.x &&
         blob_ptr->centroid.y > slider_ptr->params.rect.from.y &&
         blob_ptr->centroid.y < slider_ptr->params.rect.to.y) {
-      blob_ptr->action.func_ptr = &mapping_slider_play;
       blob_ptr->action.mapping_ptr = slider_ptr;
-      blob_ptr->action.data_ptr = &slider_ptr->params.touch[j];
+      blob_ptr->action.touch_ptr = &slider_ptr->params.touch[j];
+      blob_ptr->action.func_ptr = &mapping_slider_play;
       return true;
     }
   }
@@ -40,7 +40,7 @@ bool mapping_slider_interact(blob_t* blob_ptr, common_t* common_ptr) {
 
 void mapping_slider_play(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
-  touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.data_ptr;
+  touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
   //Serial.printf("\nDEBUG_MAPPINGS_SLIDERS\tTOUCHS:%d", slider_ptr->params.touchs);
     switch (slider_ptr->params.pos) {
       case HORIZONTAL:
@@ -149,6 +149,6 @@ void mapping_slider_create(const JsonObject &config) {
     } else {
       slider_ptr->params.pos = HORIZONTAL;
     };
-    llist_push_back(&llist_controls, slider_ptr);
   };
+  llist_push_back(&llist_controls, slider_ptr);
 };

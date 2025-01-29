@@ -1,5 +1,5 @@
 /*
-  This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
+  This file is part of the eTextile-Synthesizer project - https://synth.eTextile.org
   Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
@@ -39,42 +39,22 @@ struct touch_3d_s {
   msg_t press;
 };
 
-
 typedef enum {
   VERTICAL,
   HORIZONTAL
 } dir_t;
 
-/*
-typedef struct cTrack_s cTrack_t;
-struct cTrack_s {
-  uint8_t sliders;
-  uint8_t index;
-  float offset;
-};
-*/
-
-/*
-typedef struct cSlider_s cSlider_t;
-struct cSlider_s {
-  midi_t midiMsg;
-  uint8_t id;
-  float thetaMin;
-  float thetaMax;
-  float lastVal;
-};
-*/
-
 extern llist_t llist_controls;
 
-typedef struct mapp_common_s common_t;
-typedef bool mapping_test_t(blob_t*, common_t*); 
-typedef void mapping_play_t(blob_t*, common_t*);
+typedef struct common_s common_t;
 
-struct mapp_common_s {
-  blob_t* blob_ptr;
-  mapping_test_t* test_ptr;
-  mapping_play_t* play_ptr;
+typedef bool interact_t(blob_t*, common_t*); 
+typedef void play_t(blob_t*, common_t*);
+
+struct common_s {
+  //blob_t* blob_ptr;
+  interact_t* interact_func_ptr;
+  play_t* play_func_ptr;
 };
 
 void mapping_lib_update(void);
