@@ -6,7 +6,7 @@
 
 #include "mapping.h"
 
-llist_t llist_controls;
+llist_t llist_mappings;
 
 void mapping_lib_update(void) {
   
@@ -14,7 +14,7 @@ void mapping_lib_update(void) {
 
   for (lnode_t* blob_node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); blob_node_ptr != NULL; blob_node_ptr = ITERATOR_NEXT(blob_node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(blob_node_ptr);
-    for (lnode_t* common_node_ptr = ITERATOR_START_FROM_HEAD(&llist_controls); common_node_ptr != NULL; common_node_ptr = ITERATOR_NEXT(common_node_ptr)) {
+    for (lnode_t* common_node_ptr = ITERATOR_START_FROM_HEAD(&llist_mappings); common_node_ptr != NULL; common_node_ptr = ITERATOR_NEXT(common_node_ptr)) {
       common_t* mapping_common_ptr = (common_t*)ITERATOR_DATA(common_node_ptr);
       if (mapping_common_ptr->interact_func_ptr(blob_ptr, mapping_common_ptr)) {
         mapping_common_ptr->play_func_ptr(blob_ptr);

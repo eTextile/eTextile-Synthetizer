@@ -140,7 +140,7 @@ void mapping_grid_create(const JsonObject &config) {
   //float key_size_y = (grid_size_y / grid_ptr_->params.rows) - grid_ptr->params.gap;
   mapp_grids->params.scale_factor_x = ((float)1 / grid_size_x) * grid_ptr->params.cols;
   mapp_grids->params.scale_factor_y = ((float)1 / grid_size_y) * grid_ptr->params.rows;
-  llist_push_back(&llist_controls, grid_ptr);
+  llist_push_back(&llist_mappings, grid_ptr);
 };
 
 /*

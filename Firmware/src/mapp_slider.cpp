@@ -153,5 +153,5 @@ void mapping_slider_create(const JsonObject &config) {
       slider_ptr->params.pos = HORIZONTAL;
     };
   };
-  llist_push_back(&llist_controls, slider_ptr);
+  llist_push_back(&llist_mappings, slider_ptr);
 };

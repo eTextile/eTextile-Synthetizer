@@ -123,5 +123,5 @@ void mapping_switch_create(const JsonObject &config) {
     switch_ptr->params.msg.limit.min = config["msg"][0]["press"]["limit"]["min"].as<uint8_t>();
     switch_ptr->params.msg.limit.max = config["msg"][0]["press"]["limit"]["max"].as<uint8_t>(); 
   }
-  llist_push_back(&llist_controls, switch_ptr);
+  llist_push_back(&llist_mappings, switch_ptr);
 };

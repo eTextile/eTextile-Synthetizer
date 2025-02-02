@@ -113,5 +113,5 @@ void mapping_knob_create(const JsonObject &config) {
     knob_ptr->params.radius = (knob_ptr->params.rect.to.x - knob_ptr->params.rect.from.x) / 2;
     knob_ptr->params.center.x = (knob_ptr->params.rect.from.x + knob_ptr->params.radius);
     knob_ptr->params.center.y = (knob_ptr->params.rect.from.y + knob_ptr->params.radius);
-    llist_push_back(&llist_controls, knob_ptr);
+    llist_push_back(&llist_mappings, knob_ptr);
 };

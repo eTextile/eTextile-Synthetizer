@@ -87,5 +87,5 @@ void mapping_polygon_create(const JsonObject &config) {
     };
     v2 = v1;
   }
-  llist_push_back(&llist_controls, polygon_ptr);
+  llist_push_back(&llist_mappings, polygon_ptr);
 };

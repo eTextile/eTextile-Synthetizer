@@ -44,7 +44,7 @@ typedef enum dir_e {
   HORIZONTAL
 } dir_t;
 
-extern llist_t llist_controls;
+extern llist_t llist_mappings;
 
 typedef struct common_s common_t;
 
