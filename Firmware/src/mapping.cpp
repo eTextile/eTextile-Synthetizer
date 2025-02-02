@@ -15,9 +15,9 @@ void mapping_lib_update(void) {
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
     for (lnode_t* common_node_ptr = ITERATOR_START_FROM_HEAD(&llist_controls); common_node_ptr != NULL; common_node_ptr = ITERATOR_NEXT(common_node_ptr)) {
-      common_t* common_ptr = (common_t*)ITERATOR_DATA(common_node_ptr);
-      if (common_ptr->interact_func_ptr(blob_ptr, common_ptr)) {
-        common_ptr->play_func_ptr(blob_ptr);
+      common_t* mapping_common_ptr = (common_t*)ITERATOR_DATA(common_node_ptr);
+      if (mapping_common_ptr->interact_func_ptr(blob_ptr, mapping_common_ptr)) {
+        mapping_common_ptr->play_func_ptr(blob_ptr);
       };
     };
   };
