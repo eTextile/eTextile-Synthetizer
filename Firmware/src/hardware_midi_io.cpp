@@ -32,9 +32,9 @@ void hardware_midi_handle_input(const midi::Message<128u> &midiMsg) {
   node_ptr->midi.data2 = midiMsg.data2;     // Set the MIDI velocity
   node_ptr->midi.channel = midiMsg.channel; // Set the MIDI channel
   #if defined(MIDI_THRU)
-    llist_push_front(&midi_out, node_ptr);      // Add the node to the midi_out linked liste
+    llist_push_front(&midi_out, node_ptr);      // Add the node to the midi_out linked list
   #else
-    llist_push_front(&midi_in, node_ptr);       // Add the node to the midi_in linked liste
+    llist_push_front(&midi_in, node_ptr);       // Add the node to the midi_in linked list
   #endif
 };
 

@@ -43,8 +43,8 @@ void midi_handle_input(const midi::Message<128u> &midiMsg) {
   node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI note
   node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI velocity
   node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel
-  llist_push_front(&midi_in, node_ptr);             // Add the node to the midi_in linked liste    
-  //llist_push_front(&midi_nodes_pool, node_ptr);  // Save the node to the midi_nodes_pool linked liste
+  llist_push_front(&midi_in, node_ptr);             // Add the node to the midi_in linked list    
+  //llist_push_front(&midi_nodes_pool, node_ptr);  // Save the node to the midi_nodes_pool linked list
 };
 */
 
