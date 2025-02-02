@@ -39,7 +39,7 @@ struct touch_3d_s {
   msg_t press;
 };
 
-typedef enum {
+typedef enum dir_e {
   VERTICAL,
   HORIZONTAL
 } dir_t;

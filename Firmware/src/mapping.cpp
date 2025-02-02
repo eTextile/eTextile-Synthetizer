@@ -10,9 +10,9 @@ llist_t llist_controls;
 
 void mapping_lib_update(void) {
   
-  llist_concat_nodes(&midi_nodes_pool, &midiOut); // Save/rescure all midiOut nodes
+  llist_concat_nodes(&midi_nodes_pool, &midi_out); // Save/rescure all midi_out nodes
 
-  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
+  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
     for (lnode_t* common_node_ptr = ITERATOR_START_FROM_HEAD(&llist_controls); common_node_ptr != NULL; common_node_ptr = ITERATOR_NEXT(common_node_ptr)) {
       common_t* common_ptr = (common_t*)ITERATOR_DATA(common_node_ptr);
@@ -42,7 +42,7 @@ void mapping_lib_update(void) {
 /*
 typedef struct cSlider_s cSlider_t;
 struct cSlider_s {
-  midi_t midiMsg;
+  midi_msg_t midiMsg;
   uint8_t id;
   float thetaMin;
   float thetaMax;
@@ -128,7 +128,7 @@ void mapping_cSliders_update(void) {
         Serial.printf("\nDEBUG_MAPPINGS_CSLIDER\tRADIUS:%f\tTHETA:%f", radius, theta);
       #endif
       if (blob_ptr->state) {
-        if (!blob_ptr->lastState) {
+        if (!blob_ptr->last_state) {
           for (uint8_t id = cTrack[track].index; id < cTrack[track].index + cTrack[track].sliders; id++) {
             if (theta > mapp_cSliders[id].thetaMin && theta < mapp_cSliders[id].thetaMax) {
               mapp_cSliders_ptr[blob_ptr->UID] = &mapp_cSliders[id]; // Record pointer to slider

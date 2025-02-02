@@ -13,7 +13,7 @@
 // E256 MIDI CONSTANTS
 
 /*
-typedef enum midi_types {
+typedef enum midi_types_e {
   NOTE_OFF = 0x8,     // TRIGGER WITH VELOCITY
   NOTE_ON = 0x9,      // PRESSURE ONLY
   P_AFTERTOUCH = 0xA, // TRIGGER AND PRESSURE

@@ -9,12 +9,12 @@
 
 #define MIDI_NODES 128
 
-midiNode_t midi_nodes_array[MIDI_NODES] = {}; // Memory allocation for all MIDI I/O messages
+midi_node_t midi_nodes_array[MIDI_NODES] = {}; // Memory allocation for all MIDI I/O messages
 
 llist_t midi_nodes_pool;                    // Main MIDI node stack
-llist_t midiIn;                             // Main MIDI Input linked list
-llist_t midiOut;                            // Main MIDI Output linked list
-llist_t midiChord;                          // Main MIDI chord linked list
+llist_t midi_in;                             // Main MIDI Input linked list
+llist_t midi_out;                            // Main MIDI Output linked list
+llist_t midi_chord;                          // Main MIDI chord linked list
 
 // Extract MIDI type and channel from MIDI status msg
 // https://www.midi.org/specifications-old/item/table-2-expanded-messages-list-status-bytes
@@ -31,19 +31,19 @@ uint8_t midi_msg_status_pack(MidiType type, uint8_t channel) {
 
 void midi_bus_setup(void) {
   llist_builder(&midi_nodes_pool, &midi_nodes_array[0], MIDI_NODES, sizeof(midi_nodes_array[0])); // Add X nodes to the midi_nodes_pool
-  llist_raz(&midiIn);
-  llist_raz(&midiOut);
-  llist_raz(&midiChord);
+  llist_raz(&midi_in);
+  llist_raz(&midi_out);
+  llist_raz(&midi_chord);
 };
 
 /*
 void midi_handle_input(const midi::Message<128u> &midiMsg) {
-  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_nodes_pool);  // Get a node from the MIDI nodes stack
+  midi_node_t* node_ptr = (midi_node_t*)llist_pop_front(&midi_nodes_pool);  // Get a node from the MIDI nodes stack
   node_ptr->midiMsg.type = midiMsg.type;           // Set the MIDI type
   node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI note
   node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI velocity
   node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel
-  llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste    
+  llist_push_front(&midi_in, node_ptr);             // Add the node to the midi_in linked liste    
   //llist_push_front(&midi_nodes_pool, node_ptr);  // Save the node to the midi_nodes_pool linked liste
 };
 */

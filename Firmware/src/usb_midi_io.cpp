@@ -81,7 +81,7 @@ void usb_midi_transmit() {
     case MATRIX_MODE_RAW:
       if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
         usbTransmitTimeStamp = millis();
-        usbMIDI.sendSysEx(RAW_FRAME, rawFrame.pData, false);
+        usbMIDI.sendSysEx(RAW_FRAME, raw_frame.data_ptr, false);
         usbMIDI.send_now();
       };
       while (usbMIDI.read()); // Read and discard any incoming MIDI messages
@@ -92,7 +92,7 @@ void usb_midi_transmit() {
       // Interpolation will be made on the web_app side!
       if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
         usbTransmitTimeStamp = millis();
-        usbMIDI.sendSysEx(NEW_FRAME, interpFrame.pData, false, 0);
+        usbMIDI.sendSysEx(NEW_FRAME, interp_frame.data_ptr, false, 0);
         usbMIDI.send_now();
       };
       while (usbMIDI.read()); // Read and discard any incoming MIDI messages
@@ -100,16 +100,17 @@ void usb_midi_transmit() {
     */
     case EDIT_MODE:
       // Send all blobs values over USB using MIDI format
-      for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
+      for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
         blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
+        // TODO: update using the new blob_status_t
         if (blob_ptr->state) {
-          if (!blob_ptr->lastState) {
+          if (!blob_ptr->last_state) {
             usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, BS); // sendNoteOn(note, velocity, channel);
             usbMIDI.send_now();
           }
           else {
-            //if (millis() - blob_ptr->transmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
-              //blob_ptr->transmitTimeStamp = millis();
+            //if (millis() - blob_ptr->transmit_time_stamp > MIDI_TRANSMIT_INTERVAL) {
+              //blob_ptr->transmit_time_stamp = millis();
               blobValues[0] = blob_ptr->UID + 1;
               
               uint8_t whole_part = (uint8_t)blob_ptr->centroid.x;
@@ -128,7 +129,7 @@ void usb_midi_transmit() {
             //};
           };
         } else {
-          if (blob_ptr->lastState && blob_ptr->status != MISSING) { ///////////////////////// TO_TEST!
+          if (blob_ptr->last_state && blob_ptr->status != MISSING) { ///////////////////////// TO_TEST!
             usbMIDI.sendNoteOff(blob_ptr->UID + 1, 0, BS); // sendNoteOff(note, velocity, channel);
             usbMIDI.send_now();
           };
@@ -151,17 +152,17 @@ void usb_midi_send_info(uint8_t msg, uint8_t channel){
 };
 
 void usb_read_noteOn(uint8_t channel, uint8_t note, uint8_t velocity){
-  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_nodes_pool);
+  midi_node_t* node_ptr = (midi_node_t*)llist_pop_front(&midi_nodes_pool);
   node_ptr->midi.type = midi::NoteOn;
   node_ptr->midi.data1 = note;
   node_ptr->midi.data2 = velocity;
   node_ptr->midi.channel = channel;
   switch (e256_current_mode) {
     case EDIT_MODE:
-      llist_push_front(&midiIn, node_ptr);  // Add the node to the midiIn linked liste
+      llist_push_front(&midi_in, node_ptr);  // Add the node to the midi_in linked liste
       break;
     case PLAY_MODE:
-      llist_push_front(&midiOut, node_ptr); // Add the node to the midiOut linked liste
+      llist_push_front(&midi_out, node_ptr); // Add the node to the midi_out linked liste
       break;
     default:
       break;
@@ -169,17 +170,17 @@ void usb_read_noteOn(uint8_t channel, uint8_t note, uint8_t velocity){
 };
 
 void usb_read_noteOff(uint8_t channel, uint8_t note, uint8_t velocity){
-  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_nodes_pool);
+  midi_node_t* node_ptr = (midi_node_t*)llist_pop_front(&midi_nodes_pool);
   node_ptr->midi.type = midi::NoteOff;
   node_ptr->midi.data1 = note;
   node_ptr->midi.data2 = velocity;
   node_ptr->midi.channel = channel;
   switch (e256_current_mode) {
     case EDIT_MODE:
-      llist_push_front(&midiIn, node_ptr);  // Add the node to the midiIn linked liste
+      llist_push_front(&midi_in, node_ptr);  // Add the node to the midi_in linked liste
       break;
     case PLAY_MODE:
-      llist_push_front(&midiOut, node_ptr); // Add the node to the midiOut linked liste
+      llist_push_front(&midi_out, node_ptr); // Add the node to the midi_out linked liste
       break;
     default:
       break;
@@ -187,24 +188,24 @@ void usb_read_noteOff(uint8_t channel, uint8_t note, uint8_t velocity){
 };
 
 // Used by USB_MIDI
-// If the CC comes from usb it is forwarded to midiOut acting as MIDI thru
+// If the CC comes from usb it is forwarded to midi_out acting as MIDI thru
 void usb_read_controlChange(uint8_t channel, uint8_t control, uint8_t value){
   switch (channel){
     case MIDI_LEVELS_CHANNEL:
       set_level((level_codes_t)control, value);
       break;
     default:
-      midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_nodes_pool);  // Get a node from the MIDI nodes stack
+      midi_node_t* node_ptr = (midi_node_t*)llist_pop_front(&midi_nodes_pool);  // Get a node from the MIDI nodes stack
       node_ptr->midi.type = midi::ControlChange; // Set the MIDI type
       node_ptr->midi.data1 = control;            // Set the MIDI note
       node_ptr->midi.data2 = value;              // Set the MIDI velocity
       node_ptr->midi.channel = channel;          // Set the MIDI channel
       switch (e256_current_mode) {
         case EDIT_MODE:
-          llist_push_front(&midiIn, node_ptr);  // Add the node to the midiIn linked liste
+          llist_push_front(&midi_in, node_ptr);  // Add the node to the midi_in linked liste
           break;
         case PLAY_MODE:
-          llist_push_front(&midiOut, node_ptr); // Add the node to the midiOut linked liste
+          llist_push_front(&midi_out, node_ptr); // Add the node to the midi_out linked liste
           break;
         default:
           break;
@@ -217,7 +218,7 @@ void usb_read_programChange(uint8_t channel, uint8_t program){
   
   switch (channel){
     case MIDI_MODES_CHANNEL:
-      //Serial.printf("\nRECEIVED:\t%s", get_mode_name((mode_codes_t)program));
+      //Serial.printf("\nRECEIVED:\t%s", get_mode_name((enum_mode_codes_t)program));
       switch (program){
 
         case PENDING_MODE:

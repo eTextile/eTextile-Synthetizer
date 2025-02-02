@@ -150,22 +150,22 @@ void mapping_grids_populate_dynamic(void) {
   bool newNote = false; // TODO: move it to grid_t struct
   for (uint8_t i = 0; i < mapp_grids; i++) {
     while (1) {
-      midiNode_t* nodeIn_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn);
+      midi_node_t* nodeIn_ptr = (midi_node_t*)ITERATOR_START_FROM_HEAD(&midi_in);
       if (nodeIn_ptr != NULL) {
         switch (nodeIn_ptr->midi.type) {
           case midi::NoteOn:
-            // Move the input MIDI node to the midiChord linked list
-            llist_push_front(&midiChord, llist_pop_front(&midiIn));
+            // Move the input MIDI node to the midi_chord linked list
+            llist_push_front(&midi_chord, llist_pop_front(&midi_in));
             newNote = true;
             break;
           case midi::NoteOff:
-            // Remove and save the MIDI node from the midiChord linked list
-            // Save the nodeIn_ptr NOTE_OFF MIDI node from the midiIn linked list
-            midiNode_t* prevNode_ptr = NULL;
-            for (midiNode_t* nodeOut_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiChord); nodeOut_ptr != NULL; nodeOut_ptr = (midiNode_t*)ITERATOR_NEXT(nodeOut_ptr)) {
+            // Remove and save the MIDI node from the midi_chord linked list
+            // Save the nodeIn_ptr NOTE_OFF MIDI node from the midi_in linked list
+            midi_node_t* prevNode_ptr = NULL;
+            for (midi_node_t* nodeOut_ptr = (midi_node_t*)ITERATOR_START_FROM_HEAD(&midi_chord); nodeOut_ptr != NULL; nodeOut_ptr = (midi_node_t*)ITERATOR_NEXT(nodeOut_ptr)) {
               if (nodeIn_ptr->midi.data2 == nodeOut_ptr->midi.data2) {
-                llist_push_front(&midi_nodes_pool, llist_pop_front(&midiIn));
-                llist_extract_node(&midiChord, prevNode_ptr, nodeOut_ptr);
+                llist_push_front(&midi_nodes_pool, llist_pop_front(&midi_in));
+                llist_extract_node(&midi_chord, prevNode_ptr, nodeOut_ptr);
                 llist_push_front(&midi_nodes_pool, nodeOut_ptr);
                 break;
               };
@@ -185,7 +185,7 @@ void mapping_grids_populate_dynamic(void) {
       unsigned int key = 0;
       //while (key < GRID_KEYS) {
       while (key < mapp_grids_params[0].keys) { // FIXME: only works for one grid!
-        for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiChord); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
+        for (midi_node_t* node_ptr = (midi_node_t*)ITERATOR_START_FROM_HEAD(&midi_chord); node_ptr != NULL; node_ptr = (midi_node_t*)ITERATOR_NEXT(node_ptr)) {
           mapp_grids_params[0].midiLayout[key] = node_ptr->midi;
           key++;
         };

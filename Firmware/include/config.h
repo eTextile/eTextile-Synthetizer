@@ -76,7 +76,7 @@
 #define MIDI_ERROR_CHANNEL 6
 
 // E256 MAPPING_LIB CONSTANTS
-#define MAX_BLOBS 16 // [0:7] How many blobs can be tracked at the same time
+#define MAX_BLOBS 16 // [1:16] How many blobs can be tracked at the same time
 
 #define MAX_SWITCHS 16
 #define MAX_SWITCHS_TOUCHS 1
@@ -98,7 +98,7 @@
 
 #define MAX_CSLIDERS 2
 
-typedef enum level_codes {
+typedef enum level_codes_e {
   THRESHOLD, // E256-LEDs: | 1 | 1 |
   SIG_IN,    // E256-LEDs: | 1 | 0 |
   SIG_OUT,   // E256-LEDs: | 0 | 1 |
@@ -107,7 +107,7 @@ typedef enum level_codes {
 
 extern level_codes_t e256_current_level;
 
-typedef enum mode_codes {
+typedef enum mode_codes_e {
   PENDING_MODE,    // Waiting for mode
   SYNC_MODE,       // Hand chake mode
   CALIBRATE_MODE,  //
@@ -127,7 +127,7 @@ typedef enum mode_codes {
 
 extern mode_codes_t e256_current_mode;
 
-typedef enum verbosity_codes {
+typedef enum verbosity_codes_e{
   PENDING_MODE_DONE,
   SYNC_MODE_DONE,
   CALIBRATE_MODE_DONE,
@@ -149,7 +149,7 @@ typedef enum verbosity_codes {
 
 extern verbosity_codes_t e256_verbosity_code;
 
-typedef enum errors_codes {
+typedef enum error_codes_e {
   WAITING_FOR_CONFIG,
   CONNECTING_FLASH,
   FLASH_FULL,
@@ -166,40 +166,40 @@ typedef enum errors_codes {
 
 extern error_codes_t e256_error_code;
 
-typedef struct leds leds_t;
-struct leds {
+typedef struct leds_s leds_t;
+struct leds_s {
   bool D1;
   bool D2;
   bool update;
 };
 
-typedef struct e256_mode e256_mode_t;
-struct e256_mode {
+typedef struct e256_mode_s e256_mode_t;
+struct e256_mode_s {
   leds_t leds;
   uint16_t timeOn;
   uint16_t timeOff;
   bool toggle;
 };
 
-typedef struct e256_level e256_level_t;
-struct e256_level {
+typedef struct level_s level_t;
+struct level_s {
   leds_t leds;
-  uint8_t minVal;
-  uint8_t maxVal;
+  uint8_t min_val;
+  uint8_t max_val;
   uint8_t val;
   bool update;
 };
 
-typedef struct e256_control e256_control_t;
-struct e256_control {
-  Encoder *encoder;
-  e256_mode_t *modes;
-  e256_level_t *levels;
+typedef struct control_s control_t;
+struct control_s {
+  Encoder* encoder;
+  e256_mode_t* modes;
+  level_t* levels;
 };
 
-extern e256_control_t e256_ctr;
+extern control_t e256_ctr;
 
-extern uint8_t *flash_config_ptr;
+extern uint8_t* flash_config_ptr;
 extern size_t flash_config_size;
 
 void blink(uint8_t iter);
@@ -209,7 +209,7 @@ void set_level(level_codes_t level, uint8_t value);
 void hardware_setup(void);
 void update_controls(void);
 bool load_flash_config(void);
-bool apply_config(uint8_t *conf_ptr, size_t conf_size);
+bool apply_config(uint8_t* conf_ptr, size_t conf_size);
 
 const char* get_mode_name(mode_codes_t code);
 const char* get_verbosity_name(verbosity_codes_t code);

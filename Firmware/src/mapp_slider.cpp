@@ -29,8 +29,11 @@ bool mapping_slider_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
         blob_ptr->centroid.x < slider_ptr->params.rect.to.x &&
         blob_ptr->centroid.y > slider_ptr->params.rect.from.y &&
         blob_ptr->centroid.y < slider_ptr->params.rect.to.y) {
+      
       blob_ptr->action.mapping_ptr = slider_ptr;
-      blob_ptr->action.touch_ptr = &slider_ptr->params.touch[j];
+
+      blob_ptr->action.touch_ptr = &slider_ptr->params.touch[j]; // FIXME!
+      
       blob_ptr->action.func_ptr = &mapping_slider_play;
       return true;
     }

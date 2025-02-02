@@ -23,14 +23,14 @@
 #include "mapp_grid.h"
 #include "mapp_polygon.h"
 
-typedef union {
+union {
   switch_t _switch;
   slider_t _slider;
   touchpad_t _touchpad;
   knob_t knob;
   grid_t grid;
   polygon_t polygon;
-}mapping_u;
+} mapping_union_t;
 
 Bounce BUTTON_L = Bounce();
 Bounce BUTTON_R = Bounce();
@@ -133,14 +133,14 @@ e256_mode_t e256_m[15] = {
 Encoder e256_e(ENCODER_PIN_A, ENCODER_PIN_B);
 
 // The levels below can be selected using E256 built-in right switche
-e256_level_t e256_l[4] = {
+level_t e256_l[4] = {
   {{HIGH, HIGH, false}, 2, 50, 10, false}, // [0] THRESHOLD
   {{HIGH, LOW, false}, 1, 31, 17, false},  // [1] SIG_IN
   {{LOW, HIGH, false}, 13, 31, 29, false}, // [2] SIG_OUT
   {{LOW, LOW, false}, 2, 60, 3, false}     // [3] LINE_OUT
 };
 
-e256_control_t e256_ctr = {
+control_t e256_ctr = {
   &e256_e,    // encoder_ptr
   &e256_m[0], // modes_ptr
   &e256_l[0]  // levels_ptr
@@ -295,11 +295,11 @@ inline void setup_encoder(){
 inline bool read_encoder(level_codes_t level) {
   uint8_t val = e256_ctr.encoder->read() >> 2;
   if (val != e256_ctr.levels[(uint8_t)level].val) {
-    if (val > e256_ctr.levels[(uint8_t)level].maxVal) {
-      e256_ctr.encoder->write(e256_ctr.levels[(uint8_t)level].maxVal << 2);
+    if (val > e256_ctr.levels[(uint8_t)level].max_val) {
+      e256_ctr.encoder->write(e256_ctr.levels[(uint8_t)level].max_val << 2);
     }
-    else if (val < e256_ctr.levels[(uint8_t)level].minVal) {
-      e256_ctr.encoder->write(e256_ctr.levels[(uint8_t)level].minVal << 2);
+    else if (val < e256_ctr.levels[(uint8_t)level].min_val) {
+      e256_ctr.encoder->write(e256_ctr.levels[(uint8_t)level].min_val << 2);
     }
     else {
       e256_ctr.levels[(uint8_t)level].val = val;
@@ -350,7 +350,7 @@ inline void blink_leds(uint8_t mode) {
 inline void fade_leds(level_codes_t level) {
   if (e256_ctr.levels[(uint8_t)level].leds.update) {
     e256_ctr.levels[(uint8_t)level].leds.update = false;
-    uint8_t ledVal = constrain(map(e256_ctr.levels[(uint8_t)level].val, e256_ctr.levels[(uint8_t)level].minVal, e256_ctr.levels[(uint8_t)level].maxVal, 0, 255), 0, 255);
+    uint8_t ledVal = constrain(map(e256_ctr.levels[(uint8_t)level].val, e256_ctr.levels[(uint8_t)level].min_val, e256_ctr.levels[(uint8_t)level].max_val, 0, 255), 0, 255);
     analogWrite(LED_PIN_D1, abs(255 - ledVal));
     analogWrite(LED_PIN_D2, ledVal);
   };

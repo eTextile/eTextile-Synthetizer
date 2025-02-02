@@ -9,8 +9,8 @@
 
 #include "blob.h"
 
-extern uint8_t interpThreshold; // Exposed local declaration see interp.cpp
-extern image_t interpFrame;     // Exposed local declaration see interp.cpp
+extern uint8_t interp_threshold; // Exposed local declaration see interp.cpp
+extern image_t interp_frame;     // Exposed local declaration see interp.cpp
 
 void interp_setup(void);
 void matrix_interp(void);

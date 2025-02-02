@@ -15,7 +15,9 @@
 
 #include "llist.h"
 
-typedef enum {
+extern llist_t llist_blobs;                   // Intermediate blobs linked list
+
+typedef enum blob_params_e {
   BI, // [0] Blob UID
   BS, // [1] Blob State
   BL, // [2] Blob Last State
@@ -26,20 +28,20 @@ typedef enum {
   BH  // [7] Blob Height
 } blob_params_t;
 
-extern llist_t llist_previous_blobs; // Exposed local declaration see blob.cpp
+//extern llist_t llist_previous_blobs; // Exposed local declaration see blob.cpp
 
 typedef struct image_s image_t;
 struct image_s {
-  uint8_t* pData;
-  uint8_t numCols;
-  uint8_t numRows;
+  uint8_t* data_ptr;
+  uint8_t num_cols;
+  uint8_t num_rows;
 };
 
-#define COMPUTE_IMAGE_ROW_PTR(pImage, y) \
+#define COMPUTE_IMAGE_ROW_PTR(image_ptr, y) \
   ({ \
-    __typeof__ (pImage) _pImage = (pImage); \
+    __typeof__ (image_ptr) _image_ptr = (image_ptr); \
     __typeof__ (y) _y = (y); \
-    ((uint8_t*)_pImage->pData) + (_pImage->numCols * _y); \
+    ((uint8_t*)_image_ptr->data_ptr) + (_image_ptr->num_cols* _y); \
   })
 
 #define IMAGE_GET_PIXEL_FAST(row_ptr, x) \
@@ -57,11 +59,11 @@ struct image_s {
     _row_ptr[_x] = _v; \
   })
 
-#define PIXEL_THRESHOLD(pixel, Threshold) \
+#define PIXEL_THRESHOLD(pixel, threshold) \
   ({ \
     __typeof__ (pixel) _pixel = (pixel); \
-    __typeof__ (Threshold) _Threshold = (Threshold); \
-    _pixel > _Threshold; \
+    __typeof__ (threshold) _threshold = (threshold); \
+    _pixel > _threshold; \
   })
 
 #define MIN(a, b)({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
@@ -98,18 +100,18 @@ struct velocity_s {
 };
 
 /*
-typedef enum status {
+typedef enum blob_status_e{
   FREE,
   NOT_FOUND, // INACTIVE
   TO_REMOVE 
-} status_t;
+} blob_status_t;
 */
 
-typedef enum status {
+typedef enum blob_status_e {
   NEW,
   PRESENT,
   MISSING
-} status_t;
+} blob_status_t;
 
 typedef struct blob_s blob_t;
 
@@ -125,13 +127,13 @@ struct blob_action_s {
 
 struct blob_s {
   uint8_t UID;
-  status_t status;
-  uint32_t debounceTimeStamp; // time to leav
-  uint32_t transmitTimeStamp;
+  blob_status_t status;
+  uint32_t debounce_time_stamp; // time to leav
+  uint32_t transmit_time_stamp;
   box_t box;
   uint16_t pixels;
   bool state;
-  bool lastState;
+  bool last_state;
   vertrice_t centroid;
   vertrice_t last_centroid;
   velocity_t velocity;
@@ -140,6 +142,6 @@ struct blob_s {
 
 void blob_setup(void);
 void matrix_find_blobs(void);
-bool is_blob_existing(blob_t* blob_A_ptr, blob_t* new_blob_ptr);
+bool is_blob_existing(blob_t* blob_ptr, blob_t* new_blob_ptr);
 
 #endif /*__BLOB_H__*/

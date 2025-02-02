@@ -87,7 +87,7 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
 
   // Each controleur have touch/blobs limitation
-  if (!blob_ptr->lastState) {
+  if (!blob_ptr->last_state) {
     if (touchpad_ptr->params.touchs_count < touchpad_ptr->params.touchs) {
       touchpad_ptr->params.touchs_count++;
       midi_sendOut(touch_ptr->press.midi);
@@ -135,7 +135,7 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
 
   switch (touch_ptr->press.midi.type) {
     case midi::NoteOff:
-      if (!blob_ptr->lastState) {
+      if (!blob_ptr->last_state) {
         touch_ptr->press.midi.type = midi::NoteOn;
         //touch_ptr->press.midi.data2 = ... // TODO: add the velocity to the blob values!
         midi_sendOut(touch_ptr->press.midi);
@@ -152,7 +152,7 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
       }
       break;
     case midi::NoteOn:
-      if (!blob_ptr->lastState) {
+      if (!blob_ptr->last_state) {
         touch_ptr->press.midi.type = midi::NoteOn;
         //mapp_switch->params.msg.midi.data2 = ... // TODO: add the velocity to the blob values!
         midi_sendOut(touch_ptr->press.midi);
@@ -205,20 +205,20 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
   };
 
   if (blob_ptr->state) {
-    if (!blob_ptr->lastState) {
+    if (!blob_ptr->last_state) {
       if (touch_ptr->press.midi.type == midi::NoteOn) {
         midi_sendOut(touch_ptr->press.midi);
       }
     }
     else {
-      //if (millis() - blob_ptr->transmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
-        //blob_ptr->transmitTimeStamp = millis();
+      //if (millis() - blob_ptr->transmit_time_stamp > MIDI_TRANSMIT_INTERVAL) {
+        //blob_ptr->transmit_time_stamp = millis();
         midi_sendOut(touch_ptr->pos_x.midi);
         midi_sendOut(touch_ptr->pos_y.midi);
       //};
     };
   } else {
-    if (blob_ptr->lastState && blob_ptr->status != NOT_FOUND) {
+    if (blob_ptr->last_state && blob_ptr->status != NOT_FOUND) {
       midi_sendOut(touch_ptr->press.midi);
     };
   }

@@ -10,7 +10,7 @@
 #include "blob.h"
 
 typedef struct image_s image_t; // Forward declaration located in blob.h
-extern image_t rawFrame;        // Exposed local declaration see scan.cpp
+extern image_t raw_frame;        // Exposed local declaration see scan.cpp
 
 void scan_setup(void);
 void matrix_calibrate(void);
