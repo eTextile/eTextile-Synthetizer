@@ -7,8 +7,6 @@ typedef struct switch_s switch_t;
 struct switch_s {
   rect_t rect;
   msg_t msg;
-  //bool state; // Do we nead it?
-  //bool last_state; // Do we nead it?
 };
 
 void mapping_switchs_alloc(uint8_t switchs_cnt);

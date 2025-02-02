@@ -127,8 +127,8 @@ void mapping_cSliders_update(void) {
       #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
         Serial.printf("\nDEBUG_MAPPINGS_CSLIDER\tRADIUS:%f\tTHETA:%f", radius, theta);
       #endif
-      if (blob_ptr->state) {
-        if (!blob_ptr->last_state) {
+      if (blob_ptr->status == PRESENT) {
+        if (blob_ptr->status == NEW) {
           for (uint8_t id = cTrack[track].index; id < cTrack[track].index + cTrack[track].sliders; id++) {
             if (theta > mapp_cSliders[id].thetaMin && theta < mapp_cSliders[id].thetaMax) {
               mapp_cSliders_ptr[blob_ptr->UID] = &mapp_cSliders[id]; // Record pointer to slider

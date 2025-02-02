@@ -142,7 +142,7 @@ void matrix_calibrate(void) {
 void matrix_scan(void) {
   for (uint8_t cols = 0; cols < DUAL_COLS; cols++) { // ANNALOG_PINS [0-7] with [8-15]
     #if defined(SET_ORIGIN_Y)
-      uint16_t setRows = 0x1; // state to [0000 0000 0000 0001]
+      uint16_t setRows = 0x1; // alive to [0000 0000 0000 0001]
     #else
       uint16_t setRows = 0x8000; // Reset to [1000 0000 0000 0000]
     #endif

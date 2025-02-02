@@ -94,7 +94,7 @@ struct box_s {
 
 typedef struct velocity_s velocity_t;
 struct velocity_s {
-  unsigned long timeStamp;
+  unsigned long time_stamp;
   float xy;
   float z;
 };
@@ -128,12 +128,11 @@ struct blob_action_s {
 struct blob_s {
   uint8_t UID;
   blob_status_t status;
+  blob_status_t last_status;
   uint32_t debounce_time_stamp; // time to leav
   uint32_t transmit_time_stamp;
   box_t box;
   uint16_t pixels;
-  bool state;
-  bool last_state;
   vertrice_t centroid;
   vertrice_t last_centroid;
   velocity_t velocity;
@@ -142,6 +141,7 @@ struct blob_s {
 
 void blob_setup(void);
 void matrix_find_blobs(void);
+
 bool is_blob_existing(blob_t* blob_ptr, blob_t* new_blob_ptr);
 
 #endif /*__BLOB_H__*/

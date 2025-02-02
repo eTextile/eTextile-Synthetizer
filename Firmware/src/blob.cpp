@@ -42,14 +42,13 @@ void blob_setup(void) {
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs_pool); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
     blob_ptr->UID = 255;
-    blob_ptr->last_state = false;
-    blob_ptr->state = false;
+    blob_ptr->last_status = MISSING;
   };
 };
 
-inline uint16_t set_id(void){
-  static uint16_t UID = 0;
-  return (uint16_t)UID++; // Is casting a solution to not freeze when overflowing?
+inline uint8_t set_id(void) {
+  static uint8_t UID = 0;
+  return UID++;
 };
 
 /////////////////////////////// Scanline flood fill algorithm / SFF
@@ -219,6 +218,7 @@ void matrix_find_blobs(void) {
 
           blob_t* existing_blob_ptr = (blob_t*)llist_find(&llist_blobs, new_blob_ptr, (llist_compare_func_t*)&is_blob_existing);
           if (existing_blob_ptr != NULL) {
+            existing_blob_ptr->last_status = existing_blob_ptr->status;
             existing_blob_ptr->status = PRESENT;
             existing_blob_ptr->debounce_time_stamp = millis();
             llist_push_back(&llist_blobs_pool, new_blob_ptr);
@@ -242,12 +242,12 @@ void matrix_find_blobs(void) {
 #if defined(VELOCITY)
 for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
   blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
-  if (!blob_ptr->last_state) {
-    blob_ptr->velocity.TimeStamp = millis();
+  if (blob_ptr->status == NEW) {
+    blob_ptr->velocity.time_stamp = millis();
     blob_ptr->last_centroid = blob_ptr->centroid;
   }
-  else {
-    if (millis() - blob_ptr->velocity.TimeStamp > 10) {
+  else if (blob_ptr->status == PRESENT) {
+    if (millis() - blob_ptr->velocity.time_stamp > 5) {
       blob_ptr->velocity.timeStamp = millis();
       float vx = fabs(blob_ptr->centroid.x - blob_ptr->last_centroid.x);
       float vy = fabs(blob_ptr->centroid.y - blob_ptr->last_centroid.y);
@@ -272,10 +272,9 @@ for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_p
 #if defined(USB_MIDI_SERIAL) && defined(DEBUG_BLOBS)
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
-    Serial.printf("\nDEBUG_BLOBS:%d\tLS:%d\tS:%d\tX:%f\tY:%f\tZ:%d\tW:%d\tH:%d\tVXY:%f\tVZ:%f",
+    Serial.printf("\nDEBUG_BLOBS:%d\tS:%d\tX:%f\tY:%f\tZ:%d\tW:%d\tH:%d\tVXY:%f\tVZ:%f",
                   blob_ptr->UID,
-                  blob_ptr->last_state,
-                  blob_ptr->state,
+                  blob_ptr->status,
                   blob_ptr->centroid.x,
                   blob_ptr->centroid.y,
                   blob_ptr->centroid.z,
@@ -294,7 +293,7 @@ for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_p
 };
 
 bool is_blob_existing(blob_t* blob_ptr, blob_t* new_blob_ptr){
-  if (blob_ptr->action.mapping_ptr != NULL){
+  if (blob_ptr->action.mapping_ptr != NULL) {
     float dist = sqrtf(pow(blob_ptr->centroid.x - new_blob_ptr->centroid.x, 2) + pow(blob_ptr->centroid.y - new_blob_ptr->centroid.y, 2));
     if (dist < 10) { // SET IT AS GLOBAL !!
       common_t* mapping_ptr = (common_t*)blob_ptr->action.mapping_ptr;

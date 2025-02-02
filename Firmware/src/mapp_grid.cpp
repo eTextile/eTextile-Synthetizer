@@ -57,7 +57,7 @@ void mapping_grid_play(blob_t *blob_ptr) {
     case midi::NoteOff:
       break;
     case midi::NoteOn:
-      if (blob_ptr->state) { // Test if the blob is alive
+      if (blob_ptr->status == PRESENT) { // Test if the blob is alive
         if (&grid_ptr->params.keys[keyPress].msg.midi != &grid_ptr->params.last_keys_ptr[blob_ptr->UID]->msg.midi) { // Test if the blob is touching a new key
           if (grid_ptr->params.last_keys_ptr[blob_ptr->UID] != NULL) { // Test if the blob was touching another key
             grid_ptr->params.last_keys_ptr[blob_ptr->UID]->msg.midi.type = midi::NoteOff;
@@ -75,7 +75,7 @@ void mapping_grid_play(blob_t *blob_ptr) {
           grid_ptr->params.last_keys_ptr[blob_ptr->UID] = &grid_ptr->params.keys[keyPress]; // Keep track of last key pressed to switch it OFF when sliding
         };
       }
-      else { // if !blob_ptr->state
+      else { // if !blob_ptr->status == PRESENT
         grid_ptr->params.last_keys_ptr[blob_ptr->UID]->msg.midi.type = midi::NoteOff;
         midi_sendOut(grid_ptr->params.last_keys_ptr[blob_ptr->UID]->msg.midi);
         #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_GRIDS)

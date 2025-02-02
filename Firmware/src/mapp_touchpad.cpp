@@ -87,13 +87,13 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
 
   // Each controleur have touch/blobs limitation
-  if (!blob_ptr->last_state) {
+  if (blob_ptr->status == NEW) {
     if (touchpad_ptr->params.touchs_count < touchpad_ptr->params.touchs) {
       touchpad_ptr->params.touchs_count++;
       midi_sendOut(touch_ptr->press.midi);
     }
   }
-  else if (!blob_ptr->state) {
+  else if (blob_ptr->status == MISSING && blob_ptr->last_status == PRESENT) {
     if (touchpad_ptr->params.touchs_count < touchpad_ptr->params.touchs) {
       touchpad_ptr->params.touchs_count--;
     }
@@ -135,7 +135,7 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
 
   switch (touch_ptr->press.midi.type) {
     case midi::NoteOff:
-      if (!blob_ptr->last_state) {
+      if (blob_ptr->status == NEW) {
         touch_ptr->press.midi.type = midi::NoteOn;
         //touch_ptr->press.midi.data2 = ... // TODO: add the velocity to the blob values!
         midi_sendOut(touch_ptr->press.midi);
@@ -143,7 +143,7 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
           Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, touchpad_ptr->params.msg.midi.data1);
         #endif
       }
-      else if (!blob_ptr->state) {
+      else if (!blob_ptr->status == PRESENT) {
         touch_ptr->press.midi.type = midi::NoteOff;
         midi_sendOut(touch_ptr->press.midi);
         #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
@@ -152,7 +152,7 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
       }
       break;
     case midi::NoteOn:
-      if (!blob_ptr->last_state) {
+      if (blob_ptr->status == NEW) {
         touch_ptr->press.midi.type = midi::NoteOn;
         //mapp_switch->params.msg.midi.data2 = ... // TODO: add the velocity to the blob values!
         midi_sendOut(touch_ptr->press.midi);
@@ -204,8 +204,8 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
     #endif
   };
 
-  if (blob_ptr->state) {
-    if (!blob_ptr->last_state) {
+  if (blob_ptr->status == PRESENT) {
+    if (blob_ptr->status == NEW) {
       if (touch_ptr->press.midi.type == midi::NoteOn) {
         midi_sendOut(touch_ptr->press.midi);
       }
@@ -218,7 +218,7 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
       //};
     };
   } else {
-    if (blob_ptr->last_state && blob_ptr->status != NOT_FOUND) {
+    if (blob_ptr->last_alive && blob_ptr->status != NOT_FOUND) {
       midi_sendOut(touch_ptr->press.midi);
     };
   }

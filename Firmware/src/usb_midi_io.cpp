@@ -70,7 +70,7 @@ void usb_midi_pending_mode_timeout(){
 
 void usb_midi_transmit() {
   static uint32_t usbTransmitTimeStamp = 0;
-  uint8_t blobValues[8] = {0};
+  uint8_t blob_values[8] = {0};
   switch (e256_current_mode) {
     case PENDING_MODE:
       // Nothing to do
@@ -102,41 +102,38 @@ void usb_midi_transmit() {
       // Send all blobs values over USB using MIDI format
       for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
         blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
-        // TODO: update using the new blob_status_t
-        if (blob_ptr->state) {
-          if (!blob_ptr->last_state) {
-            usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, BS); // sendNoteOn(note, velocity, channel);
-            usbMIDI.send_now();
-          }
-          else {
-            //if (millis() - blob_ptr->transmit_time_stamp > MIDI_TRANSMIT_INTERVAL) {
-              //blob_ptr->transmit_time_stamp = millis();
-              blobValues[0] = blob_ptr->UID + 1;
-              
-              uint8_t whole_part = (uint8_t)blob_ptr->centroid.x;
-              blobValues[1] = whole_part;
-              blobValues[2] = (uint8_t)((blob_ptr->centroid.x - whole_part) * 100); // Fractional part
+        if (blob_ptr->status == NEW) {
+          usbMIDI.sendNoteOn(blob_ptr->UID, 1, BS); // sendNoteOn(note, velocity, channel);
+          usbMIDI.send_now();
+        }
+        else if (blob_ptr->status == PRESENT) {
+          //if (millis() - blob_ptr->transmit_time_stamp > MIDI_TRANSMIT_INTERVAL) {
+          //blob_ptr->transmit_time_stamp = millis();
+          blob_values[0] = blob_ptr->UID;
 
-              whole_part = (uint8_t)blob_ptr->centroid.y;
-              blobValues[3] = whole_part;
-              blobValues[4] = (uint8_t)((blob_ptr->centroid.y - whole_part) * 100); // Fractional part
+          uint8_t whole_part = (uint8_t)blob_ptr->centroid.x;
+          blob_values[1] = whole_part;
+          blob_values[2] = (uint8_t)((blob_ptr->centroid.x - whole_part) * 100); // Fractional part
 
-              blobValues[5] = blob_ptr->box.w;
-              blobValues[6] = blob_ptr->box.h;
-              blobValues[7] = blob_ptr->centroid.z;
+          whole_part = (uint8_t)blob_ptr->centroid.y;
+          blob_values[3] = whole_part;
+          blob_values[4] = (uint8_t)((blob_ptr->centroid.y - whole_part) * 100); // Fractional part
 
-              usbMIDI.sendSysEx(8, blobValues, false);
-            //};
-          };
-        } else {
-          if (blob_ptr->last_state && blob_ptr->status != MISSING) { ///////////////////////// TO_TEST!
-            usbMIDI.sendNoteOff(blob_ptr->UID + 1, 0, BS); // sendNoteOff(note, velocity, channel);
-            usbMIDI.send_now();
-          };
+          blob_values[5] = blob_ptr->box.w;
+          blob_values[6] = blob_ptr->box.h;
+          blob_values[7] = blob_ptr->centroid.z;
+          
+          usbMIDI.sendSysEx(8, blob_values, false);
+          //};
+        }
+        else if (blob_ptr->status == MISSING && blob_ptr->last_status == PRESENT) { ///////////////////////// TO_TEST!
+          usbMIDI.sendNoteOff(blob_ptr->UID, 0, BS); // sendNoteOff(note, velocity, channel);
+          usbMIDI.send_now();
         };
       };
       while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       break;
+
     case PLAY_MODE:
         // NA 
       break;

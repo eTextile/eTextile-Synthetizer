@@ -27,7 +27,7 @@ void mapping_switch_play(blob_t* blob_ptr) {
       case midi::NoteOff:
         break;
       case midi::NoteOn:
-        if (!blob_ptr->last_state) {
+        if (blob_ptr->status == NEW) {
           switch_ptr->params.msg.midi.type = midi::NoteOn;
           //switch_ptr->params.msg.midi.data2 = ... // TODO: add the velocity to the blob values!
           midi_sendOut(switch_ptr->params.msg.midi);
@@ -36,7 +36,7 @@ void mapping_switch_play(blob_t* blob_ptr) {
           #endif
         }
         /*
-        else if (!blob_ptr->state) {
+        else if (!blob_ptr->status == PRESENT) {
           switch_ptr->params.msg.midi.type = midi::NoteOff;
           midi_sendOut(switch_ptr->params.msg.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
@@ -47,14 +47,14 @@ void mapping_switch_play(blob_t* blob_ptr) {
         break;
 
       case midi::AfterTouchPoly:
-        if (!blob_ptr->last_state) {
+        if (blob_ptr->status == NEW) {
           switch_ptr->params.msg.midi.type = midi::NoteOn;
           midi_sendOut(switch_ptr->params.msg.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
             Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, switch_ptr->params.msg.midi.data1);
           #endif
         }
-        else if (!blob_ptr->last_state) {
+        else if (blob_ptr->status == NEW) {
           switch_ptr->params.msg.midi.type = midi::AfterTouchPoly;
           midi_sendOut(switch_ptr->params.msg.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
