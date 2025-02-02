@@ -55,7 +55,7 @@ void mapping_slider_play(blob_t* blob_ptr) {
             touch_ptr->pos.limit.min,
             touch_ptr->pos.limit.max)
           );
-          midi_sendOut(touch_ptr->pos.midi);
+          midi_send_out(touch_ptr->pos.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SLIDERS)
             Serial.printf("\nDEBUG_MAPPINGS_SLIDERS\tID:%d\tVal:%d", i, touch_ptr->pos.midi.data2);
           #endif
@@ -70,7 +70,7 @@ void mapping_slider_play(blob_t* blob_ptr) {
             touch_ptr->pos.limit.min,
             touch_ptr->pos.limit.max)
           );
-          midi_sendOut(touch_ptr->pos.midi);
+          midi_send_out(touch_ptr->pos.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SLIDERS)
             Serial.printf("\nDEBUG_MAPPINGS_SLIDERS\tID:%d\tVal:%d", i, touch_ptr->pos.midi.data2);
           #endif   
@@ -95,7 +95,7 @@ void mapping_slider_play(blob_t* blob_ptr) {
               touch_ptr->press.limit.max)
             */
             touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
-            midi_sendOut(touch_ptr->press.midi);
+            midi_send_out(touch_ptr->press.midi);
             #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPING_SLIDERS)
               Serial.printf("\nDEBUG_MAPPINGS_SLIDERS\tID:%d\tC_CHANGE:%d", i, mapp_grids->params.msg.midi.data2);
             #endif

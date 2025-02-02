@@ -60,8 +60,8 @@ void mapping_knob_play(blob_t* blob_ptr) {
         } else {
           knob_ptr->params.touch[j].theta.midi.data2 = atanf(posY / posX);
         }
-        midi_sendOut(knob_ptr->params.touch[j].radius.midi);
-        midi_sendOut(knob_ptr->params.touch[j].theta.midi);
+        midi_send_out(knob_ptr->params.touch[j].radius.midi);
+        midi_send_out(knob_ptr->params.touch[j].theta.midi);
         #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_KNOBS)
           Serial.printf("\nDEBUG_MAPPINGS_KNOBS:\tKnobsID:\t%d\tradius:\t%fTheta:\t%f", i, knob_ptr->params.touch[j].radius.midi.data2, knob_ptr->params.touch[j].theta.midi.data2);
         #endif

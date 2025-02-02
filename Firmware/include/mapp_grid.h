@@ -12,7 +12,6 @@ struct grid_s {
   uint8_t keys_count;
   switch_t keys[MAX_GRID_KEYS];
   uint8_t touchs;
-  switch_t* last_keys_ptr[MAX_BLOBS];
   //key_mode_t mode;
   float scale_factor_x;
   float scale_factor_y;

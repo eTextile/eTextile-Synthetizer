@@ -145,7 +145,7 @@ void mapping_cSliders_update(void) {
                 #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
                   Serial.printf("\nDEBUG_MAPPINGS_CSLIDER\tSLIDER_ID:%d\tRADIUS:%f\tTHETA:%f\tVAL:%d", id, radius, theta, sliderVal);
                 #else
-                  midi_sendOut(mapp_csliderParams[i].msg.midi);
+                  midi_send_out(mapp_csliderParams[i].msg.midi);
                 #endif
               };
             };
