@@ -15,6 +15,8 @@
 
 #include "llist.h"
 
+#define TIME_TO_LEAVE 5000
+
 extern llist_t llist_blobs;                   // Intermediate blobs linked list
 
 typedef enum blob_params_e {
@@ -129,7 +131,7 @@ struct blob_s {
   uint8_t UID;
   blob_status_t status;
   blob_status_t last_status;
-  uint32_t debounce_time_stamp; // time to leav
+  uint32_t life_time_stamp;
   uint32_t transmit_time_stamp;
   box_t box;
   uint16_t pixels;

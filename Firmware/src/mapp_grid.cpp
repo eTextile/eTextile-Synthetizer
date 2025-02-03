@@ -46,7 +46,7 @@ bool mapping_grid_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
 // Compute the keyPresed position acording to the blobs XY (centroid) coordinates
 // Add corresponding MIDI message to the MIDI out liked list
 void mapping_grid_play(blob_t *blob_ptr) {
-  mapp_grid_t* grid_ptr = (mapp_grid_t*)blob_ptr->action.mapping_ptr;
+  //app_grid_t* grid_ptr = (mapp_grid_t*)blob_ptr->action.mapping_ptr;
   switch_t* touch_ptr = (switch_t*)blob_ptr->action.touch_ptr;
   
   // Serial.printf("\nGRID\tKEY:%d\tPOS_X:%d\tPOS_Y:%d", keyPress, keyPressX, keyPressY);

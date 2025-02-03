@@ -54,11 +54,25 @@ inline uint8_t set_id(void) {
 /////////////////////////////// Scanline flood fill algorithm / SFF
 /////////////////////////////// Connected-component labeling / CCL
 void matrix_find_blobs(void) {
+  
+  // DEAD BLOBS REMOVER
+  llist_t blobs_to_keep;
+  blob_t* is_dead_blob_ptr = NULL;
 
-  for (lnode_t* curr_node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); curr_node_ptr != NULL; curr_node_ptr = ITERATOR_NEXT(curr_node_ptr)) {
-    blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(curr_node_ptr);
-    blob_ptr->status = MISSING;
+  while ((is_dead_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs)) != NULL) {
+    if ((millis() - is_dead_blob_ptr->life_time_stamp) > TIME_TO_LEAVE) {
+      llist_push_front(&llist_blobs_pool, is_dead_blob_ptr);
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FIND_BLOBS)
+        Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p removed", (lnode_t*)prev_blob_ptr);
+      #endif
+    }
+    else {
+      is_dead_blob_ptr->status = MISSING;
+      llist_push_front(&blobs_to_keep, is_dead_blob_ptr);
+    };
   };
+  llist_swap_llist(&llist_blobs, &blobs_to_keep);
+  
 
   memset((uint8_t*)bitmap_array, 0, SIZEOF_FRAME);
   uint8_t blob_count = 0;
@@ -220,12 +234,12 @@ void matrix_find_blobs(void) {
           if (existing_blob_ptr != NULL) {
             existing_blob_ptr->last_status = existing_blob_ptr->status;
             existing_blob_ptr->status = PRESENT;
-            existing_blob_ptr->debounce_time_stamp = millis();
+            existing_blob_ptr->life_time_stamp = millis();
             llist_push_back(&llist_blobs_pool, new_blob_ptr);
           } else {
             new_blob_ptr->status = NEW;
             new_blob_ptr->UID = set_id();
-            new_blob_ptr->debounce_time_stamp = millis();
+            new_blob_ptr->life_time_stamp = millis();
             llist_push_back(&llist_blobs, new_blob_ptr);
           }
         };
