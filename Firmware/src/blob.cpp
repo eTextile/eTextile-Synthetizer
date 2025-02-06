@@ -54,7 +54,7 @@ inline uint8_t set_id(void) {
 /////////////////////////////// Scanline flood fill algorithm / SFF
 /////////////////////////////// Connected-component labeling / CCL
 void matrix_find_blobs(void) {
-  
+
   // DEAD BLOBS REMOVER
   llist_t blobs_to_keep;
   blob_t* is_dead_blob_ptr = NULL;
@@ -63,7 +63,7 @@ void matrix_find_blobs(void) {
     if ((millis() - is_dead_blob_ptr->life_time_stamp) > TIME_TO_LEAVE) {
       llist_push_front(&llist_blobs_pool, is_dead_blob_ptr);
       #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FIND_BLOBS)
-        Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p removed", (lnode_t*)prev_blob_ptr);
+        Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p removed", &is_dead_blob_ptr);
       #endif
     }
     else {
@@ -72,7 +72,6 @@ void matrix_find_blobs(void) {
     };
   };
   llist_swap_llist(&llist_blobs, &blobs_to_keep);
-  
 
   memset((uint8_t*)bitmap_array, 0, SIZEOF_FRAME);
   uint8_t blob_count = 0;
@@ -306,7 +305,7 @@ for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_p
   #endif
 };
 
-bool is_blob_existing(blob_t* blob_ptr, blob_t* new_blob_ptr){
+bool is_blob_existing(blob_t* blob_ptr, blob_t* new_blob_ptr) {
   if (blob_ptr->action.mapping_ptr != NULL) {
     float dist = sqrtf(pow(blob_ptr->centroid.x - new_blob_ptr->centroid.x, 2) + pow(blob_ptr->centroid.y - new_blob_ptr->centroid.y, 2));
     if (dist < 10) { // SET IT AS GLOBAL !!
@@ -316,4 +315,27 @@ bool is_blob_existing(blob_t* blob_ptr, blob_t* new_blob_ptr){
     };
   }
   return false;
+};
+
+void blob_sort(llist_t* llist_ptr) {
+  lnode_t* next_node_ptr = (lnode_t*)llist_ptr->head_ptr->next_ptr;
+
+  uint16_t llist_size = 0;
+  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_ptr); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
+    llist_size++;
+  };
+
+  blob_t* tmp_blob_ptr;
+  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_ptr); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
+    blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
+    for (int j=0; j<llist_size; j++) {
+      blob_t* next_blob_ptr = (blob_t*)ITERATOR_DATA(next_blob_ptr);
+      if (blob_ptr->UID > next_blob_ptr->UID) {
+        tmp_blob_ptr = blob_ptr;
+        blob_ptr = next_blob_ptr;
+        next_node_ptr->data_ptr = tmp_blob_ptr;
+      }
+      next_node_ptr = ITERATOR_NEXT(next_node_ptr);
+    };
+  };
 };
