@@ -127,4 +127,3 @@ void* llist_find(llist_t* llist_ptr, void* data_ptr, llist_compare_func_t* func_
   }
   return NULL;
 };
-

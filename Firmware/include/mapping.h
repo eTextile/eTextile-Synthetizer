@@ -52,7 +52,6 @@ typedef bool interact_t(blob_t*, common_t*);
 typedef void play_t(blob_t*);
 
 struct common_s {
-  //blob_t* blob_ptr;
   interact_t* interact_func_ptr;
   play_t* play_func_ptr;
 };

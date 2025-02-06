@@ -17,7 +17,7 @@
 
 #define TIME_TO_LEAVE 5000
 
-extern llist_t llist_blobs;                   // Intermediate blobs linked list
+extern llist_t llist_blobs; // Blobs linked list
 
 typedef enum blob_params_e {
   BI, // [0] Blob UID
@@ -100,14 +100,6 @@ struct velocity_s {
   float xy;
   float z;
 };
-
-/*
-typedef enum blob_status_e{
-  FREE,
-  NOT_FOUND, // INACTIVE
-  TO_REMOVE 
-} blob_status_t;
-*/
 
 typedef enum blob_status_e {
   NEW,
