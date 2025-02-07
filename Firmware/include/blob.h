@@ -116,7 +116,7 @@ struct blob_action_s {
   blob_action_func_t* func_ptr;
   void* mapping_ptr;
   void* touch_ptr;
-  //llist touchs; // TODO
+  void* last_touch_ptr;
 };
 
 struct blob_s {

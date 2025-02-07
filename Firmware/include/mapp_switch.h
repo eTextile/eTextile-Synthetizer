@@ -7,7 +7,6 @@ typedef struct switch_s switch_t;
 struct switch_s {
   rect_t rect;
   msg_t msg;
-  switch_t* last_key_ptr; // Quik fix
 };
 
 void mapping_switchs_alloc(uint8_t switchs_cnt);

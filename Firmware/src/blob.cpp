@@ -318,7 +318,7 @@ bool is_blob_existing(blob_t* blob_ptr, blob_t* new_blob_ptr) {
 };
 
 void blob_sort(llist_t* llist_ptr) {
-  lnode_t* next_node_ptr = (lnode_t*)llist_ptr->head_ptr->next_ptr;
+  lnode_t* next_node_ptr = llist_ptr->head_ptr->next_ptr;
 
   uint16_t llist_size = 0;
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_ptr); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
