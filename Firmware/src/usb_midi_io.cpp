@@ -33,12 +33,12 @@ void usb_midi_recive(void) {
   usbMIDI.read(); // Is there a MIDI incoming messages on any channel
 };
 
-void usb_midi_pending_mode_timeout(){
-  if (e256_current_mode == PENDING_MODE && millis() - bootTime > PENDING_MODE_TIMEOUT){
+void usb_midi_pending_mode_timeout() {
+  if (e256_current_mode == PENDING_MODE && millis() - bootTime > PENDING_MODE_TIMEOUT) {
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
       Serial.printf("\nPENDING_MODE_TIME_OUT");
     #endif
-    if(load_flash_config()){
+    if(load_flash_config()) {
       #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
         Serial.printf("\nFLASH_CONFIG_LOAD_DONE: ");
         print_bytes(flash_config_ptr, flash_config_size);
@@ -142,13 +142,13 @@ void usb_midi_transmit() {
   };
 };
 
-void usb_midi_send_info(uint8_t msg, uint8_t channel){
+void usb_midi_send_info(uint8_t msg, uint8_t channel) {
   usbMIDI.sendProgramChange(msg, channel); // ProgramChange(program, channel);
   usbMIDI.send_now();
   while (usbMIDI.read());
 };
 
-void usb_read_noteOn(uint8_t channel, uint8_t note, uint8_t velocity){
+void usb_read_noteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
   midi_node_t* node_ptr = (midi_node_t*)llist_pop_front(&midi_nodes_pool);
   node_ptr->midi.type = midi::NoteOn;
   node_ptr->midi.data1 = note;
@@ -163,10 +163,10 @@ void usb_read_noteOn(uint8_t channel, uint8_t note, uint8_t velocity){
       break;
     default:
       break;
-  }
+  };
 };
 
-void usb_read_noteOff(uint8_t channel, uint8_t note, uint8_t velocity){
+void usb_read_noteOff(uint8_t channel, uint8_t note, uint8_t velocity) {
   midi_node_t* node_ptr = (midi_node_t*)llist_pop_front(&midi_nodes_pool);
   node_ptr->midi.type = midi::NoteOff;
   node_ptr->midi.data1 = note;
@@ -181,13 +181,13 @@ void usb_read_noteOff(uint8_t channel, uint8_t note, uint8_t velocity){
       break;
     default:
       break;
-  }
+  };
 };
 
 // Used by USB_MIDI
 // If the CC comes from usb it is forwarded to midi_out acting as MIDI thru
-void usb_read_controlChange(uint8_t channel, uint8_t control, uint8_t value){
-  switch (channel){
+void usb_read_controlChange(uint8_t channel, uint8_t control, uint8_t value) {
+  switch (channel) {
     case MIDI_LEVELS_CHANNEL:
       set_level((level_codes_t)control, value);
       break;
@@ -208,15 +208,15 @@ void usb_read_controlChange(uint8_t channel, uint8_t control, uint8_t value){
           break;
       }
       break;
-  }
+  };
 };
 
-void usb_read_programChange(uint8_t channel, uint8_t program){
+void usb_read_programChange(uint8_t channel, uint8_t program) {
   
-  switch (channel){
+  switch (channel) {
     case MIDI_MODES_CHANNEL:
       //Serial.printf("\nRECEIVED:\t%s", get_mode_name((enum_mode_codes_t)program));
-      switch (program){
+      switch (program) {
 
         case PENDING_MODE:
           set_mode(PENDING_MODE);
@@ -249,7 +249,7 @@ void usb_read_programChange(uint8_t channel, uint8_t program){
           break;
 
         case LOAD_MODE:
-          if(load_flash_config()){
+          if(load_flash_config()) {
             #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
               Serial.printf("\nSEND_FLASH_CONFIG: ");
               print_bytes(flash_config_ptr, flash_config_size);
@@ -313,7 +313,7 @@ void usb_read_programChange(uint8_t channel, uint8_t program){
 };
 
 // TODO
-void usb_read_midi_clock(){
+void usb_read_midi_clock() {
 #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
   Serial.println("Clock");
 #endif
