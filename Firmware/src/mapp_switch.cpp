@@ -9,7 +9,7 @@
 struct mapp_switch_s;
 typedef struct mapp_switch_s mapp_switch_t;
 struct mapp_switch_s {
-  common_t common;
+  common_t common; //  interact_func_ptr / play_func_ptr;
   switch_t params;
 };
 
@@ -21,8 +21,23 @@ void mapping_switchs_alloc(uint8_t switchs_cnt) {
   llist_builder(&llist_switch_pool, &mapp_switches[0], switchs_cnt, sizeof(mapp_switches[0]));
 };
 
+void mapping_switch_play(blob_t*);
+
+// Test if the blob is within the key limit
+bool mapping_switch_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
+  mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
+  if (blob_ptr->centroid.x > switch_ptr->params.rect.from.x &&
+      blob_ptr->centroid.x < switch_ptr->params.rect.to.x &&
+      blob_ptr->centroid.y > switch_ptr->params.rect.from.y &&
+      blob_ptr->centroid.y < switch_ptr->params.rect.to.y) {
+    blob_ptr->action.mapping_ptr = switch_ptr;
+    return true;
+  }
+  return false;
+};
+
 void mapping_switch_play(blob_t* blob_ptr) {
-  mapp_switch_t* switch_ptr = (mapp_switch_t*)blob_ptr->action.mapping_ptr;
+  mapp_switch_t* switch_ptr = (mapp_switch_t*)blob_ptr->action.touch.current_ptr;
     switch (switch_ptr->params.msg.midi.type) {
       case midi::NoteOff:
         break;
@@ -35,15 +50,21 @@ void mapping_switch_play(blob_t* blob_ptr) {
             Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, switch_ptr->params.msg.midi.data1);
           #endif
         }
-        /*
-        else if (!blob_ptr->status == PRESENT) {
+        else if ((!blob_ptr->status) == PRESENT) {
           switch_ptr->params.msg.midi.type = midi::NoteOff;
           midi_send_out(switch_ptr->params.msg.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
             Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_OFF:%d", i, switch_ptr->params.msg.midi.data1);
           #endif
         }
-        */
+        else if (blob_ptr->status == MISSING && blob_ptr->last_status == PRESENT) {
+          switch_ptr->params.msg.midi.type = midi::NoteOff;
+          midi_send_out(switch_ptr->params.msg.midi);
+          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_GRIDS)
+            Serial.printf("\nDEBUG_MAPPINGS_GRIDS\tKEY_VAL:%d\tKEY_UP_OFF:%d", switch_ptr->msg.midi.data1, switch_ptr->msg.midi.data2);
+          #endif
+          //switch_ptr = NULL; // RAZ last key pressed pointer value
+        };
         break;
 
       case midi::AfterTouchPoly:
@@ -85,27 +106,6 @@ void mapping_switch_play(blob_t* blob_ptr) {
     };
 };
 
-// Test if the blob is within the key limit
-bool mapping_switch_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
-  mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
-  //for (uint8_t j = 0; j < switch_ptr->params.touchs; j++) {
-    if (blob_ptr->centroid.x > switch_ptr->params.rect.from.x &&
-        blob_ptr->centroid.x < switch_ptr->params.rect.to.x &&
-        blob_ptr->centroid.y > switch_ptr->params.rect.from.y &&
-        blob_ptr->centroid.y < switch_ptr->params.rect.to.y) {
-      
-      blob_ptr->action.mapping_ptr = switch_ptr;
-      
-      //blob_ptr->action.touch_ptr = &switch_ptr->params.touch[j];
-
-      blob_ptr->action.func_ptr = &mapping_switch_play;
-      
-      return true;
-    }
-  //}
-  return false;
-};
-
 void mapping_switch_create(const JsonObject &config) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)llist_pop_front(&llist_switch_pool);
   midi_status_t status;
@@ -123,5 +123,9 @@ void mapping_switch_create(const JsonObject &config) {
     switch_ptr->params.msg.limit.min = config["msg"][0]["press"]["limit"]["min"].as<uint8_t>();
     switch_ptr->params.msg.limit.max = config["msg"][0]["press"]["limit"]["max"].as<uint8_t>(); 
   }
+  
+  switch_ptr->common.interact_func_ptr = &mapping_switch_interact;
+  switch_ptr->common.play_func_ptr = &mapping_switch_play;
+
   llist_push_back(&llist_mappings, switch_ptr);
 };

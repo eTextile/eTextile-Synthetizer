@@ -24,26 +24,20 @@ void mapping_slider_play(blob_t*);
 
 bool mapping_slider_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
-  for (uint8_t j = 0; j < slider_ptr->params.touchs; j++) {
-    if (blob_ptr->centroid.x > slider_ptr->params.rect.from.x &&
-        blob_ptr->centroid.x < slider_ptr->params.rect.to.x &&
-        blob_ptr->centroid.y > slider_ptr->params.rect.from.y &&
-        blob_ptr->centroid.y < slider_ptr->params.rect.to.y) {
-      
-      blob_ptr->action.mapping_ptr = slider_ptr;
-
-      blob_ptr->action.touch_ptr = &slider_ptr->params.touch[j]; // FIXME!
-      
-      blob_ptr->action.func_ptr = &mapping_slider_play;
-      return true;
-    }
+  if (blob_ptr->centroid.x > slider_ptr->params.rect.from.x &&
+      blob_ptr->centroid.x < slider_ptr->params.rect.to.x &&
+      blob_ptr->centroid.y > slider_ptr->params.rect.from.y &&
+      blob_ptr->centroid.y < slider_ptr->params.rect.to.y) {
+    blob_ptr->action.mapping_ptr = slider_ptr;
+    blob_ptr->action.touch.current_ptr = &slider_ptr->params.touch[0]; // FIXME!
+    return true;
   }
   return false;
 };
 
 void mapping_slider_play(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
-  touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
+  touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch.current_ptr;
   //Serial.printf("\nDEBUG_MAPPINGS_SLIDERS\tTOUCHS:%d", slider_ptr->params.touchs);
     switch (slider_ptr->params.pos) {
       case HORIZONTAL:
@@ -153,5 +147,9 @@ void mapping_slider_create(const JsonObject &config) {
       slider_ptr->params.pos = HORIZONTAL;
     };
   };
+
+  slider_ptr->common.interact_func_ptr = &mapping_slider_interact;
+  slider_ptr->common.play_func_ptr = &mapping_slider_play;
+
   llist_push_back(&llist_mappings, slider_ptr);
 };

@@ -308,7 +308,7 @@ for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_p
 bool is_blob_existing(blob_t* blob_ptr, blob_t* new_blob_ptr) {
   if (blob_ptr->action.mapping_ptr != NULL) {
     float dist = sqrtf(pow(blob_ptr->centroid.x - new_blob_ptr->centroid.x, 2) + pow(blob_ptr->centroid.y - new_blob_ptr->centroid.y, 2));
-    if (dist < 10) { // SET IT AS GLOBAL !!
+    if (dist < LAST_BLOB_DIST) {
       common_t* mapping_ptr = (common_t*)blob_ptr->action.mapping_ptr;
       mapping_ptr->interact_func_ptr(new_blob_ptr, mapping_ptr);
       return true;

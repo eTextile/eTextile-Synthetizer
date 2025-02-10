@@ -90,7 +90,7 @@ struct vertrice_s {
 
 typedef struct box_s box_t;
 struct box_s {
-  uint8_t w; // TODO: make it as float // use from 
+  uint8_t w; // TODO: make it as float // use from
   uint8_t h; // TODO: make it as float // use to
 };
 
@@ -111,12 +111,17 @@ typedef struct blob_s blob_t;
 
 typedef void blob_action_func_t(blob_t*);
 
+typedef struct touch_s touch_t;
+struct touch_s {
+  void* current_ptr;
+  void* previous_ptr;
+};
+
 typedef struct blob_action_s blob_action_t;
 struct blob_action_s {
   blob_action_func_t* func_ptr;
   void* mapping_ptr;
-  void* touch_ptr;
-  void* last_touch_ptr;
+  touch_t touch;
 };
 
 struct blob_s {

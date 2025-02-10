@@ -29,8 +29,7 @@ bool mapping_knob_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
       blob_ptr->centroid.y > knob_ptr->params.rect.from.y &&
       blob_ptr->centroid.y < knob_ptr->params.rect.to.y) {
     blob_ptr->action.mapping_ptr = knob_ptr;
-    //blob_ptr->action.touch_ptr = &knob_ptr->params.touch[j]; FIXME!
-    blob_ptr->action.func_ptr = &mapping_knob_play;
+    blob_ptr->action.touch.current_ptr = &knob_ptr->params.touch[0]; // FIXME: find a solution to mapp the touch index
     return true;
   };
   return false;
@@ -38,7 +37,7 @@ bool mapping_knob_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
 
 void mapping_knob_play(blob_t* blob_ptr) {
     mapp_knob_t* knob_ptr = (mapp_knob_t*)blob_ptr->action.mapping_ptr;
-    touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
+    touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch.current_ptr;
     
     float x = blob_ptr->centroid.x - knob_ptr->params.center.x;
     float y = blob_ptr->centroid.y - knob_ptr->params.center.y;
@@ -113,5 +112,9 @@ void mapping_knob_create(const JsonObject &config) {
     knob_ptr->params.radius = (knob_ptr->params.rect.to.x - knob_ptr->params.rect.from.x) / 2;
     knob_ptr->params.center.x = (knob_ptr->params.rect.from.x + knob_ptr->params.radius);
     knob_ptr->params.center.y = (knob_ptr->params.rect.from.y + knob_ptr->params.radius);
+    
+    knob_ptr->common.interact_func_ptr = &mapping_knob_interact;
+    knob_ptr->common.play_func_ptr = &mapping_knob_play;
+
     llist_push_back(&llist_mappings, knob_ptr);
 };

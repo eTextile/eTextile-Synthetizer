@@ -8,7 +8,7 @@
 
 typedef struct mapp_grid_s mapp_grid_t;
 struct mapp_grid_s {
-  common_t common;
+  common_t common; // interact_func_ptr / play_func_ptr;
   grid_t params;
 };
 
@@ -29,16 +29,15 @@ bool mapping_grid_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
       blob_ptr->centroid.x < grid_ptr->params.rect.to.x &&
       blob_ptr->centroid.y > grid_ptr->params.rect.from.y &&
       blob_ptr->centroid.y < grid_ptr->params.rect.to.y) {
-
-    blob_ptr->action.func_ptr = &mapping_grid_play;
+    
     blob_ptr->action.mapping_ptr = grid_ptr;
 
     uint8_t keyPressX = (uint8_t)lround((blob_ptr->centroid.x - grid_ptr->params.rect.from.x) * grid_ptr->params.scale_factor_x); // Compute X grid position
     uint8_t keyPressY = (uint8_t)lround((blob_ptr->centroid.y - grid_ptr->params.rect.from.y) * grid_ptr->params.scale_factor_y); // Compute Y grid position
     uint8_t keyPress = keyPressY * grid_ptr->params.cols + keyPressX; // Compute 1D key index position
 
-    blob_ptr->action.last_touch_ptr = &blob_ptr->action.touch_ptr;
-    blob_ptr->action.touch_ptr = &grid_ptr->params.keys[keyPress];
+    blob_ptr->action.touch.previous_ptr = &blob_ptr->action.touch.current_ptr;
+    blob_ptr->action.touch.current_ptr = &grid_ptr->params.keys[keyPress];
     return true;
   };
   return false;
@@ -48,13 +47,14 @@ bool mapping_grid_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
 // Add corresponding MIDI message to the MIDI out liked list
 void mapping_grid_play(blob_t *blob_ptr) {
   //app_grid_t* grid_ptr = (mapp_grid_t*)blob_ptr->action.mapping_ptr;
-  switch_t* key_ptr = (switch_t*)blob_ptr->action.touch_ptr;
-  switch_t* last_key_ptr = (switch_t*)blob_ptr->action.last_touch_ptr;
+  switch_t* key_ptr = (switch_t*)blob_ptr->action.touch.current_ptr;
+  switch_t* last_key_ptr = (switch_t*)blob_ptr->action.touch.previous_ptr;
   
   // Serial.printf("\nGRID\tKEY:%d\tPOS_X:%d\tPOS_Y:%d", keyPress, keyPressX, keyPressY);
   // Serial.printf("\nGRID\tBLOB:%d\tBLOB_X:%f\tBLOB_Y:%f", blob_ptr->UID, blob_ptr->centroid.x, blob_ptr->centroid.x);
   switch (key_ptr->msg.midi.type) {
     case midi::NoteOff:
+      //
       break;
     case midi::NoteOn:
       if (blob_ptr->status == NEW) { // Test if the blob is new
@@ -66,25 +66,25 @@ void mapping_grid_play(blob_t *blob_ptr) {
             last_key_ptr->msg.midi.type = midi::NoteOff;
             midi_send_out(last_key_ptr->msg.midi);
             #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_GRIDS)
-              Serial.printf("\nDEBUG_MAPPINGS_GRIDS\tBLOB_ID:%d\tKEY_SLIDING_OFF:%d", blob_ptr->UID, grid_ptr->params.lastKeyPress[blob_ptr->UID]);
+              Serial.printf("\nDEBUG_MAPPINGS_GRIDS\tKEY_VAL:%d\tKEY_SLIDING_OFF:%d", last_key_ptr->msg.midi.data1, last_key_ptr->msg.midi.data2);
             #endif
-            last_key_ptr = NULL; // RAZ last key pressed value
+            last_key_ptr = NULL; // RAZ last key pointer value
           };
           key_ptr->msg.midi.type = midi::NoteOn;
           midi_send_out(key_ptr->msg.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_GRIDS)
-            Serial.printf("\nDEBUG_MAPPINGS_GRIDS\tBLOB_ID:%d\tKEY_PRESS:%d", blob_ptr->UID, grid_ptr->params.keys[keyPress].msg.midi);
+            Serial.printf("\nDEBUG_MAPPINGS_GRIDS\tKEY_VAL:%d\tKEY_SLIDING_ON:%d", key_ptr->msg.midi.data1, key_ptr->msg.midi.data2);
           #endif
           last_key_ptr = key_ptr; 
         };
       }
       else if (blob_ptr->status == MISSING && blob_ptr->last_status == PRESENT) {
-        last_key_ptr->msg.midi.type = midi::NoteOff;
-        midi_send_out(last_key_ptr->msg.midi);
+        key_ptr->msg.midi.type = midi::NoteOff;
+        midi_send_out(key_ptr->msg.midi);
         #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_GRIDS)
-          Serial.printf("\nDEBUG_MAPPINGS_GRIDS\tBLOB_ID:%d\tKEY_UP:%d", blob_ptr->UID, grid_ptr->params.lastKeyPress[blob_ptr->UID]);
+          Serial.printf("\nDEBUG_MAPPINGS_GRIDS\tKEY_VAL:%d\tKEY_UP_OFF:%d", key_ptr->msg.midi.data1, key_ptr->msg.midi.data2);
         #endif
-        last_key_ptr = NULL; // RAZ last key pressed ptr value
+        //key_ptr = NULL; // RAZ last key pressed pointer value
       };
       break;
     case midi::AfterTouchPoly:
@@ -95,7 +95,7 @@ void mapping_grid_play(blob_t *blob_ptr) {
         key_ptr->msg.midi.data2 = blob_ptr->centroid.z;
         midi_send_out(key_ptr->msg.midi);
         #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_GRIDS)
-          Serial.printf("\nDEBUG_MAPPINGS_GRIDS\tID:%d\tC_CHANGE:%d", i, grid_ptr->params.msg.midi.data2);
+          Serial.printf("\nDEBUG_MAPPINGS_GRIDS\tKEY_ID:%d\tC_CHANGE:%d", key_ptr->msg.midi.data1, key_ptr->msg.midi.data2);
         #endif
       }
       break;
@@ -143,6 +143,10 @@ void mapping_grid_create(const JsonObject &config) {
   //float key_size_y = (grid_size_y / grid_ptr_->params.rows) - grid_ptr->params.gap;
   mapp_grids->params.scale_factor_x = ((float)1 / grid_size_x) * grid_ptr->params.cols;
   mapp_grids->params.scale_factor_y = ((float)1 / grid_size_y) * grid_ptr->params.rows;
+  
+  grid_ptr->common.interact_func_ptr = &mapping_grid_interact;
+  grid_ptr->common.play_func_ptr = &mapping_grid_play;
+
   llist_push_back(&llist_mappings, grid_ptr);
 };
 

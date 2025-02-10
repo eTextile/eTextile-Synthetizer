@@ -41,6 +41,7 @@
 #define SIZEOF_FRAME (NEW_FRAME * sizeof(uint8_t))
 #define BLOB_MIN_PIX 6    // Set the minimum blob pixels
 #define BLOB_MAX_PIX 1024 // Set the minimum blob pixels
+#define LAST_BLOB_DIST 10
 
 #define X_PADDING_LEFT   0
 #define X_PADDING_REIGHT 0

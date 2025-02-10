@@ -43,8 +43,7 @@ bool mapping_polygon_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
   };
   if (polygon_ptr->params.is_inside) {
     blob_ptr->action.mapping_ptr = polygon_ptr;
-    //blob_ptr->action.touch_ptr = &polygon_ptr->params.touch[j];
-    blob_ptr->action.func_ptr = &mapping_polygon_play;
+    //blob_ptr->action.touch.current_ptr = &polygon_ptr->params.touch[0]; // FIXME: find a solution to mapp the touch index
     return true;
   }
   return false;
@@ -87,5 +86,9 @@ void mapping_polygon_create(const JsonObject &config) {
     };
     v2 = v1;
   }
+  
+  polygon_ptr->common.interact_func_ptr = &mapping_polygon_interact;
+  polygon_ptr->common.play_func_ptr = &mapping_polygon_play;
+
   llist_push_back(&llist_mappings, polygon_ptr);
 };
