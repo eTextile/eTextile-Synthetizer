@@ -12,8 +12,8 @@
 #include "blob.h"
 #include "midi_bus.h"
 
-void tapTempo(void);      // TODO
-void stepSequencer(void); // TODO
-void arpeggiator(void);   // TODO
+void tap_tempo(void);      // TODO
+void step_sequencer(void); // TODO
+void arpeggiator(void);    // TODO
 
 #endif /*__MIDI_SEQ_H__*/

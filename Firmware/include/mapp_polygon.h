@@ -11,6 +11,7 @@ struct polygon_s {
   float m[MAX_POLYGON_POINTS];
   float c[MAX_POLYGON_POINTS];
   bool is_inside;
+  touch_3d_t touch[MAX_POLYGON_TOUCHS];
 };
 
 void mapping_polygons_alloc(uint8_t polygons_cnt);

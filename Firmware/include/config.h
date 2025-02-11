@@ -93,6 +93,7 @@
 
 #define MAX_POLYGONS 8
 #define MAX_POLYGON_POINTS 64
+#define MAX_POLYGON_TOUCHS 3
 
 #define MAX_GRIDS 2
 #define MAX_GRID_KEYS 256

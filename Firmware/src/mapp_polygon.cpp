@@ -43,7 +43,7 @@ bool mapping_polygon_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
   };
   if (polygon_ptr->params.is_inside) {
     blob_ptr->action.mapping_ptr = polygon_ptr;
-    //blob_ptr->action.touch.current_ptr = &polygon_ptr->params.touch[0]; // FIXME: find a solution to mapp the touch index
+    blob_ptr->action.touch.current_ptr = &polygon_ptr->params.touch[0]; // FIXME: find a solution to mapp the touch index
     return true;
   }
   return false;

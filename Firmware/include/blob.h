@@ -109,7 +109,7 @@ typedef enum blob_status_e {
 
 typedef struct blob_s blob_t;
 
-typedef void blob_action_func_t(blob_t*);
+//typedef void blob_action_func_t(blob_t*);
 
 typedef struct touch_s touch_t;
 struct touch_s {
@@ -119,7 +119,7 @@ struct touch_s {
 
 typedef struct blob_action_s blob_action_t;
 struct blob_action_s {
-  blob_action_func_t* func_ptr;
+  //blob_action_func_t* func_ptr;
   void* mapping_ptr;
   touch_t touch;
 };

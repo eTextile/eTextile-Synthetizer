@@ -1,0 +1,298 @@
+[1mdiff --git a/Firmware/include/blob.h b/Firmware/include/blob.h[m
+[1mindex c89e7d0..4b2f86c 100644[m
+[1m--- a/Firmware/include/blob.h[m
+[1m+++ b/Firmware/include/blob.h[m
+[36m@@ -109,7 +109,7 @@[m [mtypedef enum blob_status_e {[m
+ [m
+ typedef struct blob_s blob_t;[m
+ [m
+[31m-typedef void blob_action_func_t(blob_t*);[m
+[32m+[m[32m//typedef void blob_action_func_t(blob_t*);[m
+ [m
+ typedef struct touch_s touch_t;[m
+ struct touch_s {[m
+[36m@@ -119,7 +119,7 @@[m [mstruct touch_s {[m
+ [m
+ typedef struct blob_action_s blob_action_t;[m
+ struct blob_action_s {[m
+[31m-  blob_action_func_t* func_ptr;[m
+[32m+[m[32m  //blob_action_func_t* func_ptr;[m
+   void* mapping_ptr;[m
+   touch_t touch;[m
+ };[m
+[1mdiff --git a/Firmware/include/config.h b/Firmware/include/config.h[m
+[1mindex 33e2e20..bb3e696 100644[m
+[1m--- a/Firmware/include/config.h[m
+[1m+++ b/Firmware/include/config.h[m
+[36m@@ -93,6 +93,7 @@[m
+ [m
+ #define MAX_POLYGONS 8[m
+ #define MAX_POLYGON_POINTS 64[m
+[32m+[m[32m#define MAX_POLYGON_TOUCHS 3[m
+ [m
+ #define MAX_GRIDS 2[m
+ #define MAX_GRID_KEYS 256[m
+[1mdiff --git a/Firmware/include/mapp_polygon.h b/Firmware/include/mapp_polygon.h[m
+[1mindex 9b5cdd0..e90d4e6 100644[m
+[1m--- a/Firmware/include/mapp_polygon.h[m
+[1m+++ b/Firmware/include/mapp_polygon.h[m
+[36m@@ -11,6 +11,7 @@[m [mstruct polygon_s {[m
+   float m[MAX_POLYGON_POINTS];[m
+   float c[MAX_POLYGON_POINTS];[m
+   bool is_inside;[m
+[32m+[m[32m  touch_3d_t touch[MAX_POLYGON_TOUCHS];[m
+ };[m
+ [m
+ void mapping_polygons_alloc(uint8_t polygons_cnt);[m
+[1mdiff --git a/Firmware/include/midi_seq.h b/Firmware/include/midi_seq.h[m
+[1mindex b72fc88..8cf82a8 100644[m
+[1m--- a/Firmware/include/midi_seq.h[m
+[1m+++ b/Firmware/include/midi_seq.h[m
+[36m@@ -12,8 +12,8 @@[m
+ #include "blob.h"[m
+ #include "midi_bus.h"[m
+ [m
+[31m-void tapTempo(void);      // TODO[m
+[31m-void stepSequencer(void); // TODO[m
+[31m-void arpeggiator(void);   // TODO[m
+[32m+[m[32mvoid tap_tempo(void);      // TODO[m
+[32m+[m[32mvoid step_sequencer(void); // TODO[m
+[32m+[m[32mvoid arpeggiator(void);    // TODO[m
+ [m
+ #endif /*__MIDI_SEQ_H__*/[m
+[1mdiff --git a/Firmware/src/config.cpp b/Firmware/src/config.cpp[m
+[1mindex cac89da..ce1ceaf 100644[m
+[1m--- a/Firmware/src/config.cpp[m
+[1m+++ b/Firmware/src/config.cpp[m
+[36m@@ -27,9 +27,9 @@[m [munion {[m
+   switch_t _switch;[m
+   slider_t _slider;[m
+   touchpad_t _touchpad;[m
+[31m-  knob_t knob;[m
+[31m-  grid_t grid;[m
+[31m-  polygon_t polygon;[m
+[32m+[m[32m  knob_t _knob;[m
+[32m+[m[32m  grid_t _grid;[m
+[32m+[m[32m  polygon_t _polygon;[m
+ } mapping_union_t;[m
+ [m
+ Bounce BUTTON_L = Bounce();[m
+[1mdiff --git a/Firmware/src/mapp_knob.cpp b/Firmware/src/mapp_knob.cpp[m
+[1mindex fb73816..7711033 100644[m
+[1m--- a/Firmware/src/mapp_knob.cpp[m
+[1m+++ b/Firmware/src/mapp_knob.cpp[m
+[36m@@ -36,85 +36,84 @@[m [mbool mapping_knob_interact(blob_t* blob_ptr, common_t* mapping_ptr) {[m
+ };[m
+ [m
+ void mapping_knob_play(blob_t* blob_ptr) {[m
+[31m-    mapp_knob_t* knob_ptr = (mapp_knob_t*)blob_ptr->action.mapping_ptr;[m
+[31m-    touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch.current_ptr;[m
+[32m+[m[32m  mapp_knob_t* knob_ptr = (mapp_knob_t*)blob_ptr->action.mapping_ptr;[m
+[32m+[m[32m  knob_touch_t* touch_ptr = (knob_touch_t*)blob_ptr->action.touch.current_ptr;[m
+     [m
+[31m-    float x = blob_ptr->centroid.x - knob_ptr->params.center.x;[m
+[31m-    float y = blob_ptr->centroid.y - knob_ptr->params.center.y;[m
+[31m-    float radius = sqrt(x * x + y * y);[m
+[32m+[m[32m  float x = blob_ptr->centroid.x - knob_ptr->params.center.x;[m
+[32m+[m[32m  float y = blob_ptr->centroid.y - knob_ptr->params.center.y;[m
+[32m+[m[32m  float radius = sqrt(x * x + y * y);[m
+ [m
+[31m-    for (uint8_t j = 0; j < knob_ptr->params.touchs; j++) {[m
+[31m-      if (radius < knob_ptr->params.touch[j].radius.midi.data2) { [m
+[31m-        // Rotation of Axes through an angle without shifting Origin[m
+[31m-        float posX = x * cos(knob_ptr->params.offset) + y * sin(knob_ptr->params.offset);[m
+[31m-        float posY = -x * sin(knob_ptr->params.offset) + y * cos(knob_ptr->params.offset);[m
+[31m-        if (posX == 0 && 0 < posY) {[m
+[31m-          knob_ptr->params.touch[j].theta.midi.data2 = PiII;[m
+[31m-        } else if (posX == 0 && posY < 0) {[m
+[31m-          knob_ptr->params.touch[j].theta.midi.data2 = IIIPiII;[m
+[31m-        } else if (posX < 0) {[m
+[31m-          knob_ptr->params.touch[j].theta.midi.data2 = atanf(posY / posX) + PI;[m
+[31m-        } else if (posY < 0) {[m
+[31m-          knob_ptr->params.touch[j].theta.midi.data2 = atanf(posY / posX) + IIPi;[m
+[31m-        } else {[m
+[31m-          knob_ptr->params.touch[j].theta.midi.data2 = atanf(posY / posX);[m
+[31m-        }[m
+[31m-        midi_send_out(knob_ptr->params.touch[j].radius.midi);[m
+[31m-        midi_send_out(knob_ptr->params.touch[j].theta.midi);[m
+[31m-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_KNOBS)[m
+[31m-          Serial.printf("\nDEBUG_MAPPINGS_KNOBS:\tKnobsID:\t%d\tradius:\t%fTheta:\t%f", i, knob_ptr->params.touch[j].radius.midi.data2, knob_ptr->params.touch[j].theta.midi.data2);[m
+[31m-        #endif[m
+[31m-      };[m
+[31m-    };[m
+[32m+[m[32m  if (radius < knob_ptr->params.radius) {[m
+[32m+[m[32m    // Rotation of Axes through an angle without shifting Origin[m
+[32m+[m[32m    float posX = x * cos(knob_ptr->params.offset) + y * sin(knob_ptr->params.offset);[m
+[32m+[m[32m    float posY = -x * sin(knob_ptr->params.offset) + y * cos(knob_ptr->params.offset);[m
+[32m+[m[32m    if (posX == 0 && 0 < posY) {[m
+[32m+[m[32m      touch_ptr->theta.midi.data2 = PiII;[m
+[32m+[m[32m    } else if (posX == 0 && posY < 0) {[m
+[32m+[m[32m      touch_ptr->theta.midi.data2 = IIIPiII;[m
+[32m+[m[32m    } else if (posX < 0) {[m
+[32m+[m[32m      touch_ptr->theta.midi.data2 = atanf(posY / posX) + PI;[m
+[32m+[m[32m    } else if (posY < 0) {[m
+[32m+[m[32m      touch_ptr->theta.midi.data2 = atanf(posY / posX) + IIPi;[m
+[32m+[m[32m    } else {[m
+[32m+[m[32m      touch_ptr->theta.midi.data2 = atanf(posY / posX);[m
+[32m+[m[32m    }[m
+[32m+[m[32m    midi_send_out(touch_ptr->radius.midi);[m
+[32m+[m[32m    midi_send_out(touch_ptr->theta.midi);[m
+[32m+[m[32m    midi_send_out(touch_ptr->pressure.midi);[m
+[32m+[m[32m    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_KNOBS)[m
+[32m+[m[32m      Serial.printf("\nDEBUG_MAPPINGS_KNOBS:\tKnobsID:\t%d\tradius:\t%fTheta:\t%f", i, knob_ptr->params.touch[j].radius.midi.data2, knob_ptr->params.touch[j].theta.midi.data2);[m
+[32m+[m[32m    #endif[m
+[32m+[m[32m  };[m
+ };[m
+ [m
+ void mapping_knob_create(const JsonObject &config) {[m
+[31m-    mapp_knob_t* knob_ptr = (mapp_knob_t*)llist_pop_front(&llist_knobs_pool);[m
+[31m-    knob_ptr->params.rect.from.x = config["from"][0].as<float>();[m
+[31m-    knob_ptr->params.rect.from.y = config["from"][1].as<float>();[m
+[31m-    knob_ptr->params.rect.to.x = config["to"][0].as<float>();[m
+[31m-    knob_ptr->params.rect.to.y = config["to"][1].as<float>();[m
+[31m-    knob_ptr->params.radius = config["radius"].as<float>();[m
+[31m-    knob_ptr->params.offset = config["offset"].as<uint8_t>();[m
+[31m-    midi_status_t status;[m
+[31m-    for (uint8_t j = 0; j<config["touchs"].as<uint8_t>(); j++){[m
+[31m-      midi_msg_status_unpack(config["msg"][j]["radius"]["midi"]["status"].as<uint8_t>(), &status);[m
+[31m-      knob_ptr->params.touch[j].radius.midi.type = status.type;[m
+[31m-      knob_ptr->params.touch[j].radius.midi.data1 = config["msg"][j]["radius"]["midi"]["data1"].as<uint8_t>();[m
+[31m-      knob_ptr->params.touch[j].radius.midi.data2 = config["msg"][j]["radius"]["midi"]["data2"].as<uint8_t>();[m
+[31m-      knob_ptr->params.touch[j].radius.midi.channel = status.channel;[m
+[31m-      if (knob_ptr->params.touch[j].radius.midi.type == midi::ControlChange ||[m
+[31m-        knob_ptr->params.touch[j].radius.midi.type == midi::AfterTouchPoly) {[m
+[31m-        knob_ptr->params.touch[j].radius.limit.min = config["msg"][j]["radius"]["limit"]["min"].as<uint8_t>();[m
+[31m-        knob_ptr->params.touch[j].radius.limit.max = config["msg"][j]["radius"]["limit"]["max"].as<uint8_t>();[m
+[31m-      }[m
+[31m-      midi_msg_status_unpack(config["msg"][j]["theta"]["midi"]["status"].as<uint8_t>(), &status);[m
+[31m-      knob_ptr->params.touch[j].theta.midi.type = status.type;[m
+[31m-      knob_ptr->params.touch[j].theta.midi.data1 = config["msg"][j]["theta"]["midi"]["data1"].as<uint8_t>();[m
+[31m-      knob_ptr->params.touch[j].theta.midi.data2 = config["msg"][j]["theta"]["midi"]["data2"].as<uint8_t>();[m
+[31m-      knob_ptr->params.touch[j].theta.midi.channel = status.channel;[m
+[31m-      if (knob_ptr->params.touch[j].theta.midi.type == midi::ControlChange ||[m
+[31m-        knob_ptr->params.touch[j].theta.midi.type == midi::AfterTouchPoly) {[m
+[31m-        knob_ptr->params.touch[j].theta.limit.min = config["msg"][j]["theta"]["limit"]["min"].as<uint8_t>();[m
+[31m-        knob_ptr->params.touch[j].theta.limit.max = config["msg"][j]["theta"]["limit"]["max"].as<uint8_t>();[m
+[31m-      }[m
+[31m-      midi_msg_status_unpack(config["msg"][j]["pressure"]["midi"]["status"].as<uint8_t>(), &status);[m
+[31m-      knob_ptr->params.touch[j].pressure.midi.type = status.type;[m
+[31m-      knob_ptr->params.touch[j].pressure.midi.data1 = config["msg"][j]["press"]["midi"]["data1"].as<uint8_t>();[m
+[31m-      knob_ptr->params.touch[j].pressure.midi.data2 = config["msg"][j]["press"]["midi"]["data2"].as<uint8_t>();[m
+[31m-      knob_ptr->params.touch[j].pressure.midi.channel = status.channel;[m
+[31m-      if (knob_ptr->params.touch[j].pressure.midi.type == midi::ControlChange ||[m
+[31m-        knob_ptr->params.touch[j].pressure.midi.type == midi::AfterTouchPoly) {[m
+[31m-        knob_ptr->params.touch[j].pressure.limit.min = config["msg"][j]["press"]["limit"]["min"].as<uint8_t>();[m
+[31m-        knob_ptr->params.touch[j].pressure.limit.max = config["msg"][j]["press"]["limit"]["max"].as<uint8_t>();[m
+[31m-      }[m
+[32m+[m[32m  mapp_knob_t* knob_ptr = (mapp_knob_t*)llist_pop_front(&llist_knobs_pool);[m
+[32m+[m[32m  knob_ptr->params.rect.from.x = config["from"][0].as<float>();[m
+[32m+[m[32m  knob_ptr->params.rect.from.y = config["from"][1].as<float>();[m
+[32m+[m[32m  knob_ptr->params.rect.to.x = config["to"][0].as<float>();[m
+[32m+[m[32m  knob_ptr->params.rect.to.y = config["to"][1].as<float>();[m
+[32m+[m[32m  knob_ptr->params.radius = config["radius"].as<float>();[m
+[32m+[m[32m  knob_ptr->params.offset = config["offset"].as<uint8_t>();[m
+[32m+[m[32m  midi_status_t status;[m
+[32m+[m[32m  for (uint8_t j = 0; j<config["touchs"].as<uint8_t>(); j++){[m
+[32m+[m[32m    midi_msg_status_unpack(config["msg"][j]["radius"]["midi"]["status"].as<uint8_t>(), &status);[m
+[32m+[m[32m    knob_ptr->params.touch[j].radius.midi.type = status.type;[m
+[32m+[m[32m    knob_ptr->params.touch[j].radius.midi.data1 = config["msg"][j]["radius"]["midi"]["data1"].as<uint8_t>();[m
+[32m+[m[32m    knob_ptr->params.touch[j].radius.midi.data2 = config["msg"][j]["radius"]["midi"]["data2"].as<uint8_t>();[m
+[32m+[m[32m    knob_ptr->params.touch[j].radius.midi.channel = status.channel;[m
+[32m+[m[32m    if (knob_ptr->params.touch[j].radius.midi.type == midi::ControlChange ||[m
+[32m+[m[32m      knob_ptr->params.touch[j].radius.midi.type == midi::AfterTouchPoly) {[m
+[32m+[m[32m      knob_ptr->params.touch[j].radius.limit.min = config["msg"][j]["radius"]["limit"]["min"].as<uint8_t>();[m
+[32m+[m[32m      knob_ptr->params.touch[j].radius.limit.max = config["msg"][j]["radius"]["limit"]["max"].as<uint8_t>();[m
+[32m+[m[32m    }[m
+[32m+[m[32m    midi_msg_status_unpack(config["msg"][j]["theta"]["midi"]["status"].as<uint8_t>(), &status);[m
+[32m+[m[32m    knob_ptr->params.touch[j].theta.midi.type = status.type;[m
+[32m+[m[32m    knob_ptr->params.touch[j].theta.midi.data1 = config["msg"][j]["theta"]["midi"]["data1"].as<uint8_t>();[m
+[32m+[m[32m    knob_ptr->params.touch[j].theta.midi.data2 = config["msg"][j]["theta"]["midi"]["data2"].as<uint8_t>();[m
+[32m+[m[32m    knob_ptr->params.touch[j].theta.midi.channel = status.channel;[m
+[32m+[m[32m    if (knob_ptr->params.touch[j].theta.midi.type == midi::ControlChange ||[m
+[32m+[m[32m      knob_ptr->params.touch[j].theta.midi.type == midi::AfterTouchPoly) {[m
+[32m+[m[32m      knob_ptr->params.touch[j].theta.limit.min = config["msg"][j]["theta"]["limit"]["min"].as<uint8_t>();[m
+[32m+[m[32m      knob_ptr->params.touch[j].theta.limit.max = config["msg"][j]["theta"]["limit"]["max"].as<uint8_t>();[m
+[32m+[m[32m    }[m
+[32m+[m[32m    midi_msg_status_unpack(config["msg"][j]["pressure"]["midi"]["status"].as<uint8_t>(), &status);[m
+[32m+[m[32m    knob_ptr->params.touch[j].pressure.midi.type = status.type;[m
+[32m+[m[32m    knob_ptr->params.touch[j].pressure.midi.data1 = config["msg"][j]["press"]["midi"]["data1"].as<uint8_t>();[m
+[32m+[m[32m    knob_ptr->params.touch[j].pressure.midi.data2 = config["msg"][j]["press"]["midi"]["data2"].as<uint8_t>();[m
+[32m+[m[32m    knob_ptr->params.touch[j].pressure.midi.channel = status.channel;[m
+[32m+[m[32m    if (knob_ptr->params.touch[j].pressure.midi.type == midi::ControlChange ||[m
+[32m+[m[32m      knob_ptr->params.touch[j].pressure.midi.type == midi::AfterTouchPoly) {[m
+[32m+[m[32m      knob_ptr->params.touch[j].pressure.limit.min = config["msg"][j]["press"]["limit"]["min"].as<uint8_t>();[m
+[32m+[m[32m      knob_ptr->params.touch[j].pressure.limit.max = config["msg"][j]["press"]["limit"]["max"].as<uint8_t>();[m
+     }[m
+[31m-    knob_ptr->params.radius = (knob_ptr->params.rect.to.x - knob_ptr->params.rect.from.x) / 2;[m
+[31m-    knob_ptr->params.center.x = (knob_ptr->params.rect.from.x + knob_ptr->params.radius);[m
+[31m-    knob_ptr->params.center.y = (knob_ptr->params.rect.from.y + knob_ptr->params.radius);[m
+[32m+[m[32m  }[m
+[32m+[m[32m  knob_ptr->params.radius = (knob_ptr->params.rect.to.x - knob_ptr->params.rect.from.x) / 2;[m
+[32m+[m[32m  knob_ptr->params.center.x = (knob_ptr->params.rect.from.x + knob_ptr->params.radius);[m
+[32m+[m[32m  knob_ptr->params.center.y = (knob_ptr->params.rect.from.y + knob_ptr->params.radius);[m
+     [m
+[31m-    knob_ptr->common.interact_func_ptr = &mapping_knob_interact;[m
+[31m-    knob_ptr->common.play_func_ptr = &mapping_knob_play;[m
+[32m+[m[32m  knob_ptr->common.interact_func_ptr = &mapping_knob_interact;[m
+[32m+[m[32m  knob_ptr->common.play_func_ptr = &mapping_knob_play;[m
+ [m
+[31m-    llist_push_back(&llist_mappings, knob_ptr);[m
+[32m+[m[32m  llist_push_back(&llist_mappings, knob_ptr);[m
+ };[m
+\ No newline at end of file[m
+[1mdiff --git a/Firmware/src/mapp_polygon.cpp b/Firmware/src/mapp_polygon.cpp[m
+[1mindex 66cfba9..10e05e1 100644[m
+[1m--- a/Firmware/src/mapp_polygon.cpp[m
+[1m+++ b/Firmware/src/mapp_polygon.cpp[m
+[36m@@ -43,7 +43,7 @@[m [mbool mapping_polygon_interact(blob_t* blob_ptr, common_t* mapping_ptr) {[m
+   };[m
+   if (polygon_ptr->params.is_inside) {[m
+     blob_ptr->action.mapping_ptr = polygon_ptr;[m
+[31m-    //blob_ptr->action.touch.current_ptr = &polygon_ptr->params.touch[0]; // FIXME: find a solution to mapp the touch index[m
+[32m+[m[32m    blob_ptr->action.touch.current_ptr = &polygon_ptr->params.touch[0]; // FIXME: find a solution to mapp the touch index[m
+     return true;[m
+   }[m
+   return false;[m
+[1mdiff --git a/Firmware/src/mapp_slider.cpp b/Firmware/src/mapp_slider.cpp[m
+[1mindex d393e97..a6007f8 100644[m
+[1m--- a/Firmware/src/mapp_slider.cpp[m
+[1m+++ b/Firmware/src/mapp_slider.cpp[m
+[36m@@ -29,7 +29,7 @@[m [mbool mapping_slider_interact(blob_t* blob_ptr, common_t* mapping_ptr) {[m
+       blob_ptr->centroid.y > slider_ptr->params.rect.from.y &&[m
+       blob_ptr->centroid.y < slider_ptr->params.rect.to.y) {[m
+     blob_ptr->action.mapping_ptr = slider_ptr;[m
+[31m-    blob_ptr->action.touch.current_ptr = &slider_ptr->params.touch[0]; // FIXME![m
+[32m+[m[32m    blob_ptr->action.touch.current_ptr = &slider_ptr->params.touch[0]; // FIXME: find a solution to mapp the touch index[m
+     return true;[m
+   }[m
+   return false;[m
+[1mdiff --git a/Firmware/src/midi_seq.cpp b/Firmware/src/midi_seq.cpp[m
+[1mindex e8aa58c..10c4aa7 100644[m
+[1m--- a/Firmware/src/midi_seq.cpp[m
+[1m+++ b/Firmware/src/midi_seq.cpp[m
+[36m@@ -6,13 +6,13 @@[m
+ [m
+ #include "midi_seq.h"[m
+ [m
+[31m-typedef struct seq seq_t;[m
+[31m-struct seq {[m
+[32m+[m[32mtypedef struct seq_s seq_t;[m
+[32m+[m[32mstruct seq_s {[m
+   //uint32_t intervalTime[32];[m
+   uint8_t* seqframe;[m
+ };[m
+ [m
+[31m-void tapTempo(void) {[m
+[32m+[m[32mvoid tap_tempo(void) {[m
+   /*[m
+   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&midi_out); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {[m
+     midi_node_t* midi_node_ptr = (midi_node_t*)ITERATOR_DATA(node_ptr);[m
+[36m@@ -22,7 +22,7 @@[m [mvoid tapTempo(void) {[m
+ };[m
+ [m
+ // TODO[m
+[31m-void stepSequencer(void) {[m
+[32m+[m[32mvoid step_sequencer(void) {[m
+ };[m
+ [m
+ // TODO[m

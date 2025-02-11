@@ -29,7 +29,7 @@ bool mapping_slider_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
       blob_ptr->centroid.y > slider_ptr->params.rect.from.y &&
       blob_ptr->centroid.y < slider_ptr->params.rect.to.y) {
     blob_ptr->action.mapping_ptr = slider_ptr;
-    blob_ptr->action.touch.current_ptr = &slider_ptr->params.touch[0]; // FIXME!
+    blob_ptr->action.touch.current_ptr = &slider_ptr->params.touch[0]; // FIXME: find a solution to mapp the touch index
     return true;
   }
   return false;
