@@ -23,6 +23,7 @@
 #include "mapp_grid.h"
 #include "mapp_polygon.h"
 
+/*
 union {
   switch_t _switch;
   slider_t _slider;
@@ -31,6 +32,7 @@ union {
   grid_t _grid;
   polygon_t _polygon;
 } mapping_union_t;
+*/
 
 Bounce BUTTON_L = Bounce();
 Bounce BUTTON_R = Bounce();

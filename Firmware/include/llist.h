@@ -32,7 +32,7 @@ void llist_swap_llist(llist_t* llistA_ptr, llist_t* llistB_ptr);
 void llist_concat_nodes(llist_t* dst_ptr, llist_t* src_ptr);
 
 typedef bool llist_compare_func_t (void*, void*);
-void* llist_find(llist_t* llist_ptr, void* data_ptr, llist_compare_func_t* func_ptr);
+void* llist_find_node(llist_t* llist_ptr, void* data_ptr, llist_compare_func_t* func_ptr);
 
 ////////////// Iterators //////////////
 #define ITERATOR_START_FROM_HEAD(llist) (((llist_t *)(llist))->head_ptr)

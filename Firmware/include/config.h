@@ -8,7 +8,7 @@
 #define __CONFIG_H__
 
 #include <Arduino.h>
-//#define ENCODER_USE_INTERRUPTS
+#define ENCODER_USE_INTERRUPTS
 #define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h> // https://github.com/PaulStoffregen/Encoder
 

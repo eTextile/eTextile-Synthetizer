@@ -6,7 +6,7 @@
 typedef struct slider_s slider_t;
 struct slider_s {
   rect_t rect;
-  dir_t pos;
+  dir_t dir;
   uint8_t touchs;
   // TODO: add llist of touchs
   //llist_t touch;

@@ -39,7 +39,7 @@ void mapping_slider_play(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
   touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch.current_ptr;
   //Serial.printf("\nDEBUG_MAPPINGS_SLIDERS\tTOUCHS:%d", slider_ptr->params.touchs);
-    switch (slider_ptr->params.pos) {
+    switch (slider_ptr->params.dir) {
       case HORIZONTAL:
         if (blob_ptr->centroid.x != blob_ptr->last_centroid.x) {
           touch_ptr->pos.midi.data2 = round(map(
@@ -142,9 +142,9 @@ void mapping_slider_create(const JsonObject &config) {
     uint8_t size_x = slider_ptr->params.rect.to.x - slider_ptr->params.rect.from.x;
     uint8_t size_y = slider_ptr->params.rect.to.y - slider_ptr->params.rect.from.y;
     if (size_x < size_y) {
-      slider_ptr->params.pos = VERTICAL; // TODO: pos -> dir
+      slider_ptr->params.dir = VERTICAL; // TODO: pos -> dir
     } else {
-      slider_ptr->params.pos = HORIZONTAL;
+      slider_ptr->params.dir = HORIZONTAL;
     };
   };
 

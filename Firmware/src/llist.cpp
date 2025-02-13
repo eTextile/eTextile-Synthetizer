@@ -119,7 +119,7 @@ void llist_concat_nodes(llist_t* dst_ptr, llist_t* src_ptr) {
   };
 };
 
-void* llist_find(llist_t* llist_ptr, void* data_ptr, llist_compare_func_t* func_ptr){
+void* llist_find_node(llist_t* llist_ptr, void* data_ptr, llist_compare_func_t* func_ptr){
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_ptr); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     if ((*func_ptr)(node_ptr->data_ptr, data_ptr) ){
       return node_ptr->data_ptr;
