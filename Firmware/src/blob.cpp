@@ -67,6 +67,7 @@ void matrix_find_blobs(void) {
       #endif
     }
     else {
+      is_dead_blob_ptr->last_status = is_dead_blob_ptr->status;
       is_dead_blob_ptr->status = MISSING;
       llist_push_front(&blobs_to_keep, is_dead_blob_ptr);
     };
@@ -229,9 +230,8 @@ void matrix_find_blobs(void) {
           new_blob_ptr->box.w = (blob_x2 - blob_x1);
           new_blob_ptr->box.h = blob_height;
 
-          blob_t* existing_blob_ptr = (blob_t*)llist_find(&llist_blobs, new_blob_ptr, (llist_compare_func_t*)&is_blob_existing);
+          blob_t* existing_blob_ptr = (blob_t*)llist_find_node(&llist_blobs, new_blob_ptr, (llist_compare_func_t*)&is_blob_existing);
           if (existing_blob_ptr != NULL) {
-            existing_blob_ptr->last_status = existing_blob_ptr->status;
             existing_blob_ptr->status = PRESENT;
             existing_blob_ptr->life_time_stamp = millis();
             llist_push_back(&llist_blobs_pool, new_blob_ptr);
