@@ -68,52 +68,51 @@ void mapping_switch_play(blob_t* blob_ptr) {
         break;
       case midi::NoteOn:
         if (blob_ptr->status == NEW) {
-          switch_ptr->params.msg.midi.type = midi::NoteOn;
-          //switch_ptr->params.msg.midi.data2 = ... // TODO: add the velocity to the blob values!
-          midi_send_out(switch_ptr->params.msg.midi);
+          touch_ptr->press.midi.type = midi::NoteOn;
+          //touch_ptr->press.midi.data2 = ... // TODO: add the velocity to the blob values!
+          midi_send_out(touch_ptr->press.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
-            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, switch_ptr->params.msg.midi.data1);
+            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, touch_ptr->press.midi.data1);
           #endif
         }
         else if ((!blob_ptr->status) == PRESENT) {
-          switch_ptr->params.msg.midi.type = midi::NoteOff;
-          midi_send_out(switch_ptr->params.msg.midi);
+          touch_ptr->press.midi.type = midi::NoteOff;
+          midi_send_out(touch_ptr->press.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_OFF:%d", i, switch_ptr->params.msg.midi.data1);
+            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_OFF:%d", i, touch_ptr->press.midi.data1);
           #endif
         }
         else if (blob_ptr->status == MISSING && blob_ptr->last_status == PRESENT) {
-          switch_ptr->params.msg.midi.type = midi::NoteOff;
-          midi_send_out(switch_ptr->params.msg.midi);
+          touch_ptr->press.midi.type = midi::NoteOff;
+          midi_send_out(touch_ptr->press.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_GRIDS)
-            Serial.printf("\nDEBUG_MAPPINGS_GRIDS\tKEY_VAL:%d\tKEY_UP_OFF:%d", switch_ptr->msg.midi.data1, switch_ptr->msg.midi.data2);
+            Serial.printf("\nDEBUG_MAPPINGS_GRIDS\tKEY_VAL:%d\tKEY_UP_OFF:%d", touch_ptr->press.midi.data1, touch_ptr->press.midi.data2);
           #endif
-          //switch_ptr = NULL; // RAZ last key pressed pointer value
         };
         break;
 
       case midi::AfterTouchPoly:
         if (blob_ptr->status == NEW) {
-          switch_ptr->params.msg.midi.type = midi::NoteOn;
-          midi_send_out(switch_ptr->params.msg.midi);
+          touch_ptr->press.midi.type = midi::NoteOn;
+          midi_send_out(touch_ptr->press.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
-            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, switch_ptr->params.msg.midi.data1);
+            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, touch_ptr->press.midi.data1);
           #endif
         }
         else if (blob_ptr->status == NEW) {
-          switch_ptr->params.msg.midi.type = midi::AfterTouchPoly;
-          midi_send_out(switch_ptr->params.msg.midi);
+          touch_ptr->press.midi.type = midi::AfterTouchPoly;
+          midi_send_out(touch_ptr->press.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
-            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tC_CHANGE:%d", i, switch_ptr->params.msg.midi.data2);
+            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tC_CHANGE:%d", i, touch_ptr->press.midi.data2);
           #endif
         }
         break;
 
       case midi::ControlChange:
-        switch_ptr->params.msg.midi.data2 = blob_ptr->centroid.z;
-        midi_send_out(switch_ptr->params.msg.midi);
+        touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
+        midi_send_out(touch_ptr->press.midi);
         #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
-          Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tC_CHANGE:%d", i, switch_ptr->params.msg.midi.data2);
+          Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tC_CHANGE:%d", i, touch_ptr->press.midi.data2);
         #endif
         break;
 
