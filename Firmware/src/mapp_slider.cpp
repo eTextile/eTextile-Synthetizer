@@ -10,6 +10,8 @@ typedef struct mapp_slider_s mapp_slider_t;
 struct mapp_slider_s {
   common_t common;
   slider_t params;
+  uint8_t active_blob_count;
+  uint8_t touch_index;
 };
 
 static mapp_slider_t mapp_sliders[MAX_SLIDERS];
@@ -20,24 +22,42 @@ void mapping_sliders_alloc(uint8_t sliders_cnt) {
   llist_builder(&llist_sliders_pool, &mapp_sliders[0], sliders_cnt, sizeof(mapp_sliders[0]));
 };
 
-void mapping_slider_play(blob_t*);
-
-bool mapping_slider_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
+bool mapping_slider_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
   if (blob_ptr->centroid.x > slider_ptr->params.rect.from.x &&
       blob_ptr->centroid.x < slider_ptr->params.rect.to.x &&
       blob_ptr->centroid.y > slider_ptr->params.rect.from.y &&
       blob_ptr->centroid.y < slider_ptr->params.rect.to.y) {
-    blob_ptr->action.mapping_ptr = slider_ptr;
-    blob_ptr->action.touch.current_ptr = &slider_ptr->params.touch[0]; // FIXME: find a solution to mapp the touch index
     return true;
   }
   return false;
 };
 
+// blob == valeurs physiqyes captées
+// touch == données du nieme blob
+bool mapping_slider_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+  mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
+  if (slider_ptr->touch_index < slider_ptr->params.touchs) {
+    blob_ptr->action.mapping_ptr = slider_ptr;
+    blob_ptr->action.mapping_data_ptr = &slider_ptr->params.touch[slider_ptr->touch_index++];
+    slider_ptr->active_blob_count++;
+    return true;
+  }
+  return false;
+};
+
+void mapping_slider_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+  mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
+  blob_ptr->action.mapping_ptr = NULL;
+  blob_ptr->action.mapping_data_ptr = NULL;
+  if (--slider_ptr->active_blob_count == 0) {
+    slider_ptr->touch_index = 0;
+  };
+};
+
 void mapping_slider_play(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
-  touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch.current_ptr;
+  touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.mapping_data_ptr;
   //Serial.printf("\nDEBUG_MAPPINGS_SLIDERS\tTOUCHS:%d", slider_ptr->params.touchs);
     switch (slider_ptr->params.dir) {
       case HORIZONTAL:
@@ -148,7 +168,9 @@ void mapping_slider_create(const JsonObject &config) {
     };
   };
 
-  slider_ptr->common.interact_func_ptr = &mapping_slider_interact;
+  slider_ptr->common.blob_assign_func_ptr = &mapping_slider_assign_blob;
+  slider_ptr->common.blob_dispose_func_ptr = &mapping_slider_dispose_blob;
+  slider_ptr->common.is_blob_inside_func_ptr = &mapping_slider_is_blob_inside;
   slider_ptr->common.play_func_ptr = &mapping_slider_play;
 
   llist_push_back(&llist_mappings, slider_ptr);

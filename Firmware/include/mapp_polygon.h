@@ -5,12 +5,12 @@
 
 typedef struct polygon_s polygon_t;
 struct polygon_s {
-  msg_t msg;
   uint8_t point_cnt;
   point_t point[MAX_POLYGON_POINTS];
   float m[MAX_POLYGON_POINTS];
   float c[MAX_POLYGON_POINTS];
   bool is_inside;
+  uint8_t touchs;
   touch_3d_t touch[MAX_POLYGON_TOUCHS];
 };
 

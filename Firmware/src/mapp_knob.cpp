@@ -10,6 +10,8 @@ typedef struct mapp_knob_s mapp_knob_t;
 struct mapp_knob_s {
   common_t common;
   knob_t params;
+  uint8_t active_blob_count;
+  uint8_t touch_index;
 };
 
 static mapp_knob_t mapp_knobs[MAX_KNOBS];
@@ -22,23 +24,43 @@ void mapping_knobs_alloc(uint8_t knobs_cnt) {
 
 void mapping_knob_play(blob_t*);
 
-bool mapping_knob_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
+bool mapping_knob_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
   if (blob_ptr->centroid.x > knob_ptr->params.rect.from.x &&
       blob_ptr->centroid.x < knob_ptr->params.rect.to.x &&
       blob_ptr->centroid.y > knob_ptr->params.rect.from.y &&
       blob_ptr->centroid.y < knob_ptr->params.rect.to.y) {
-    blob_ptr->action.mapping_ptr = knob_ptr;
-    blob_ptr->action.touch.current_ptr = &knob_ptr->params.touch[0]; // FIXME: find a solution to mapp the touch index
     return true;
   };
   return false;
 };
 
+// blob == valeurs physiqyes captées
+// touch == données du nieme blob
+bool mapping_knob_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+  mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
+  if (knob_ptr->touch_index < knob_ptr->params.touchs) {
+    blob_ptr->action.mapping_ptr = knob_ptr;
+    blob_ptr->action.mapping_data_ptr = &knob_ptr->params.touch[knob_ptr->touch_index++];
+    knob_ptr->active_blob_count++;
+    return true;
+  }
+  return false;
+};
+
+void mapping_knob_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+  mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
+  blob_ptr->action.mapping_ptr = NULL;
+  blob_ptr->action.mapping_data_ptr = NULL;
+  if (--knob_ptr->active_blob_count == 0) {
+    knob_ptr->touch_index = 0;
+  };
+};
+
 void mapping_knob_play(blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)blob_ptr->action.mapping_ptr;
-  knob_touch_t* touch_ptr = (knob_touch_t*)blob_ptr->action.touch.current_ptr;
-    
+  knob_touch_t* touch_ptr = (knob_touch_t*)blob_ptr->action.mapping_data_ptr;
+  
   float x = blob_ptr->centroid.x - knob_ptr->params.center.x;
   float y = blob_ptr->centroid.y - knob_ptr->params.center.y;
   float radius = sqrt(x * x + y * y);
@@ -112,7 +134,9 @@ void mapping_knob_create(const JsonObject &config) {
   knob_ptr->params.center.x = (knob_ptr->params.rect.from.x + knob_ptr->params.radius);
   knob_ptr->params.center.y = (knob_ptr->params.rect.from.y + knob_ptr->params.radius);
     
-  knob_ptr->common.interact_func_ptr = &mapping_knob_interact;
+  knob_ptr->common.blob_assign_func_ptr = &mapping_knob_assign_blob;
+  knob_ptr->common.blob_dispose_func_ptr = &mapping_knob_dispose_blob;
+  knob_ptr->common.is_blob_inside_func_ptr = &mapping_knob_is_blob_inside;
   knob_ptr->common.play_func_ptr = &mapping_knob_play;
 
   llist_push_back(&llist_mappings, knob_ptr);

@@ -14,7 +14,7 @@ typedef struct knob_s knob_t;
 struct knob_s {
   rect_t rect;
   point_t center;
-  float radius; // IN PROGRESS
+  float radius;
   float offset;
   uint8_t touchs;
   knob_touch_t touch[MAX_KNOB_TOUCHS];

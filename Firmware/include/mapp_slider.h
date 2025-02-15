@@ -8,8 +8,6 @@ struct slider_s {
   rect_t rect;
   dir_t dir;
   uint8_t touchs;
-  // TODO: add llist of touchs
-  //llist_t touch;
   touch_2d_t touch[MAX_SLIDER_TOUCHS];
 };
 

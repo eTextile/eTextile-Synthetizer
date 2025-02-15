@@ -11,6 +11,8 @@ typedef struct mapp_switch_s mapp_switch_t;
 struct mapp_switch_s {
   common_t common; //  interact_func_ptr / play_func_ptr;
   switch_t params;
+  uint8_t active_blob_count;
+  uint8_t touch_index;
 };
 
 static mapp_switch_t mapp_switches[MAX_SWITCHS];
@@ -24,20 +26,43 @@ void mapping_switchs_alloc(uint8_t switchs_cnt) {
 void mapping_switch_play(blob_t*);
 
 // Test if the blob is within the key limit
-bool mapping_switch_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
+bool mapping_switch_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
   if (blob_ptr->centroid.x > switch_ptr->params.rect.from.x &&
       blob_ptr->centroid.x < switch_ptr->params.rect.to.x &&
       blob_ptr->centroid.y > switch_ptr->params.rect.from.y &&
       blob_ptr->centroid.y < switch_ptr->params.rect.to.y) {
-    blob_ptr->action.mapping_ptr = switch_ptr;
     return true;
   }
   return false;
 };
 
+// blob == valeurs physiqyes captées
+// touch == données du nieme blob
+bool mapping_switch_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+  mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
+  if (switch_ptr->touch_index < switch_ptr->params.touchs) {
+    blob_ptr->action.mapping_ptr = switch_ptr;
+    blob_ptr->action.mapping_data_ptr = &switch_ptr->params.touch[switch_ptr->touch_index++];
+    switch_ptr->active_blob_count++;
+    return true;
+  }
+  return false;
+};
+
+void mapping_switch_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+  mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
+  blob_ptr->action.mapping_ptr = NULL;
+  blob_ptr->action.mapping_data_ptr = NULL;
+  if (--switch_ptr->active_blob_count == 0){
+    switch_ptr->touch_index = 0;
+  };
+};
+
 void mapping_switch_play(blob_t* blob_ptr) {
-  mapp_switch_t* switch_ptr = (mapp_switch_t*)blob_ptr->action.touch.current_ptr;
+  mapp_switch_t* switch_ptr = (mapp_switch_t*)blob_ptr->action.mapping_ptr;
+  touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.mapping_data_ptr;
+
     switch (switch_ptr->params.msg.midi.type) {
       case midi::NoteOff:
         break;
@@ -124,8 +149,11 @@ void mapping_switch_create(const JsonObject &config) {
     switch_ptr->params.msg.limit.max = config["msg"][0]["press"]["limit"]["max"].as<uint8_t>(); 
   }
   
-  switch_ptr->common.interact_func_ptr = &mapping_switch_interact;
-  switch_ptr->common.play_func_ptr = &mapping_switch_play;
 
+  switch_ptr->common.blob_assign_func_ptr = &mapping_switch_assign_blob;
+  switch_ptr->common.blob_dispose_func_ptr = &mapping_switch_dispose_blob;
+  switch_ptr->common.is_blob_inside_func_ptr = &mapping_switch_is_blob_inside;
+  switch_ptr->common.play_func_ptr = &mapping_switch_play;
+  
   llist_push_back(&llist_mappings, switch_ptr);
 };

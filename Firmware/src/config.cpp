@@ -20,7 +20,6 @@
 #include "mapp_slider.h"
 #include "mapp_touchpad.h"
 #include "mapp_knob.h"
-#include "mapp_grid.h"
 #include "mapp_polygon.h"
 
 /*
@@ -424,18 +423,6 @@ bool config_load_mappings_touchpads(const JsonArray& config) {
   return true;
 };
 
-bool config_load_mappings_grids(const JsonArray& config) {
-  if (config.isNull()) {
-    return false;
-  };
-  uint8_t n = config.size();
-  mapping_grids_alloc(n);
-  for (uint8_t i = 0; i < n; i++) {
-    mapping_grid_create(config[i]);
-  };
-  return true;
-};
-
 bool config_load_mappings_polygons(const JsonArray& config) {
   if (config.isNull()) {
     return false;
@@ -465,9 +452,6 @@ bool config_load_mappings(const JsonObject config) {
   };
   if (config_load_mappings_touchpads(config["touchpad"])) {
     //Serial.println("CONFIG_LOAD_TOUCHPAD");
-  };
-  if (config_load_mappings_grids(config["grid"])) {
-    //Serial.println("CONFIG_LOAD_GRID");
   };
   if (config_load_mappings_polygons(config["polygon"])) {
     //Serial.println("CONFIG_LOAD_POLYGON");

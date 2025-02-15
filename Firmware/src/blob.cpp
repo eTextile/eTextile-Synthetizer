@@ -60,7 +60,14 @@ void matrix_find_blobs(void) {
   blob_t* is_dead_blob_ptr = NULL;
 
   while ((is_dead_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs)) != NULL) {
+    
     if ((millis() - is_dead_blob_ptr->life_time_stamp) > TIME_TO_LEAVE) {
+      
+      common_t* mapping_common_ptr = (common_t*)is_dead_blob_ptr->action.mapping_ptr;
+      if (mapping_common_ptr != NULL) {
+        mapping_common_ptr->blob_dispose_func_ptr(mapping_common_ptr, is_dead_blob_ptr);
+      }
+
       llist_push_front(&llist_blobs_pool, is_dead_blob_ptr);
       #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FIND_BLOBS)
         Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p removed", &is_dead_blob_ptr);
@@ -231,6 +238,7 @@ void matrix_find_blobs(void) {
           new_blob_ptr->box.h = blob_height;
 
           blob_t* existing_blob_ptr = (blob_t*)llist_find_node(&llist_blobs, new_blob_ptr, (llist_compare_func_t*)&is_blob_existing);
+          
           if (existing_blob_ptr != NULL) {
             existing_blob_ptr->status = PRESENT;
             existing_blob_ptr->life_time_stamp = millis();
@@ -306,17 +314,14 @@ for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_p
 };
 
 bool is_blob_existing(blob_t* blob_ptr, blob_t* new_blob_ptr) {
-  if (blob_ptr->action.mapping_ptr != NULL) {
-    float dist = sqrtf(pow(blob_ptr->centroid.x - new_blob_ptr->centroid.x, 2) + pow(blob_ptr->centroid.y - new_blob_ptr->centroid.y, 2));
-    if (dist < LAST_BLOB_DIST) {
-      common_t* mapping_ptr = (common_t*)blob_ptr->action.mapping_ptr;
-      mapping_ptr->interact_func_ptr(new_blob_ptr, mapping_ptr);
-      return true;
-    };
-  }
+  float dist = sqrtf(pow(blob_ptr->centroid.x - new_blob_ptr->centroid.x, 2) + pow(blob_ptr->centroid.y - new_blob_ptr->centroid.y, 2));
+  if (dist < LAST_BLOB_DIST) {
+    return true;
+  };
   return false;
 };
 
+/*
 void blob_sort(llist_t* llist_ptr) {
   lnode_t* next_node_ptr = llist_ptr->head_ptr->next_ptr;
 
@@ -339,3 +344,4 @@ void blob_sort(llist_t* llist_ptr) {
     };
   };
 };
+*/

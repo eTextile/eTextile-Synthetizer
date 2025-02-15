@@ -80,7 +80,7 @@
 #define MAX_BLOBS 16 // [1:16] How many blobs can be tracked at the same time
 
 #define MAX_SWITCHS 16
-#define MAX_SWITCHS_TOUCHS 1
+#define MAX_SWITCH_TOUCHS 2
 
 #define MAX_SLIDERS 6
 #define MAX_SLIDER_TOUCHS 2

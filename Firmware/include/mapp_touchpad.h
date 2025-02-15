@@ -8,7 +8,6 @@ struct touchpad_s {
   rect_t rect;
   uint8_t touchs;
   touch_3d_t touch[MAX_TOUCHPAD_TOUCHS];
-  uint8_t touchs_count;
 };
 
 void mapping_touchpads_alloc(uint8_t touchpads_cnt);

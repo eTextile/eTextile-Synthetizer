@@ -10,6 +10,8 @@ typedef struct mapp_touchpad_s mapp_touchpad_t;
 struct mapp_touchpad_s {
   common_t common;
   touchpad_t params;
+  uint8_t active_blob_count;
+  uint8_t touch_index;
 };
 
 static mapp_touchpad_t mapp_touchpads[MAX_TOUCHPADS];
@@ -22,22 +24,42 @@ void mapping_touchpads_alloc(uint8_t touchpads_cnt) {
 
 void mapping_touchpad_play(blob_t*);
 
-bool mapping_touchpad_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
+bool mapping_touchpad_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
   if (blob_ptr->centroid.x > touchpad_ptr->params.rect.from.x &&
         blob_ptr->centroid.x < touchpad_ptr->params.rect.to.x &&
         blob_ptr->centroid.y > touchpad_ptr->params.rect.from.y &&
         blob_ptr->centroid.y < touchpad_ptr->params.rect.to.y) {
-    blob_ptr->action.mapping_ptr = touchpad_ptr;
-    blob_ptr->action.touch.current_ptr = &touchpad_ptr->params.touch[0]; // FIXME: find a solution to mapp the touch index
     return true;
   }
   return false;
 };
 
+// blob == valeurs physiqyes captées
+// touch == données du nieme blob
+bool mapping_touchpad_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+  mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
+  if (touchpad_ptr->touch_index < touchpad_ptr->params.touchs) {
+    blob_ptr->action.mapping_ptr = touchpad_ptr;
+    blob_ptr->action.mapping_data_ptr = &touchpad_ptr->params.touch[touchpad_ptr->touch_index++];
+    touchpad_ptr->active_blob_count++;
+    return true;
+  }
+  return false;
+};
+
+void mapping_touchpad_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+  mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
+  blob_ptr->action.mapping_ptr = NULL;
+  blob_ptr->action.mapping_data_ptr = NULL;
+  if (--touchpad_ptr->active_blob_count == 0) {
+    touchpad_ptr->touch_index = 0;
+  };
+};
+
 void mapping_touchpad_play(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
-  touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch.current_ptr;
+  touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.mapping_data_ptr;
 
   if (blob_ptr->status == NEW) {
     midi_send_out(touch_ptr->press.midi);
@@ -201,7 +223,9 @@ void mapping_touchpad_create(const JsonObject &config) {
     };
   };
 
-  touchpad_ptr->common.interact_func_ptr = &mapping_touchpad_interact;
+  touchpad_ptr->common.blob_assign_func_ptr = &mapping_touchpad_assign_blob;
+  touchpad_ptr->common.blob_dispose_func_ptr = &mapping_touchpad_dispose_blob;
+  touchpad_ptr->common.is_blob_inside_func_ptr = &mapping_touchpad_is_blob_inside;
   touchpad_ptr->common.play_func_ptr = &mapping_touchpad_play;
 
   llist_push_back(&llist_mappings, touchpad_ptr);

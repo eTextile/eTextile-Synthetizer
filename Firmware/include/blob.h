@@ -111,17 +111,19 @@ typedef struct blob_s blob_t;
 
 //typedef void blob_action_func_t(blob_t*);
 
+/*
 typedef struct touch_s touch_t;
 struct touch_s {
   void* current_ptr;
   void* previous_ptr;
 };
+*/
 
 typedef struct blob_action_s blob_action_t;
 struct blob_action_s {
   //blob_action_func_t* func_ptr;
   void* mapping_ptr;
-  touch_t touch;
+  void* mapping_data_ptr;
 };
 
 struct blob_s {

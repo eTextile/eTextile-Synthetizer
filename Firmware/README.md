@@ -9,7 +9,7 @@
     - use both cables: the power cable and the Micro USB cable (Type B)
 3. Load the provided web application (using Chome): https://mapping.etextile.org/
 4. Build your custom Graphic-User-Interface using the web app features
-5. The app contains GUI moduls like toggles, sliders, grids, etc.
+5. The app contains GUI moduls like toggles, sliders, etc.
 6. Each one can be placed, resized and configured to target specific MIDI_PARAMETERS
     - Each modul is providing **Midi Note** or **Midi Control-Change**
 7. The web app is made to generate and upload a **config file** to the eTextile-MIDI-interface
@@ -52,7 +52,6 @@
   - knobs()
   - polygons()
   - touchpads()
-  - grids()
 
 ### Development Frameworks
 - **eTextile-Synthesizer PCB** & **Teensy 4.0**

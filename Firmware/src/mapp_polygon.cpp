@@ -13,6 +13,8 @@ typedef struct mapp_polygon_s mapp_polygon_t;
 struct mapp_polygon_s {
   common_t common;
   polygon_t params;
+  uint8_t active_blob_count;
+  uint8_t touch_index;
 };
 
 static mapp_polygon_t mapp_polygons[MAX_POLYGONS];
@@ -25,8 +27,8 @@ void mapping_polygons_alloc(uint8_t polygons_cnt) {
 
 void mapping_polygon_play(blob_t*);
 
-// Test if the blob is within the key limits
-bool mapping_polygon_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
+// Test if the blob is within the polygon
+bool mapping_polygon_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)mapping_ptr;
   int i, j = (polygon_ptr->params.point_cnt - 1);
   polygon_ptr->params.is_inside = false;
@@ -42,11 +44,31 @@ bool mapping_polygon_interact(blob_t* blob_ptr, common_t* mapping_ptr) {
     j = i;
   };
   if (polygon_ptr->params.is_inside) {
-    blob_ptr->action.mapping_ptr = polygon_ptr;
-    blob_ptr->action.touch.current_ptr = &polygon_ptr->params.touch[0]; // FIXME: find a solution to mapp the touch index
     return true;
   }
   return false;
+};
+
+// blob == valeurs physiqyes captées
+// touch == données du nieme blob
+bool mapping_polygon_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+  mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)mapping_ptr;
+  if (polygon_ptr->touch_index < polygon_ptr->params.touchs) {
+    blob_ptr->action.mapping_ptr = polygon_ptr;
+    blob_ptr->action.mapping_data_ptr = &polygon_ptr->params.touch[polygon_ptr->touch_index++];
+    polygon_ptr->active_blob_count++;
+    return true;
+  }
+  return false;
+};
+
+void mapping_polygon_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+  mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)mapping_ptr;
+  blob_ptr->action.mapping_ptr = NULL;
+  blob_ptr->action.mapping_data_ptr = NULL;
+  if (--polygon_ptr->active_blob_count == 0){
+    polygon_ptr->touch_index = 0;
+  };
 };
 
 // Use to detect if a blob is inside a polygon
@@ -62,6 +84,7 @@ void mapping_polygon_play(blob_t* blob_ptr) {
 
 void mapping_polygon_create(const JsonObject &config) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)llist_pop_front(&llist_polygons_pool);
+  
   polygon_ptr->params.point_cnt = config["cnt"].as<uint8_t>();
   for (uint8_t j = 0; j < polygon_ptr->params.point_cnt; j++) {
     polygon_ptr->params.point[j].x = config["point"][j]["X"].as<float>();
@@ -87,7 +110,9 @@ void mapping_polygon_create(const JsonObject &config) {
     v2 = v1;
   }
   
-  polygon_ptr->common.interact_func_ptr = &mapping_polygon_interact;
+  polygon_ptr->common.blob_assign_func_ptr = &mapping_polygon_assign_blob;
+  polygon_ptr->common.blob_dispose_func_ptr = &mapping_polygon_dispose_blob;
+  polygon_ptr->common.is_blob_inside_func_ptr = &mapping_polygon_is_blob_inside;
   polygon_ptr->common.play_func_ptr = &mapping_polygon_play;
 
   llist_push_back(&llist_mappings, polygon_ptr);
