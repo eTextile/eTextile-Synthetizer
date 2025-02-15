@@ -149,10 +149,9 @@ void mapping_switch_create(const JsonObject &config) {
     switch_ptr->params.msg.limit.max = config["msg"][0]["press"]["limit"]["max"].as<uint8_t>(); 
   }
   
-
+  switch_ptr->common.is_blob_inside_func_ptr = &mapping_switch_is_blob_inside;
   switch_ptr->common.blob_assign_func_ptr = &mapping_switch_assign_blob;
   switch_ptr->common.blob_dispose_func_ptr = &mapping_switch_dispose_blob;
-  switch_ptr->common.is_blob_inside_func_ptr = &mapping_switch_is_blob_inside;
   switch_ptr->common.play_func_ptr = &mapping_switch_play;
   
   llist_push_back(&llist_mappings, switch_ptr);

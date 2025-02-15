@@ -223,9 +223,9 @@ void mapping_touchpad_create(const JsonObject &config) {
     };
   };
 
+  touchpad_ptr->common.is_blob_inside_func_ptr = &mapping_touchpad_is_blob_inside;
   touchpad_ptr->common.blob_assign_func_ptr = &mapping_touchpad_assign_blob;
   touchpad_ptr->common.blob_dispose_func_ptr = &mapping_touchpad_dispose_blob;
-  touchpad_ptr->common.is_blob_inside_func_ptr = &mapping_touchpad_is_blob_inside;
   touchpad_ptr->common.play_func_ptr = &mapping_touchpad_play;
 
   llist_push_back(&llist_mappings, touchpad_ptr);

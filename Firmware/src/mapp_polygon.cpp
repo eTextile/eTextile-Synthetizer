@@ -110,9 +110,9 @@ void mapping_polygon_create(const JsonObject &config) {
     v2 = v1;
   }
   
+  polygon_ptr->common.is_blob_inside_func_ptr = &mapping_polygon_is_blob_inside;
   polygon_ptr->common.blob_assign_func_ptr = &mapping_polygon_assign_blob;
   polygon_ptr->common.blob_dispose_func_ptr = &mapping_polygon_dispose_blob;
-  polygon_ptr->common.is_blob_inside_func_ptr = &mapping_polygon_is_blob_inside;
   polygon_ptr->common.play_func_ptr = &mapping_polygon_play;
 
   llist_push_back(&llist_mappings, polygon_ptr);

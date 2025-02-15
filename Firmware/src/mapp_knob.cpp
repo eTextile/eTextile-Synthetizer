@@ -133,10 +133,10 @@ void mapping_knob_create(const JsonObject &config) {
   knob_ptr->params.radius = (knob_ptr->params.rect.to.x - knob_ptr->params.rect.from.x) / 2;
   knob_ptr->params.center.x = (knob_ptr->params.rect.from.x + knob_ptr->params.radius);
   knob_ptr->params.center.y = (knob_ptr->params.rect.from.y + knob_ptr->params.radius);
-    
+  
+  knob_ptr->common.is_blob_inside_func_ptr = &mapping_knob_is_blob_inside;
   knob_ptr->common.blob_assign_func_ptr = &mapping_knob_assign_blob;
   knob_ptr->common.blob_dispose_func_ptr = &mapping_knob_dispose_blob;
-  knob_ptr->common.is_blob_inside_func_ptr = &mapping_knob_is_blob_inside;
   knob_ptr->common.play_func_ptr = &mapping_knob_play;
 
   llist_push_back(&llist_mappings, knob_ptr);

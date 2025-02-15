@@ -168,9 +168,9 @@ void mapping_slider_create(const JsonObject &config) {
     };
   };
 
+  slider_ptr->common.is_blob_inside_func_ptr = &mapping_slider_is_blob_inside;
   slider_ptr->common.blob_assign_func_ptr = &mapping_slider_assign_blob;
   slider_ptr->common.blob_dispose_func_ptr = &mapping_slider_dispose_blob;
-  slider_ptr->common.is_blob_inside_func_ptr = &mapping_slider_is_blob_inside;
   slider_ptr->common.play_func_ptr = &mapping_slider_play;
 
   llist_push_back(&llist_mappings, slider_ptr);
